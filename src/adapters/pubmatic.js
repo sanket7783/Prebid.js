@@ -20,21 +20,66 @@ var PubmaticAdapter = function PubmaticAdapter() {
   var _pm_optimize_adslots = [];
   let iframe;
 
+  function _initConf() {
+    var conf = {},
+      currTime = new Date()
+    ;
+
+    conf.SAVersion = "1100";
+    conf.wp = "PreBid";
+    conf.wv = CONSTANTS.REPO_AND_VERSION;
+    _secure && ( conf.sec = 1 );
+    conf.screenResolution =  screen.width + 'x' +screen.height;
+    conf.ranreq = Math.random();
+    conf.inIframe = window != top ? '1' : '0';
+
+    if(window.navigator.cookieEnabled === false ){
+      conf.fpcd = '1';
+    }
+    
+    try {
+      conf.pageURL = window.top.location.href;
+      conf.refurl = window.top.document.referrer;
+    } catch (e) {
+      conf.pageURL = window.location.href;
+      conf.refurl = window.document.referrer;
+    }
+    
+    conf.kltstamp  = currTime.getFullYear()
+      + "-" + (currTime.getMonth() + 1)
+      + "-" + currTime.getDate()
+      + " " + currTime.getHours()
+      + ":" + currTime.getMinutes()
+      + ":" + currTime.getSeconds();
+    conf.timezone = currTime.getTimezoneOffset()/60  * -1;
+
+    //todo: pm_ctype
+
+    return conf;
+  }
+
   function _callBids(params) {
+    var conf = _initConf(),
+      slots = []
+    ;
+
+    conf.pubId = 0;
     bids = params.bids;
-    _pm_optimize_adslots = [];
+
     for (var i = 0; i < bids.length; i++) {
       var bid = bids[i];
-      // bidmanager.pbCallbackMap['' + bid.params.adSlot] = bid;
-      _pm_pub_id = _pm_pub_id || bid.params.publisherId;
-      _pm_pub_age = _pm_pub_age || (bid.params.age || '');
-      _pm_pub_gender = _pm_pub_gender || (bid.params.gender || '');
-      _pm_pub_kvs = _pm_pub_kvs || (bid.params.kvs || '');
-      _pm_optimize_adslots.push(bid.params.adSlot);
+      conf.pubId = conf.pubId || bid.params.publisherId;
+      conf = _handleCustomParams(bid, conf);
+      slots.push(bid.params.adSlot);
     }
 
-    // Load pubmatic script in an iframe, because they call document.write
-    _getBids();
+    slots = _cleanSlots(_cleanSlots);
+
+    if(conf.pubId && slots.length > 0){
+      _legacyExecution(conf, slots);
+    }
+
+    _initUserSync(conf.pubId);
   }
 
   function _getBids() {
