@@ -11,6 +11,8 @@ var bidmanager = require('../bidmanager.js');
 var PubmaticAdapter = function PubmaticAdapter() {
   var bids;
   var usersync = false;
+  var _secure = 0;
+  let _protocol = ( window.location.protocol ===  "https:" ?  ( _secure = 1, "https"  ) : "http" ) + "://";
   var _pm_pub_id;
   var _pm_pub_age;
   var _pm_pub_gender;
