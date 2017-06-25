@@ -22,6 +22,12 @@ var PubmaticAdapter = function PubmaticAdapter() {
 
     conf.SAVersion = "1100";
     conf.wp = "PreBid";
+    conf.js = 1;
+    conf.grs = 3; //todo Grouped Response parameter, 0: default, 1: variables are split, 2: 1+rid passed to cback func, 3: 1+ md5 of bidid
+    conf.a = 1;//todo async == true
+    //todo profileid ==> profId
+    //todo versionid ==> verId
+
     conf.wv = CONSTANTS.REPO_AND_VERSION;
     _secure && ( conf.sec = 1 );
     conf.screenResolution =  screen.width + 'x' +screen.height;
@@ -251,3 +257,10 @@ var PubmaticAdapter = function PubmaticAdapter() {
 };
 
 module.exports = PubmaticAdapter;
+
+/*
+TODO:
+  diff of initConf
+    wrapperImpressionID
+    merge param
+*/
