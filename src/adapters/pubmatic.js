@@ -10,6 +10,7 @@ var bidmanager = require('../bidmanager.js');
  */
 var PubmaticAdapter = function PubmaticAdapter() {
   var bids;
+  var usersync = false;
   var _pm_pub_id;
   var _pm_pub_age;
   var _pm_pub_gender;
@@ -80,6 +81,19 @@ var PubmaticAdapter = function PubmaticAdapter() {
     content = utils.replaceTokenInString(content, map, '%%');
 
     return content;
+  }
+
+  function _initUserSync(pubId){
+    if (!usersync) {
+      var iframe = utils.createInvisibleIframe();
+      iframe.src = _protocol + 'ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=' + pubId;
+      try {
+        document.body.appendChild(iframe);
+      } catch (error) {
+        utils.logError(error);
+      }
+      usersync = true;
+    }
   }
 
   $$PREBID_GLOBAL$$.handlePubmaticCallback = function () {
