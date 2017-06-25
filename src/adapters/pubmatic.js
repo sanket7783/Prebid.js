@@ -86,6 +86,58 @@ var PubmaticAdapter = function PubmaticAdapter() {
     return tempSlots;
   }
 
+  function _legacyExecution(conf, slots){
+    var url = _generateLegacyCall(conf, slots);
+    iframe = utils.createInvisibleIframe();
+    var elToAppend = document.getElementsByTagName('head')[0];
+    elToAppend.insertBefore(iframe, elToAppend.firstChild);
+    var iframeDoc = utils.getIframeDocument(iframe);
+    iframeDoc.write(_createRequestContent(url));
+    iframeDoc.close();
+  }
+
+  function _generateLegacyCall(conf, slots){
+    var lessOneHopPubList = {46076:'', 60530:'', 9999:'', 7777:''},
+      request_url
+    ;
+    conf.pm_cb = "window.parent.$$PREBID_GLOBAL$$.handlePubmaticCallback";
+    //todo: add pm_dm_enabled in custom params    
+    request_url = (conf.pm_dm_enabled != true && !lessOneHopPubList.hasOwnProperty(conf.pubId)) ? ('gads.pubmatic.com/AdServer/AdCallAggregator') : ("haso.pubmatic.com/ads/" + conf.pubId + "/GRPBID/index.html");
+    request_url = request_url + '?' + _toUrlParams(conf);
+    request_url += '&adslots=' + encodeURIComponent('[' + slots.join(',') +']');
+    return _protocol + request_url;
+  }
+
+  function _toUrlParams(obj) {
+    var values = [],
+      key,
+      value,
+      undefined
+    ;
+
+    for(key in obj ){
+      value=obj[ key ];      
+      if ( obj.hasOwnProperty( key ) && value != undefined && value !== ''  ) {
+        values.push(key + '=' + _encodeIfRequired( value ) );
+      }
+    }
+
+    return values.join( '&' );
+  }
+
+  function _encodeIfRequired(s){
+    try{    
+      s = typeof s === "string" ? s : ''+s; //Make sure that this is string
+      s = decodeURIComponent(s) === s ? encodeURIComponent(s) : s;
+      if(s.indexOf('&') >=0 || s.indexOf('=') >=0 || s.indexOf('?') >=0 ){
+        s = encodeURIComponent(s);
+      }
+      return s;
+    }catch(ex){
+      return "";
+    }
+  }
+
   function _callBids(params) {
     var conf = _initConf(),
       slots = []
