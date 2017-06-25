@@ -138,6 +138,19 @@ var PubmaticAdapter = function PubmaticAdapter() {
     }
   }
 
+  function _initUserSync(pubId){
+    if (!usersync) {
+      var iframe = utils.createInvisibleIframe();
+      iframe.src = _protocol + 'ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=' + pubId;
+      try {
+        document.body.appendChild(iframe);
+      } catch (error) {
+        utils.logError(error);
+      }
+      usersync = true;
+    }
+  }
+
   function _callBids(params) {
     var conf = _initConf(),
       slots = []
@@ -160,21 +173,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     }
 
     _initUserSync(conf.pubId);
-  }
-
-  function _getBids() {
-    // create the iframe
-    iframe = utils.createInvisibleIframe();
-
-    var elToAppend = document.getElementsByTagName('head')[0];
-
-    // insert the iframe into document
-    elToAppend.insertBefore(iframe, elToAppend.firstChild);
-
-    var iframeDoc = utils.getIframeDocument(iframe);
-    iframeDoc.write(_createRequestContent());
-    iframeDoc.close();
-  }
+  }  
 
   function _createRequestContent() {
     var content = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"' +
@@ -184,20 +183,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     content += '<scr' + 'ipt src="'+url+'"></scr' + 'ipt>';    
     content += '</body></html>';
     return content;
-  }
-
-  function _initUserSync(pubId){
-    if (!usersync) {
-      var iframe = utils.createInvisibleIframe();
-      iframe.src = _protocol + 'ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=' + pubId;
-      try {
-        document.body.appendChild(iframe);
-      } catch (error) {
-        utils.logError(error);
-      }
-      usersync = true;
-    }
-  }
+  }  
 
   $$PREBID_GLOBAL$$.handlePubmaticCallback = function () {
     let bidDetailsMap = {};
