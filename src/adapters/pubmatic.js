@@ -53,6 +53,10 @@ var PubmaticAdapter = function PubmaticAdapter() {
     return conf;
   }
 
+  /*
+    ToDo
+      gender, age, dctr
+  */
   function _handleCustomParams(bids, conf){
     if(!conf.kadpageurl){
       conf.kadpageurl = conf.pageURL;
