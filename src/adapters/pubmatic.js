@@ -180,33 +180,9 @@ var PubmaticAdapter = function PubmaticAdapter() {
     var content = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"' +
       ' "http://www.w3.org/TR/html4/loose.dtd"><html><head><base target="_top" /><scr' +
       'ipt>inDapIF=true;</scr' + 'ipt></head>';
-    content += '<body>';
-    content += '<scr' + 'ipt>';
-    content += '' +
-      'window.pm_pub_id  = "%%PM_PUB_ID%%";' +
-      'window.pm_optimize_adslots     = [%%PM_OPTIMIZE_ADSLOTS%%];' +
-      'window.kaddctr = "%%PM_ADDCTR%%";' +
-      'window.kadgender = "%%PM_GENDER%%";' +
-      'window.kadage = "%%PM_AGE%%";' +
-      'window.pm_async_callback_fn = "window.parent.$$PREBID_GLOBAL$$.handlePubmaticCallback";';
-
-    content += '</scr' + 'ipt>';
-
-    var map = {};
-    map.PM_PUB_ID = _pm_pub_id;
-    map.PM_ADDCTR = _pm_pub_kvs;
-    map.PM_GENDER = _pm_pub_gender;
-    map.PM_AGE = _pm_pub_age;
-    map.PM_OPTIMIZE_ADSLOTS = _pm_optimize_adslots.map(function (adSlot) {
-      return "'" + adSlot + "'";
-    }).join(',');
-
-    content += '<scr' + 'ipt src="https://ads.pubmatic.com/AdServer/js/gshowad.js"></scr' + 'ipt>';
-    content += '<scr' + 'ipt>';
-    content += '</scr' + 'ipt>';
+    content += '<body>';    
+    content += '<scr' + 'ipt src="'+url+'"></scr' + 'ipt>';    
     content += '</body></html>';
-    content = utils.replaceTokenInString(content, map, '%%');
-
     return content;
   }
 
