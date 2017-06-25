@@ -58,6 +58,34 @@ var PubmaticAdapter = function PubmaticAdapter() {
     return conf;
   }
 
+  function _handleCustomParams(bids, conf){
+    if(!conf.kadpageurl){
+      conf.kadpageurl = conf.pageURL;
+    }
+
+    return conf;
+  }
+
+  function _cleanSlots(slots){
+    var i,
+      len = slots.length,
+      tempSlot,
+      tempSlots = []
+    ;
+
+    for(i=0; i<len; i++){
+      tempSlot = slots[i];
+      if(utils.isStr(tempSlot)){
+        tempSlot = tempSlot.replace(/^\s+/g,'').replace(/\s+$/g,'');
+        if(tempSlot.length > 0){
+          tempSlots.push( tempSlot );
+        }
+      }
+    }
+
+    return tempSlots;
+  }
+
   function _callBids(params) {
     var conf = _initConf(),
       slots = []
