@@ -183,7 +183,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     content += '<scr' + 'ipt src="'+url+'"></scr' + 'ipt>';    
     content += '</body></html>';
     return content;
-  }  
+  }
 
   $$PREBID_GLOBAL$$.handlePubmaticCallback = function () {
     let bidDetailsMap = {};
