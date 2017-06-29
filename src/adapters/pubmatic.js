@@ -14,6 +14,23 @@ var PubmaticAdapter = function PubmaticAdapter() {
   var _secure = 0;
   let _protocol = ( window.location.protocol ===  "https:" ?  ( _secure = 1, "https"  ) : "http" ) + "://";
   let iframe;
+  /*
+    ToDo
+    Following params can also be considered
+      pmzoneid
+      merge
+    Check those are added
+  */
+  var customPars = {
+    "kadgender": "gender",
+    "age": "kadage",
+    "dctr": "dctr", // Custom Targeting
+    "wiid": "wiid", // Wrapper Impression ID
+    "profileid": "profileid", // HB: Profile ID
+    "profId": "profId", // Legacy: Profile ID
+    "versionid": "versionid", // HB: version ID 
+    "verId": "verId" // Legacy: version ID 
+  };
 
   function _initConf() {
     var conf = {},
@@ -59,15 +76,30 @@ var PubmaticAdapter = function PubmaticAdapter() {
     return conf;
   }
 
-  /*
-    ToDo
-      gender, age, dctr
-  */
-  function _handleCustomParams(bid, conf){
+  function _handleCustomParams(params, conf){
     if(!conf.kadpageurl){
       conf.kadpageurl = conf.pageURL;
     }
 
+    var key, value, entry;
+    for (key in customPars) {
+        if (customPars.hasOwnProperty(key)) {
+            value = params[key];
+            if (value) {
+                entry = customPars[key];
+                if (typeof entry === "object") {
+                    value = entry.m(value, conf);
+                    key = entry.n;
+                } else {
+                    key = customPars[key];
+                }
+
+                if (value) {
+                    conf[key] = value;
+                }
+            }
+        }
+    }
     return conf;
   }
 
@@ -119,14 +151,12 @@ var PubmaticAdapter = function PubmaticAdapter() {
       value,
       undefined
     ;
-
     for(key in obj ){
       value=obj[ key ];      
       if ( obj.hasOwnProperty( key ) && value != undefined && value !== ''  ) {
         values.push(key + '=' + _encodeIfRequired( value ) );
       }
     }
-
     return values.join( '&' );
   }
 
@@ -167,7 +197,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     for (var i = 0; i < bids.length; i++) {
       var bid = bids[i];
       conf.pubId = conf.pubId || bid.params.publisherId;
-      conf = _handleCustomParams(bid, conf);
+      conf = _handleCustomParams(bid.params, conf);
       slots.push(bid.params.adSlot);
     }
 
@@ -257,10 +287,3 @@ var PubmaticAdapter = function PubmaticAdapter() {
 };
 
 module.exports = PubmaticAdapter;
-
-/*
-TODO:
-  diff of initConf
-    wrapperImpressionID
-    merge param
-*/
