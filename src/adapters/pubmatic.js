@@ -1,6 +1,7 @@
 var utils = require('../utils.js');
 var bidfactory = require('../bidfactory.js');
 var bidmanager = require('../bidmanager.js');
+const constants = require('../constants.json');
 
 /**
  * Adapter for requesting bids from Pubmatic.
@@ -36,12 +37,10 @@ var PubmaticAdapter = function PubmaticAdapter() {
     conf.SAVersion = "1100";
     conf.wp = "PreBid";
     conf.js = 1;
-    conf.grs = 3; //todo Grouped Response parameter, 0: default, 1: variables are split, 2: 1+rid passed to cback func, 3: 1+ md5 of bidid
+    //conf.grs = 3; //todo Grouped Response parameter, 0: default, 1: variables are split, 2: 1+rid passed to cback func, 3: 1+ md5 of bidid
     conf.a = 1;//todo async == true
-    //todo profileid ==> profId
-    //todo versionid ==> verId
 
-    conf.wv = CONSTANTS.REPO_AND_VERSION;
+    conf.wv = constants.REPO_AND_VERSION;
     _secure && ( conf.sec = 1 );
     conf.screenResolution =  screen.width + 'x' +screen.height;
     conf.ranreq = Math.random();
@@ -197,7 +196,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
       slots.push(bid.params.adSlot);
     }
 
-    slots = _cleanSlots(_cleanSlots);
+    slots = _cleanSlots(slots);
 
     if(conf.pubId && slots.length > 0){
       _legacyExecution(conf, slots);
@@ -206,7 +205,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     _initUserSync(conf.pubId);
   }  
 
-  function _createRequestContent() {
+  function _createRequestContent(url) {
     var content = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"' +
       ' "http://www.w3.org/TR/html4/loose.dtd"><html><head><base target="_top" /><scr' +
       'ipt>inDapIF=true;</scr' + 'ipt></head>';
