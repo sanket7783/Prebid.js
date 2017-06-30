@@ -18,17 +18,13 @@ var PubmaticAdapter = function PubmaticAdapter() {
     ToDo
     Following params can also be considered
       pmzoneid
-      merge
-    Check those are added
   */
   var customPars = {
     "kadgender": "gender",
     "age": "kadage",
     "dctr": "dctr", // Custom Targeting
     "wiid": "wiid", // Wrapper Impression ID
-    "profileid": "profileid", // HB: Profile ID
     "profId": "profId", // Legacy: Profile ID
-    "versionid": "versionid", // HB: version ID 
     "verId": "verId" // Legacy: version ID 
   };
 
