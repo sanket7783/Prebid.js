@@ -265,6 +265,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
         adResponse.width = dimensions[0];
         adResponse.height = dimensions[1];
         adResponse.dealId = adUnitInfo.wdeal;
+        adResponse.dealChannel = adUnit.deal_channel || null;
 
         bidmanager.addBidResponse(bids[i].placementCode, adResponse);
       } else {
