@@ -15,6 +15,13 @@ var PubmaticAdapter = function PubmaticAdapter() {
   var _secure = 0;
   let _protocol = ( window.location.protocol ===  "https:" ?  ( _secure = 1, "https"  ) : "http" ) + "://";
   let iframe;
+
+  var dealChannelValues = {
+    1: "PMP",
+    5: "PMPG",
+    6: "PREF"
+  };
+
   /*
     ToDo
     Following params can also be considered
@@ -263,7 +270,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
         adResponse.width = adUnit.width;
         adResponse.height = adUnit.height;
         adResponse.dealId = adUnitInfo.wdeal;
-        adResponse.dealChannel = adUnit.deal_channel || null;
+        adResponse.dealChannel = dealChannelValues[adUnit.deal_channel] || null;
 
         bidmanager.addBidResponse(bids[i].placementCode, adResponse);
       } else {
