@@ -231,7 +231,6 @@ var PubmaticAdapter = function PubmaticAdapter() {
     var bid;
     var bidResponseMap = bidDetailsMap || {};
     var bidInfoMap = progKeyValueMap || {};
-    var dimensions;
 
     for (i = 0; i < bids.length; i++) {
       var adResponse;
@@ -255,15 +254,14 @@ var PubmaticAdapter = function PubmaticAdapter() {
       }, {});
 
       if (adUnitInfo.bidstatus === '1') {
-        dimensions = adUnitInfo.bidid.split('@')[1].split('x');
         adResponse = bidfactory.createBid(1);
         adResponse.bidderCode = 'pubmatic';
         adResponse.adSlot = bid.adSlot;
         adResponse.cpm = Number(adUnitInfo.bid);
         adResponse.ad = unescape(adUnit.creative_tag);
         adResponse.ad += utils.createTrackPixelIframeHtml(decodeURIComponent(adUnit.tracking_url));
-        adResponse.width = dimensions[0];
-        adResponse.height = dimensions[1];
+        adResponse.width = adUnit.width;
+        adResponse.height = adUnit.height;
         adResponse.dealId = adUnitInfo.wdeal;
         adResponse.dealChannel = adUnit.deal_channel || null;
 
