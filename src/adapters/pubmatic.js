@@ -18,8 +18,8 @@ var PubmaticAdapter = function PubmaticAdapter() {
 
   var dealChannelValues = {
     1: "PMP",
-    5: "PMPG",
-    6: "PREF"
+    5: "PREF",
+    6: "PMPG"
   };
 
   /*
