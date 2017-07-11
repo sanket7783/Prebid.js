@@ -666,3 +666,17 @@ export function getBidderRequest(bidder, adUnitCode) {
         .filter(bid => bid.bidder === bidder && bid.placementCode === adUnitCode).length > 0;
   }) || { start: null, requestId: null };
 }
+
+/**
+ * Returns content for a friendly iframe to execute a URL in script tag
+ * @param {url} URL to be executed in a script tag in friendly iframe
+ */
+export function createContentToExecuteExtScriptInFriendlyFrame(url) {
+  if (!url) {
+    return '';
+  }
+
+  return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"' +
+    ' "http://www.w3.org/TR/html4/loose.dtd"><html><head><base target="_top" /><scr' +
+    'ipt>inDapIF=true;</scr' + 'ipt></head><body><script src="${url}"></script></body></html>`;
+}
