@@ -131,7 +131,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     var elToAppend = document.getElementsByTagName('head')[0];
     elToAppend.insertBefore(iframe, elToAppend.firstChild);
     var iframeDoc = utils.getIframeDocument(iframe);
-    iframeDoc.write(_createRequestContent(url));
+    iframeDoc.write(utils.createContentToExecuteExtScriptInFriendlyFrame(url));
     iframeDoc.close();
   }
 
@@ -211,16 +211,6 @@ var PubmaticAdapter = function PubmaticAdapter() {
 
     _initUserSync(conf.pubId);
   }  
-
-  function _createRequestContent(url) {
-    var content = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"' +
-      ' "http://www.w3.org/TR/html4/loose.dtd"><html><head><base target="_top" /><scr' +
-      'ipt>inDapIF=true;</scr' + 'ipt></head>';
-    content += '<body>';    
-    content += '<scr' + 'ipt src="'+url+'"></scr' + 'ipt>';    
-    content += '</body></html>';
-    return content;
-  }
 
   $$PREBID_GLOBAL$$.handlePubmaticCallback = function () {
     let bidDetailsMap = {};
