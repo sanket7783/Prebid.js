@@ -676,7 +676,5 @@ export function createContentToExecuteExtScriptInFriendlyFrame(url) {
     return '';
   }
 
-  return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"' +
-    ' "http://www.w3.org/TR/html4/loose.dtd"><html><head><base target="_top" /><scr' +
-    'ipt>inDapIF=true;</scr' + 'ipt></head><body><script src="${url}"></script></body></html>`;
+  return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><html><head><base target="_top" /><script>inDapIF=true;</scr' + 'ipt></head><body><script src="${url}"></script></body></html>`;
 }
