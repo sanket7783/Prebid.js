@@ -524,4 +524,20 @@ describe('Utils', function () {
       assert.equal(arr.length, count, 'Polyfill test fails')
     });
   });
+
+  describe('createContentToExecuteExtScriptInFriendlyFrame', function () {
+    it('should return empty string if url is not passed', function () {      
+      var output = utils.createContentToExecuteExtScriptInFriendlyFrame();
+      assert.equal(output, '');
+    });
+
+    it('should have URL in returned value if url is passed', function () {
+      var url = 'https://abcd.com/service?a=1&b=2&c=3';
+      var output = utils.createContentToExecuteExtScriptInFriendlyFrame(url);
+      var expected = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><html><head><base target="_top" /><script>inDapIF=true;</scr' + 'ipt></head><body><script src="${url}"></script></body></html>`;
+      assert.equal(output, expected);
+    });
+  });
+    
 });
+
