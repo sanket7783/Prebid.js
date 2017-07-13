@@ -142,48 +142,16 @@ var PubmaticAdapter = function PubmaticAdapter() {
     conf.pm_cb = "window.parent.$$PREBID_GLOBAL$$.handlePubmaticCallback";
     //todo: add pm_dm_enabled in custom params    
     request_url = (conf.pm_dm_enabled != true && !lessOneHopPubList.hasOwnProperty(conf.pubId)) ? ('gads.pubmatic.com/AdServer/AdCallAggregator') : ("haso.pubmatic.com/ads/" + conf.pubId + "/GRPBID/index.html");
-    request_url = request_url + '?' + _toUrlParams(conf);
+    request_url = request_url + '?' + utils.parseQueryStringParameters(conf);
     request_url += '&adslots=' + encodeURIComponent('[' + slots.join(',') +']');
     return _protocol + request_url;
-  }
-
-  function _toUrlParams(obj) {
-    var values = [],
-      key,
-      value,
-      undefined
-    ;
-    for(key in obj ){
-      value=obj[ key ];      
-      if ( obj.hasOwnProperty( key ) && value != undefined && value !== ''  ) {
-        values.push(key + '=' + _encodeIfRequired( value ) );
-      }
-    }
-    return values.join( '&' );
-  }
-
-  function _encodeIfRequired(s){
-    try{    
-      s = typeof s === "string" ? s : ''+s; //Make sure that this is string
-      s = decodeURIComponent(s) === s ? encodeURIComponent(s) : s;
-      if(s.indexOf('&') >=0 || s.indexOf('=') >=0 || s.indexOf('?') >=0 ){
-        s = encodeURIComponent(s);
-      }
-      return s;
-    }catch(ex){
-      return "";
-    }
   }
 
   function _initUserSync(pubId){
     if (!usersync) {
       var iframe = utils.createInvisibleIframe();
       iframe.src = _protocol + 'ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=' + pubId;
-      try {
-        document.body.appendChild(iframe);
-      } catch (error) {
-        utils.logError(error);
-      }
+      utils.insertElement(iframe, document);      
       usersync = true;
     }
   }
@@ -194,7 +162,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     ;
 
     conf.pubId = 0;
-    bids = params.bids;
+    bids = params.bids || [];
 
     for (var i = 0; i < bids.length; i++) {
       var bid = bids[i];
