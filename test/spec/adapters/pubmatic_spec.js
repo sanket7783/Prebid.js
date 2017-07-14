@@ -45,6 +45,29 @@ describe('PubMaticAdapter', () => {
       expect(adapter.callBids).to.exist.and.to.be.a('function');
     });
 
+    describe('user syncup', () => {
+
+    	beforeEach(() => {			
+        	sinon.spy(utils, "insertElement");
+		});
+
+		afterEach(() => {
+        	utils.insertElement.restore();
+		});
+
+    	it('usersync is initiated', () => {        	
+        	adapter.callBids(createBidderRequest({
+				params: {
+				  publisherId: 9999,
+				  adSlot: "abcd@728x90",
+				  age: "20"
+				}
+			}));
+			utils.insertElement.calledOnce.should.be.true;
+        });
+
+    });
+
     describe('bid request', () => {
 
 		beforeEach(() => {
@@ -58,13 +81,14 @@ describe('PubMaticAdapter', () => {
 		it('requires parameters to be made', () => {
           adapter.callBids({});
           utils.createContentToExecuteExtScriptInFriendlyFrame.calledOnce.should.be.false;
-        });
+        });        
 
         it('for publisherId 9999 call is made to haso.pubmatic.com', () => {        	
           adapter.callBids(createBidderRequest({
             params: {
               publisherId: 9999,
-              adSlot: "abcd@728x90"
+              adSlot: "abcd@728x90",
+              age: "20"
             }
           }));
           //console.log("utils.createContentToExecuteExtScriptInFriendlyFrame.called ==> ", utils.createContentToExecuteExtScriptInFriendlyFrame.called);
