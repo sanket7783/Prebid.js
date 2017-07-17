@@ -53,6 +53,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     conf.ranreq = Math.random();
     conf.inIframe = window != top ? '1' : '0';
 
+    // istanbul ignore else
     if(window.navigator.cookieEnabled === false ){
       conf.fpcd = '1';
     }
@@ -85,8 +86,10 @@ var PubmaticAdapter = function PubmaticAdapter() {
 
     var key, value, entry;
     for (key in customPars) {
+        // istanbul ignore else
         if (customPars.hasOwnProperty(key)) {
             value = params[key];
+            // istanbul ignore else
             if (value) {
                 entry = customPars[key];
                 if (typeof entry === "object") {
@@ -96,6 +99,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
                     key = customPars[key];
                 }
 
+                // istanbul ignore else
                 if (value) {
                     conf[key] = value;
                 }
@@ -114,8 +118,10 @@ var PubmaticAdapter = function PubmaticAdapter() {
 
     for(i=0; i<len; i++){
       tempSlot = slots[i];
+      // istanbul ignore else
       if(utils.isStr(tempSlot)){
         tempSlot = tempSlot.replace(/^\s+/g,'').replace(/\s+$/g,'');
+        // istanbul ignore else
         if(tempSlot.length > 0){
           tempSlots.push( tempSlot );
         }
@@ -131,7 +137,9 @@ var PubmaticAdapter = function PubmaticAdapter() {
     var elToAppend = document.getElementsByTagName('head')[0];
     elToAppend.insertBefore(iframe, elToAppend.firstChild);
     var iframeDoc = utils.getIframeDocument(iframe);
-    iframeDoc.write(utils.createContentToExecuteExtScriptInFriendlyFrame(url));
+    var content = utils.createContentToExecuteExtScriptInFriendlyFrame(url);
+    content = content.replace(`</body></html>`, `<script>window.parent.$$PREBID_GLOBAL$$.handlePubmaticCallback(window.bidDetailsMap, window.progKeyValueMap);</script></body></html>`);
+    iframeDoc.write(content);
     iframeDoc.close();
   }
 
@@ -139,7 +147,6 @@ var PubmaticAdapter = function PubmaticAdapter() {
     var lessOneHopPubList = {46076:'', 60530:'', 9999:'', 7777:''},
       request_url
     ;
-    conf.pm_cb = "window.parent.$$PREBID_GLOBAL$$.handlePubmaticCallback";
     //todo: add pm_dm_enabled in custom params    
     request_url = (conf.pm_dm_enabled != true && !lessOneHopPubList.hasOwnProperty(conf.pubId)) ? ('gads.pubmatic.com/AdServer/AdCallAggregator') : ("haso.pubmatic.com/ads/" + conf.pubId + "/GRPBID/index.html");
     request_url = request_url + '?' + utils.parseQueryStringParameters(conf);
@@ -148,6 +155,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
   }
 
   function _initUserSync(pubId){
+    // istanbul ignore else
     if (!usersync) {
       var iframe = utils.createInvisibleIframe();
       iframe.src = _protocol + 'ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=' + pubId;
@@ -173,6 +181,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
 
     slots = _cleanSlots(slots);
 
+    // istanbul ignore else
     if(conf.pubId && slots.length > 0){
       _legacyExecution(conf, slots);
     }
@@ -180,16 +189,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     _initUserSync(conf.pubId);
   }  
 
-  $$PREBID_GLOBAL$$.handlePubmaticCallback = function () {
-    let bidDetailsMap = {};
-    let progKeyValueMap = {};
-    try {
-      bidDetailsMap = iframe.contentWindow.bidDetailsMap;
-      progKeyValueMap = iframe.contentWindow.progKeyValueMap;
-    } catch (e) {
-      utils.logError(e, 'Error parsing Pubmatic response');
-    }
-
+  $$PREBID_GLOBAL$$.handlePubmaticCallback = function (bidDetailsMap, progKeyValueMap) {
     var i;
     var adUnit;
     var adUnitInfo;
@@ -208,6 +208,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
       // if using DFP GPT, the params string comes in the format:
       // "bidstatus;1;bid;5.0000;bidid;hb_test@468x60;wdeal;"
       // the code below detects and handles this.
+      // istanbul ignore else
       if (bidInfoMap[bid.adSlot] && bidInfoMap[bid.adSlot].indexOf('=') === -1) {
         bidInfoMap[bid.adSlot] = bidInfoMap[bid.adSlot].replace(/([a-z]+);(.[^;]*)/ig, '$1=$2');
       }
