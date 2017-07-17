@@ -15,7 +15,7 @@ let getDefaultBidRequest = () => {
       bidId: '84ab500420319d',
       bidderRequestId: '7101db09af0db2',
       requestId: 'd3e07445-ab06-44c8-a9dd-5ef9af06d2a6',
-      placementCode: 'foo',
+      placementCode: 'DIV_1',
       params: {
         placement: 1234567,
         network: '9599.1'
@@ -115,6 +115,18 @@ describe('PubMaticAdapter', () => {
 	      expect($$PREBID_GLOBAL$$.handlePubmaticCallback).to.exist.and.to.be.a('function');
 	    });
 
+    	it('empty response, arguments not passed', () => {
+	    	adapter.callBids(createBidderRequest({
+				params: {
+				  publisherId: 9999,
+				  adSlot: "abcd@728x90",
+				  age: "20"
+				}
+			}));
+	    	$$PREBID_GLOBAL$$.handlePubmaticCallback();
+	    	sinon.assert.called(bidmanager.addBidResponse);
+	    });
+
 	    it('empty response', () => {
 	    	adapter.callBids(createBidderRequest({
 				params: {
@@ -142,11 +154,50 @@ describe('PubMaticAdapter', () => {
 			        "tracking_url": "http%3a%2f%2fhaso.pubmatic.com%2fads%2f9999%2fGRPBID%2f2.gif%3ftrackid%3d12345",
 			        "width": 728,
 			        "height": 90,
-			        "deal_channel": 1
+			        "deal_channel": 5
 			    }}, {
 				    'abcd@728x90': 'bidstatus;1;bid;10.0000;bidid;abcd@728x90:0;wdeal;PMERW36842'
 				});
 	    	sinon.assert.called(bidmanager.addBidResponse);
+	    	expect(bidmanager.addBidResponse.firstCall.args[0]).to.equal("DIV_1");
+	    	var theBid = bidmanager.addBidResponse.firstCall.args[1];
+	    	expect(theBid.bidderCode).to.equal("pubmatic");
+	    	expect(theBid.adSlot).to.equal("abcd@728x90");
+	    	expect(theBid.cpm).to.equal(10);
+	    	expect(theBid.width).to.equal(728);
+	    	expect(theBid.height).to.equal(90);
+	    	expect(theBid.dealId).to.equal("PMERW36842");
+	    	expect(theBid.dealChannel).to.equal("PREF");
+	    });
+
+	    it('not empty response, without dealChannel', () => {
+	    	adapter.callBids(createBidderRequest({
+				params: {
+				  publisherId: 9999,
+				  adSlot: "abcd@728x90",
+				  age: "20"				  
+				}
+			}));
+	    	$$PREBID_GLOBAL$$.handlePubmaticCallback({
+			    'abcd@728x90': {
+			        "ecpm": 10,
+			        "creative_tag": "hello",
+			        "tracking_url": "http%3a%2f%2fhaso.pubmatic.com%2fads%2f9999%2fGRPBID%2f2.gif%3ftrackid%3d12345",
+			        "width": 728,
+			        "height": 90
+			    }}, {
+				    'abcd@728x90': 'bidstatus;1;bid;10.0000;bidid;abcd@728x90:0;wdeal;PMERW36842'
+				});
+	    	sinon.assert.called(bidmanager.addBidResponse);
+	    	expect(bidmanager.addBidResponse.firstCall.args[0]).to.equal("DIV_1");
+	    	var theBid = bidmanager.addBidResponse.firstCall.args[1];
+	    	expect(theBid.bidderCode).to.equal("pubmatic");
+	    	expect(theBid.adSlot).to.equal("abcd@728x90");
+	    	expect(theBid.cpm).to.equal(10);
+	    	expect(theBid.width).to.equal(728);
+	    	expect(theBid.height).to.equal(90);
+	    	expect(theBid.dealId).to.equal("PMERW36842");
+	    	expect(theBid.dealChannel).to.equal(null);
 	    });
     });
   });  
