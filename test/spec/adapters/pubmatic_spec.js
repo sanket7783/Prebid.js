@@ -48,7 +48,7 @@ describe('PubMaticAdapter', () => {
     describe('user syncup', () => {
 
     	beforeEach(() => {			
-        	sinon.spy(utils, "insertElement");
+        	sinon.stub(utils, "insertElement");
 		});
 
 		afterEach(() => {
@@ -64,6 +64,7 @@ describe('PubMaticAdapter', () => {
 				}
 			}));
 			utils.insertElement.calledOnce.should.be.true;
+			expect(utils.insertElement.getCall(0).args[0].src).to.equal("http://ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=9999");
         });
 
     });
@@ -71,7 +72,7 @@ describe('PubMaticAdapter', () => {
     describe('bid request', () => {
 
 		beforeEach(() => {
-			sinon.stub(utils, "createContentToExecuteExtScriptInFriendlyFrame");
+			sinon.stub(utils, "createContentToExecuteExtScriptInFriendlyFrame", function(){return '';});
 		});
 
 		afterEach(() => {
@@ -96,6 +97,36 @@ describe('PubMaticAdapter', () => {
           var callURL = utils.createContentToExecuteExtScriptInFriendlyFrame.getCall(0).args[0];
           expect(callURL).to.contain("haso.pubmatic.com");
         });
+    });
+
+    describe('bid response', () => {
+
+    	beforeEach(() => {
+    		sinon.stub(utils, "createContentToExecuteExtScriptInFriendlyFrame", function(){return '';});
+          	sinon.stub(bidmanager, 'addBidResponse');
+    	});
+
+    	afterEach(() => {
+    		utils.createContentToExecuteExtScriptInFriendlyFrame.restore();
+    		bidmanager.addBidResponse.restore();
+    	});
+
+    	it('exists and is a function', () => {
+	      expect($$PREBID_GLOBAL$$.handlePubmaticCallback).to.exist.and.to.be.a('function');
+	    });
+
+	    it('trying a call', () => {
+	    	adapter.callBids(createBidderRequest({
+				params: {
+				  publisherId: 9999,
+				  adSlot: "abcd@728x90",
+				  age: "20"
+				}
+			}));
+	    	$$PREBID_GLOBAL$$.handlePubmaticCallback({}, {});
+	    	sinon.assert.called(bidmanager.addBidResponse);
+	    })
+
     });
 
   });  
