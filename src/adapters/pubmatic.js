@@ -93,12 +93,16 @@ var PubmaticAdapter = function PubmaticAdapter() {
             // istanbul ignore else
             if (value) {
                 entry = customPars[key];
-                if (typeof entry === "object") {
+                
+                // following part is not required as of now
+                /*if (typeof entry === "object") {
                     value = entry.m(value, conf);
                     key = entry.n;
                 } else {
                     key = customPars[key];
-                }
+                }*/
+
+                key = customPars[key];
 
                 // istanbul ignore else
                 if (value) {
