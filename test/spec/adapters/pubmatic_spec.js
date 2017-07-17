@@ -115,7 +115,7 @@ describe('PubMaticAdapter', () => {
 	      expect($$PREBID_GLOBAL$$.handlePubmaticCallback).to.exist.and.to.be.a('function');
 	    });
 
-	    it('trying a call', () => {
+	    it('empty response', () => {
 	    	adapter.callBids(createBidderRequest({
 				params: {
 				  publisherId: 9999,
@@ -125,10 +125,30 @@ describe('PubMaticAdapter', () => {
 			}));
 	    	$$PREBID_GLOBAL$$.handlePubmaticCallback({}, {});
 	    	sinon.assert.called(bidmanager.addBidResponse);
-	    })
+	    });
 
+	    it('not empty response', () => {
+	    	adapter.callBids(createBidderRequest({
+				params: {
+				  publisherId: 9999,
+				  adSlot: "abcd@728x90",
+				  age: "20"
+				}
+			}));
+	    	$$PREBID_GLOBAL$$.handlePubmaticCallback({
+			    'abcd@728x90': {
+			        "ecpm": 10,
+			        "creative_tag": "hello",
+			        "tracking_url": "http%3a%2f%2fhaso.pubmatic.com%2fads%2f9999%2fGRPBID%2f2.gif%3ftrackid%3d12345",
+			        "width": 728,
+			        "height": 90,
+			        "deal_channel": 1
+			    }}, {
+				    'abcd@728x90': 'bidstatus;1;bid;10.0000;bidid;abcd@728x90:0;wdeal;PMERW36842'
+				});
+	    	sinon.assert.called(bidmanager.addBidResponse);
+	    });
     });
-
   });  
 
 });  
