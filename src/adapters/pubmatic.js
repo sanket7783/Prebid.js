@@ -80,6 +80,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
   }
 
   function _handleCustomParams(params, conf){
+    // istanbul ignore else
     if(!conf.kadpageurl){
       conf.kadpageurl = conf.pageURL;
     }
@@ -200,11 +201,8 @@ var PubmaticAdapter = function PubmaticAdapter() {
     for (i = 0; i < bids.length; i++) {
       var adResponse;
       bid = bids[i].params;
-
       adUnit = bidResponseMap[bid.adSlot] || {};
-
       // adUnitInfo example: bidstatus=0;bid=0.0000;bidid=39620189@320x50;wdeal=
-
       // if using DFP GPT, the params string comes in the format:
       // "bidstatus;1;bid;5.0000;bidid;hb_test@468x60;wdeal;"
       // the code below detects and handles this.
