@@ -90,7 +90,10 @@ describe('PubMaticAdapter', () => {
             params: {
               publisherId: 9999,
               adSlot: "abcd@728x90",
-              age: "20"
+              age: "20",
+              wiid: "abcdefghijk",
+              profId: "1234",
+              verId: "12"
             }
           }));
           var callURL = utils.createContentToExecuteExtScriptInFriendlyFrame.getCall(0).args[0];
@@ -110,6 +113,9 @@ describe('PubMaticAdapter', () => {
           expect(callURL).to.contain("age=20");
           expect(callURL).to.contain("adslots=%5Babcd%40728x90%5D");
           expect(callURL).to.contain("kadpageurl=");
+          expect(callURL).to.contain("wiid=abcdefghijk");
+          expect(callURL).to.contain("profId=1234");
+          expect(callURL).to.contain("verId=12");
         });
 
         it('for publisherId 9990 call is made to gads.pubmatic.com', () => {        	
