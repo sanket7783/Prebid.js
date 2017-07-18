@@ -3,6 +3,7 @@ import {expect} from 'chai';
 import * as utils from 'src/utils';
 import PubMaticAdapter from 'src/adapters/pubmatic';
 import bidmanager from 'src/bidmanager';
+import constants from 'src/constants.json';
 
 let getDefaultBidRequest = () => {
   return {
@@ -92,10 +93,35 @@ describe('PubMaticAdapter', () => {
               age: "20"
             }
           }));
-          //console.log("utils.createContentToExecuteExtScriptInFriendlyFrame.called ==> ", utils.createContentToExecuteExtScriptInFriendlyFrame.called);
-          //console.log(utils.createContentToExecuteExtScriptInFriendlyFrame.getCall(0).args);
           var callURL = utils.createContentToExecuteExtScriptInFriendlyFrame.getCall(0).args[0];
-          expect(callURL).to.contain("haso.pubmatic.com");
+          expect(callURL).to.contain("haso.pubmatic.com/ads/9999/");
+          expect(callURL).to.contain("SAVersion=1100");
+          expect(callURL).to.contain("wp=PreBid");
+          expect(callURL).to.contain("js=1");
+          expect(callURL).to.contain("a=1");
+          expect(callURL).to.contain("screenResolution=");
+          expect(callURL).to.contain("wv="+constants.REPO_AND_VERSION);
+          expect(callURL).to.contain("ranreq=");
+          expect(callURL).to.contain("inIframe=");
+          expect(callURL).to.contain("pageURL=");
+          expect(callURL).to.contain("refurl=");
+          expect(callURL).to.contain("kltstamp=");
+          expect(callURL).to.contain("timezone=");
+          expect(callURL).to.contain("age=20");
+          expect(callURL).to.contain("adslots=%5Babcd%40728x90%5D");
+          expect(callURL).to.contain("kadpageurl=");
+        });
+
+        it('for publisherId 9990 call is made to gads.pubmatic.com', () => {        	
+          adapter.callBids(createBidderRequest({
+            params: {
+              publisherId: 9990,
+              adSlot: "abcd@728x90",
+              age: "20"
+            }
+          }));
+          var callURL = utils.createContentToExecuteExtScriptInFriendlyFrame.getCall(0).args[0];
+          expect(callURL).to.contain("gads.pubmatic.com/AdServer/AdCallAggregator?");
         });
     });
 
@@ -143,12 +169,12 @@ describe('PubMaticAdapter', () => {
 	    	adapter.callBids(createBidderRequest({
 				params: {
 				  publisherId: 9999,
-				  adSlot: "abcd@728x90",
+				  adSlot: "abcd@728x90:0",
 				  age: "20"
 				}
 			}));
 	    	$$PREBID_GLOBAL$$.handlePubmaticCallback({
-			    'abcd@728x90': {
+			    'abcd@728x90:0': {
 			        "ecpm": 10,
 			        "creative_tag": "hello",
 			        "tracking_url": "http%3a%2f%2fhaso.pubmatic.com%2fads%2f9999%2fGRPBID%2f2.gif%3ftrackid%3d12345",
@@ -156,13 +182,13 @@ describe('PubMaticAdapter', () => {
 			        "height": 90,
 			        "deal_channel": 5
 			    }}, {
-				    'abcd@728x90': 'bidstatus;1;bid;10.0000;bidid;abcd@728x90:0;wdeal;PMERW36842'
+				    'abcd@728x90:0': 'bidstatus;1;bid;10.0000;bidid;abcd@728x90:0;wdeal;PMERW36842'
 				});
 	    	sinon.assert.called(bidmanager.addBidResponse);
 	    	expect(bidmanager.addBidResponse.firstCall.args[0]).to.equal("DIV_1");
 	    	var theBid = bidmanager.addBidResponse.firstCall.args[1];
 	    	expect(theBid.bidderCode).to.equal("pubmatic");
-	    	expect(theBid.adSlot).to.equal("abcd@728x90");
+	    	expect(theBid.adSlot).to.equal("abcd@728x90:0");
 	    	expect(theBid.cpm).to.equal(10);
 	    	expect(theBid.width).to.equal(728);
 	    	expect(theBid.height).to.equal(90);
