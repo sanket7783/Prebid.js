@@ -85,23 +85,24 @@ describe('PubMaticAdapter', () => {
           utils.createContentToExecuteExtScriptInFriendlyFrame.calledOnce.should.be.false;
         });        
 
-        it('for publisherId 9999 call is made to haso.pubmatic.com', () => {        	
+        it('for publisherId 9990 call is made to gads.pubmatic.com', () => {        	
           adapter.callBids(createBidderRequest({
             params: {
-              publisherId: 9999,
+              publisherId: 9990,
               adSlot: "abcd@728x90",
               age: "20",
               wiid: "abcdefghijk",
               profId: "1234",
-              verId: "12"
+              verId: "12",
+              pmzoneid: "abcd123, efg345",
+              dctr: 1234
             }
           }));
           var callURL = utils.createContentToExecuteExtScriptInFriendlyFrame.getCall(0).args[0];
-          expect(callURL).to.contain("haso.pubmatic.com/ads/9999/");
+          expect(callURL).to.contain("gads.pubmatic.com/AdServer/AdCallAggregator?");
           expect(callURL).to.contain("SAVersion=1100");
           expect(callURL).to.contain("wp=PreBid");
           expect(callURL).to.contain("js=1");
-          expect(callURL).to.contain("a=1");
           expect(callURL).to.contain("screenResolution=");
           expect(callURL).to.contain("wv="+constants.REPO_AND_VERSION);
           expect(callURL).to.contain("ranreq=");
@@ -116,18 +117,47 @@ describe('PubMaticAdapter', () => {
           expect(callURL).to.contain("wiid=abcdefghijk");
           expect(callURL).to.contain("profId=1234");
           expect(callURL).to.contain("verId=12");
+          // todo
+          // dctr check
+          // pmzoneid check
         });
 
-        it('for publisherId 9990 call is made to gads.pubmatic.com', () => {        	
+        it('for publisherId 9990 call is made to gads.pubmatic.com, age passed as int not being passed ahead', () => {
           adapter.callBids(createBidderRequest({
             params: {
               publisherId: 9990,
               adSlot: "abcd@728x90",
-              age: "20"
+              age: 20,
+              wiid: "abcdefghijk",
+              profId: "1234",
+              verId: "12",
+              pmzoneid: {},
+              dctr: 1234
             }
           }));
           var callURL = utils.createContentToExecuteExtScriptInFriendlyFrame.getCall(0).args[0];
-          expect(callURL).to.contain("gads.pubmatic.com/AdServer/AdCallAggregator?");
+          expect(callURL).to.contain("gads.pubmatic.com/AdServer/AdCallAggregator?");          
+          // todo
+          // pmzoneid check not being passed
+        });
+
+        it('for publisherId 9990 call is made to gads.pubmatic.com, invalid data for pmzoneid', () => {
+          adapter.callBids(createBidderRequest({
+            params: {
+              publisherId: 9990,
+              adSlot: "abcd@728x90",
+              age: "20",
+              wiid: "abcdefghijk",
+              profId: "1234",
+              verId: "12",
+              pmzoneid: {},
+              dctr: 1234
+            }
+          }));
+          var callURL = utils.createContentToExecuteExtScriptInFriendlyFrame.getCall(0).args[0];
+          expect(callURL).to.contain("gads.pubmatic.com/AdServer/AdCallAggregator?");          
+          // todo
+          // pmzoneid check not being passed
         });
     });
 
@@ -235,3 +265,8 @@ describe('PubMaticAdapter', () => {
   });  
 
 });  
+
+/*
+	TODO
+		util.createContentToExecuteExtScriptInFriendlyFrame response writing test case
+*/

@@ -22,18 +22,23 @@ var PubmaticAdapter = function PubmaticAdapter() {
     6: "PMPG"
   };
 
-  /*
-    ToDo
-    Following params can also be considered
-      pmzoneid
-  */
   var customPars = {
     "kadgender": "gender",
     "age": "kadage",
     "dctr": "dctr", // Custom Targeting
     "wiid": "wiid", // Wrapper Impression ID
     "profId": "profId", // Legacy: Profile ID
-    "verId": "verId" // Legacy: version ID 
+    "verId": "verId", // Legacy: version ID 
+    "pmzoneid": { // Zone ID
+      n: "pmZoneId",
+      m: function(zoneId){
+        if(utils.isStr(zoneId)){
+          return zoneId.split(',').slice(0, 50).join();
+        }else{
+          return "";
+        }
+      }
+    }
   };
 
   function _initConf() {
@@ -44,9 +49,6 @@ var PubmaticAdapter = function PubmaticAdapter() {
     conf.SAVersion = "1100";
     conf.wp = "PreBid";
     conf.js = 1;
-    //conf.grs = 3; //todo Grouped Response parameter, 0: default, 1: variables are split, 2: 1+rid passed to cback func, 3: 1+ md5 of bidid
-    conf.a = 1;//todo async == true
-
     conf.wv = constants.REPO_AND_VERSION;
     _secure && ( conf.sec = 1 );
     conf.screenResolution =  screen.width + 'x' +screen.height;
@@ -74,8 +76,6 @@ var PubmaticAdapter = function PubmaticAdapter() {
       + ":" + currTime.getSeconds();
     conf.timezone = currTime.getTimezoneOffset()/60  * -1;
 
-    //todo: pm_ctype
-
     return conf;
   }
 
@@ -94,15 +94,16 @@ var PubmaticAdapter = function PubmaticAdapter() {
             if (value) {
                 entry = customPars[key];
                 
-                // following part is not required as of now
-                /*if (typeof entry === "object") {
+                if (typeof entry === "object") {
                     value = entry.m(value, conf);
                     key = entry.n;
                 } else {
-                    key = customPars[key];
-                }*/
-
-                key = customPars[key];
+                    if(utils.isStr(value)){
+                      key = customPars[key];
+                    }else{
+                      utils.logWarn("PubMatic: Ignoring param key: " + customPars[key] + ", expects string-value, found " + typeof value);
+                    }
+                }
 
                 // istanbul ignore else
                 if (value) {
@@ -143,20 +144,14 @@ var PubmaticAdapter = function PubmaticAdapter() {
     elToAppend.insertBefore(iframe, elToAppend.firstChild);
     var iframeDoc = utils.getIframeDocument(iframe);
     var content = utils.createContentToExecuteExtScriptInFriendlyFrame(url);
-    content = content.replace(`</body></html>`, `<script>window.parent.$$PREBID_GLOBAL$$.handlePubmaticCallback(window.bidDetailsMap, window.progKeyValueMap);</script></body></html>`);
+    content = content.replace(`<!--POST_SCRIPT_TAG_MACRO-->`, `<script>window.parent.$$PREBID_GLOBAL$$.handlePubmaticCallback(window.bidDetailsMap, window.progKeyValueMap);</script>`);
     iframeDoc.write(content);
     iframeDoc.close();
   }
 
   function _generateLegacyCall(conf, slots){
-    var lessOneHopPubList = {46076:'', 60530:'', 9999:'', 7777:''},
-      request_url
-    ;
-    //todo: add pm_dm_enabled in custom params    
-    request_url = (conf.pm_dm_enabled != true && !lessOneHopPubList.hasOwnProperty(conf.pubId)) ? ('gads.pubmatic.com/AdServer/AdCallAggregator') : ("haso.pubmatic.com/ads/" + conf.pubId + "/GRPBID/index.html");
-    request_url = request_url + '?' + utils.parseQueryStringParameters(conf);
-    request_url += '&adslots=' + encodeURIComponent('[' + slots.join(',') +']');
-    return _protocol + request_url;
+    var request_url = 'gads.pubmatic.com/AdServer/AdCallAggregator';
+    return _protocol + request_url + '?' + utils.parseQueryStringParameters(conf) + '&adslots=' + encodeURIComponent('[' + slots.join(',') +']');
   }
 
   function _initUserSync(pubId){
@@ -164,7 +159,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     if (!usersync) {
       var iframe = utils.createInvisibleIframe();
       iframe.src = _protocol + 'ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=' + pubId;
-      utils.insertElement(iframe, document);      
+      utils.insertElement(iframe, document);
       usersync = true;
     }
   }
