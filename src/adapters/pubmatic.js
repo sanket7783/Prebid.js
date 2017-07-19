@@ -151,7 +151,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
 
   function _generateLegacyCall(conf, slots){
     var request_url = 'gads.pubmatic.com/AdServer/AdCallAggregator';
-    return _protocol + request_url + '?' + utils.parseQueryStringParameters(conf) + '&adslots=' + encodeURIComponent('[' + slots.join(',') +']');
+    return _protocol + request_url + '?' + utils.parseQueryStringParameters(conf) + 'adslots=' + encodeURIComponent('[' + slots.join(',') +']');
   }
 
   function _initUserSync(pubId){
