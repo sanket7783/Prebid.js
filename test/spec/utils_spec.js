@@ -526,7 +526,7 @@ describe('Utils', function () {
   });
 
   describe('createContentToExecuteExtScriptInFriendlyFrame', function () {
-    it('should return empty string if url is not passed', function () {      
+    it('should return empty string if url is not passed', function () {
       var output = utils.createContentToExecuteExtScriptInFriendlyFrame();
       assert.equal(output, '');
     });
@@ -538,6 +538,4 @@ describe('Utils', function () {
       assert.equal(output, expected);
     });
   });
-    
 });
-

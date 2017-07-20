@@ -13,29 +13,29 @@ var PubmaticAdapter = function PubmaticAdapter() {
   var bids;
   var usersync = false;
   var _secure = 0;
-  let _protocol = ( window.location.protocol ===  "https:" ?  ( _secure = 1, "https"  ) : "http" ) + "://";
+  let _protocol = (window.location.protocol === 'https:' ? (_secure = 1, 'https') : 'http') + '://';
   let iframe;
 
   var dealChannelValues = {
-    1: "PMP",
-    5: "PREF",
-    6: "PMPG"
+    1: 'PMP',
+    5: 'PREF',
+    6: 'PMPG'
   };
 
   var customPars = {
-    "kadgender": "gender",
-    "age": "kadage",
-    "dctr": "dctr", // Custom Targeting
-    "wiid": "wiid", // Wrapper Impression ID
-    "profId": "profId", // Legacy: Profile ID
-    "verId": "verId", // Legacy: version ID 
-    "pmzoneid": { // Zone ID
-      n: "pmZoneId",
-      m: function(zoneId){
-        if(utils.isStr(zoneId)){
+    'kadgender': 'gender',
+    'age': 'kadage',
+    'dctr': 'dctr', // Custom Targeting
+    'wiid': 'wiid', // Wrapper Impression ID
+    'profId': 'profId', // Legacy: Profile ID
+    'verId': 'verId', // Legacy: version ID
+    'pmzoneid': { // Zone ID
+      n: 'pmZoneId',
+      m: function(zoneId) {
+        if (utils.isStr(zoneId)) {
           return zoneId.split(',').slice(0, 50).join();
-        }else{
-          return "";
+        } else {
+          return '';
         }
       }
     }
@@ -43,23 +43,22 @@ var PubmaticAdapter = function PubmaticAdapter() {
 
   function _initConf() {
     var conf = {},
-      currTime = new Date()
-    ;
+      currTime = new Date();
 
-    conf.SAVersion = "1100";
-    conf.wp = "PreBid";
+    conf.SAVersion = '1100';
+    conf.wp = 'PreBid';
     conf.js = 1;
     conf.wv = constants.REPO_AND_VERSION;
-    _secure && ( conf.sec = 1 );
-    conf.screenResolution =  screen.width + 'x' +screen.height;
+    _secure && (conf.sec = 1);
+    conf.screenResolution = screen.width + 'x' + screen.height;
     conf.ranreq = Math.random();
     conf.inIframe = window != top ? '1' : '0';
 
     // istanbul ignore else
-    if(window.navigator.cookieEnabled === false ){
+    if (window.navigator.cookieEnabled === false) {
       conf.fpcd = '1';
     }
-    
+
     try {
       conf.pageURL = window.top.location.href;
       conf.refurl = window.top.document.referrer;
@@ -67,69 +66,68 @@ var PubmaticAdapter = function PubmaticAdapter() {
       conf.pageURL = window.location.href;
       conf.refurl = window.document.referrer;
     }
-    
-    conf.kltstamp  = currTime.getFullYear()
-      + "-" + (currTime.getMonth() + 1)
-      + "-" + currTime.getDate()
-      + " " + currTime.getHours()
-      + ":" + currTime.getMinutes()
-      + ":" + currTime.getSeconds();
-    conf.timezone = currTime.getTimezoneOffset()/60  * -1;
+
+    conf.kltstamp = currTime.getFullYear() +
+      '-' + (currTime.getMonth() + 1) +
+      '-' + currTime.getDate() +
+      ' ' + currTime.getHours() +
+      ':' + currTime.getMinutes() +
+      ':' + currTime.getSeconds();
+    conf.timezone = currTime.getTimezoneOffset() / 60 * -1;
 
     return conf;
   }
 
-  function _handleCustomParams(params, conf){
+  function _handleCustomParams(params, conf) {
     // istanbul ignore else
-    if(!conf.kadpageurl){
+    if (!conf.kadpageurl) {
       conf.kadpageurl = conf.pageURL;
     }
 
     var key, value, entry;
     for (key in customPars) {
+      // istanbul ignore else
+      if (customPars.hasOwnProperty(key)) {
+        value = params[key];
         // istanbul ignore else
-        if (customPars.hasOwnProperty(key)) {
-            value = params[key];
-            // istanbul ignore else
-            if (value) {
-                entry = customPars[key];
-                
-                if (typeof entry === "object") {
-                    value = entry.m(value, conf);
-                    key = entry.n;
-                } else {
-                    if(utils.isStr(value)){
-                      key = customPars[key];
-                    }else{
-                      utils.logWarn("PubMatic: Ignoring param key: " + customPars[key] + ", expects string-value, found " + typeof value);
-                    }
-                }
+        if (value) {
+          entry = customPars[key];
 
-                // istanbul ignore else
-                if (value) {
-                    conf[key] = value;
-                }
+          if (typeof entry === 'object') {
+            value = entry.m(value, conf);
+            key = entry.n;
+          } else {
+            if (utils.isStr(value)) {
+              key = customPars[key];
+            } else {
+              utils.logWarn('PubMatic: Ignoring param key: ' + customPars[key] + ', expects string-value, found ' + typeof value);
             }
+          }
+
+          // istanbul ignore else
+          if (value) {
+            conf[key] = value;
+          }
         }
+      }
     }
     return conf;
   }
 
-  function _cleanSlots(slots){
+  function _cleanSlots(slots) {
     var i,
       len = slots.length,
       tempSlot,
-      tempSlots = []
-    ;
+      tempSlots = [];
 
-    for(i=0; i<len; i++){
+    for (i = 0; i < len; i++) {
       tempSlot = slots[i];
       // istanbul ignore else
-      if(utils.isStr(tempSlot)){
-        tempSlot = tempSlot.replace(/^\s+/g,'').replace(/\s+$/g,'');
+      if (utils.isStr(tempSlot)) {
+        tempSlot = tempSlot.replace(/^\s+/g, '').replace(/\s+$/g, '');
         // istanbul ignore else
-        if(tempSlot.length > 0){
-          tempSlots.push( tempSlot );
+        if (tempSlot.length > 0) {
+          tempSlots.push(tempSlot);
         }
       }
     }
@@ -137,7 +135,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     return tempSlots;
   }
 
-  function _legacyExecution(conf, slots){
+  function _legacyExecution(conf, slots) {
     var url = _generateLegacyCall(conf, slots);
     iframe = utils.createInvisibleIframe();
     var elToAppend = document.getElementsByTagName('head')[0];
@@ -149,12 +147,12 @@ var PubmaticAdapter = function PubmaticAdapter() {
     iframeDoc.close();
   }
 
-  function _generateLegacyCall(conf, slots){
+  function _generateLegacyCall(conf, slots) {
     var request_url = 'gads.pubmatic.com/AdServer/AdCallAggregator';
-    return _protocol + request_url + '?' + utils.parseQueryStringParameters(conf) + 'adslots=' + encodeURIComponent('[' + slots.join(',') +']');
+    return _protocol + request_url + '?' + utils.parseQueryStringParameters(conf) + 'adslots=' + encodeURIComponent('[' + slots.join(',') + ']');
   }
 
-  function _initUserSync(pubId){
+  function _initUserSync(pubId) {
     // istanbul ignore else
     if (!usersync) {
       var iframe = utils.createInvisibleIframe();
@@ -166,8 +164,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
 
   function _callBids(params) {
     var conf = _initConf(),
-      slots = []
-    ;
+      slots = [];
 
     conf.pubId = 0;
     bids = params.bids || [];
@@ -182,14 +179,14 @@ var PubmaticAdapter = function PubmaticAdapter() {
     slots = _cleanSlots(slots);
 
     // istanbul ignore else
-    if(conf.pubId && slots.length > 0){
+    if (conf.pubId && slots.length > 0) {
       _legacyExecution(conf, slots);
     }
 
     _initUserSync(conf.pubId);
-  }  
+  }
 
-  $$PREBID_GLOBAL$$.handlePubmaticCallback = function (bidDetailsMap, progKeyValueMap) {
+  $$PREBID_GLOBAL$$.handlePubmaticCallback = function(bidDetailsMap, progKeyValueMap) {
     var i;
     var adUnit;
     var adUnitInfo;
@@ -210,7 +207,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
         bidInfoMap[bid.adSlot] = bidInfoMap[bid.adSlot].replace(/([a-z]+);(.[^;]*)/ig, '$1=$2');
       }
 
-      adUnitInfo = (bidInfoMap[bid.adSlot] || '').split(';').reduce(function (result, pair) {
+      adUnitInfo = (bidInfoMap[bid.adSlot] || '').split(';').reduce(function(result, pair) {
         var parts = pair.split('=');
         result[parts[0]] = parts[1];
         return result;
