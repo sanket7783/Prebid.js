@@ -191,8 +191,12 @@ var PubmaticAdapter = function PubmaticAdapter() {
     var adUnit;
     var adUnitInfo;
     var bid;
-    var bidResponseMap = bidDetailsMap || {};
-    var bidInfoMap = progKeyValueMap || {};
+    var bidResponseMap = bidDetailsMap;
+    var bidInfoMap = progKeyValueMap;
+
+    if (!bidResponseMap || !bidInfoMap) {
+      return;
+    }  
 
     for (i = 0; i < bids.length; i++) {
       var adResponse;
