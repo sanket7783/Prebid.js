@@ -13,7 +13,7 @@ import { loadScript } from './adloader';
 import { setAjaxTimeout } from './ajax';
 
 
-var $$PREBID_GLOBAL$$ = getGlobal();
+$$PREBID_GLOBAL$$ = getGlobal();
 var CONSTANTS = require('./constants.json');
 var utils = require('./utils.js');
 var bidmanager = require('./bidmanager.js');
