@@ -5,7 +5,7 @@ var utils = require('../utils.js');
 
 var UnderdogMediaAdapter = function UnderdogMediaAdapter() {
   const UDM_ADAPTER_VERSION = '1.0.0';
-  var getJsStaticUrl = window.location.protocol + '//udmserve.net/udm/img.fetch?tid=1;dt=9;callback=$$PREBID_GLOBAL$$.handleUnderdogMediaCB;';
+  var getJsStaticUrl = window.location.protocol + '//udmserve.net/udm/img.fetch?tid=1;dt=9;callback=' + preBidNameSpace + '.handleUnderdogMediaCB;';
   var bidParams = {};
 
   function _callBids(params) {

@@ -186,7 +186,7 @@ const OpenxAdapter = function OpenxAdapter() {
       }
     });
 
-    params.callback = 'window.$$PREBID_GLOBAL$$.oxARJResponse';
+    params.callback = 'window.' + preBidNameSpace + '.oxARJResponse';
     let queryString = buildQueryStringFromParams(params);
 
     adloader.loadScript(`//${delDomain}/w/1.0/arj?${queryString}`);

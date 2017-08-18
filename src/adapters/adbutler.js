@@ -113,7 +113,7 @@ var AdButlerAdapter = function AdButlerAdapter() {
     if (keyword !== '') {
       requestURI += 'kw=' + encodeURIComponent(keyword) + ';';
     }
-    requestURI += 'jsonpfunc=$$PREBID_GLOBAL$$.adbutlerCB;';
+    requestURI += 'jsonpfunc='+preBidNameSpace+'.adbutlerCB;';
     requestURI += 'click=CLICK_MACRO_PLACEHOLDER';
 
     return requestURI;
