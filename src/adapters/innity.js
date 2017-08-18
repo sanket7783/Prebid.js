@@ -18,7 +18,7 @@ var InnityAdapter = function InnityAdapter() {
       requestParams.width = arrSize[0];
       requestParams.height = arrSize[1];
       // Callback function
-      requestParams.callback = '$$PREBID_GLOBAL$$._doInnityCallback';
+      requestParams.callback = preBidNameSpace + '._doInnityCallback';
       // Callback ID
       requestParams.callback_uid = bid.bidId;
       // Load Bidder URL

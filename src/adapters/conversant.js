@@ -15,7 +15,7 @@ var ConversantAdapter = function () {
   var n = navigator;
 
   // production endpoint
-  var conversantUrl = '//media.msg.dotomi.com/s2s/header/24?callback=$$PREBID_GLOBAL$$.conversantResponse';
+  var conversantUrl = '//media.msg.dotomi.com/s2s/header/24?callback=' + preBidNameSpace + '.conversantResponse';
 
   // SSAPI returns JSONP with window.pbjs.conversantResponse as the cb
   var appendScript = function (code) {

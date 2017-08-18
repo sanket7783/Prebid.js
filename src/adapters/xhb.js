@@ -36,7 +36,7 @@ const XhbAdapter = function XhbAdapter() {
     // Always use https
     let jptCall = 'https://ib.adnxs.com/jpt?';
 
-    jptCall = utils.tryAppendQueryString(jptCall, 'callback', '$$PREBID_GLOBAL$$.handleXhbCB');
+    jptCall = utils.tryAppendQueryString(jptCall, 'callback', preBidNameSpace + '.handleXhbCB');
     jptCall = utils.tryAppendQueryString(jptCall, 'callback_uid', callbackId);
     jptCall = utils.tryAppendQueryString(jptCall, 'id', placementId);
     jptCall = utils.tryAppendQueryString(jptCall, 'code', inventoryCode);
