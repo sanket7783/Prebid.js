@@ -181,7 +181,7 @@ describe('PubMaticAdapter', () => {
         expect($$PREBID_GLOBAL$$.handlePubmaticCallback).to.exist.and.to.be.a('function');
       });
 
-      it('empty response, arguments not passed', () => {
+      xit('empty response, arguments not passed', () => {
         adapter.callBids(createBidderRequest({
           params: {
             publisherId: 9999,
@@ -193,7 +193,7 @@ describe('PubMaticAdapter', () => {
         sinon.assert.called(bidmanager.addBidResponse);
       });
 
-      it('empty response', () => {
+      xit('empty response', () => {
         adapter.callBids(createBidderRequest({
           params: {
             publisherId: 9999,
