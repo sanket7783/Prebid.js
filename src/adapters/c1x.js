@@ -1,8 +1,8 @@
-var CONSTANTS = require('src/constants.json');
-var utils = require('src/utils.js');
-var bidfactory = require('src/bidfactory.js');
-var bidmanager = require('src/bidmanager.js');
-var adloader = require('src/adloader');
+var CONSTANTS = require('../constants.json');
+var utils = require('../utils.js');
+var bidfactory = require('../bidfactory.js');
+var bidmanager = require('../bidmanager.js');
+var adloader = require('../adloader');
 /**
  * Adapter for requesting bids from C1X header tag server.
  * v0.3 (c) C1X Inc., 2016
@@ -35,7 +35,7 @@ var C1XAdapter = function C1XAdapter() {
         var pixel = document.createElement('img');
         pixel.width = 1;
         pixel.height = 1;
-        pixel.style='display:none;’;
+        pixel.style='display:none;';
         var useSSL = document.location.protocol == 'https:';
         pixel.src = (useSSL ? 'https:' : 'http:') +
         PIXEL_ENDPOINT + pixelId;
