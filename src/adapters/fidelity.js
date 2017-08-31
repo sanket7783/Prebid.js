@@ -13,7 +13,7 @@ var FidelityAdapter = function FidelityAdapter() {
     bids.forEach(function (currentBid) {
       var server = currentBid.params.server || FIDELITY_SERVER_NAME;
       var m3_u = window.location.protocol + '//' + server + '/delivery/hb.php?';
-      m3_u += 'callback=window.$$PREBID_GLOBAL$$.fidelityResponse';
+      m3_u += 'callback=window.' + preBidNameSpace + '.fidelityResponse';
       m3_u += '&requestid=' + utils.getUniqueIdentifierStr();
       m3_u += '&impid=' + currentBid.bidId;
       m3_u += '&zoneid=' + currentBid.params.zoneid;

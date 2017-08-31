@@ -87,7 +87,7 @@ describe('fidelity adapter tests', function() {
 
       expect(parsedBidUrlQueryString).to.have.property('zoneid').and.to.equal('37');
       expect(parsedBidUrlQueryString).to.have.property('impid').and.to.equal('bidId-123456-1');
-      expect(parsedBidUrlQueryString).to.have.property('callback').and.to.equal('window.$$PREBID_GLOBAL$$.fidelityResponse');
+      expect(parsedBidUrlQueryString).to.have.property('callback').and.to.equal('window.' + preBidNameSpace + '.fidelityResponse');
       expect(parsedBidUrlQueryString).to.have.property('loc').and.to.equal('http://locurl');
       expect(parsedBidUrlQueryString).to.have.property('ct0').and.to.equal('http://clickurl');
       expect(parsedBidUrlQueryString).to.have.property('subid').and.to.equal('000');

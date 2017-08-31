@@ -107,7 +107,7 @@ const GumgumAdapter = function GumgumAdapter() {
         id: bidId
       }, bid);
 
-      const callback = { jsonp: `$$PREBID_GLOBAL$$.handleGumGumCB['${bidId}']` };
+      const callback = { jsonp: preBidNameSpace+`.handleGumGumCB['${bidId}']` };
       CALLBACKS[bidId] = _handleGumGumResponse(cachedBid);
       const query = Object.assign(callback, browserParams, bid, _getDigiTrustQueryParams());
       const bidCall = `${bidEndpoint}?${utils.parseQueryStringParameters(query)}`;
@@ -143,7 +143,7 @@ const GumgumAdapter = function GumgumAdapter() {
           if (G) {
             loadAd();
           } else {
-            topWindow.$$PREBID_GLOBAL$$.loadScript("https://g2.gumgum.com/javascripts/ggv2.js", loadAd);
+            topWindow.`+preBidNameSpace+`.loadScript("https://g2.gumgum.com/javascripts/ggv2.js", loadAd);
           }
         }(window, top));
       </script>`;

@@ -4,8 +4,8 @@ var adloader = require('src/adloader.js');
 var utils = require('src/utils.js');
 
 var JCMAdapter = function JCMAdapter() {
-  window.pbjs = window.pbjs || {};
-  window.pbjs.processJCMResponse = function(JCMResponse) {
+  //window.pbjs = window.pbjs || {};
+  $$PREBID_GLOBAL$$.processJCMResponse = function(JCMResponse) {
     if (JCMResponse) {
       var JCMRespObj = JSON.parse(JCMResponse);
       if (JCMRespObj) {
