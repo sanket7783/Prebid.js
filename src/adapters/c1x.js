@@ -17,19 +17,9 @@ var C1XAdapter = function C1XAdapter() {
   var ENDPOINT = 'https://ht.c1exchange.com/ht',
     PIXEL_ENDPOINT = '//px.c1exchange.com/pubpixel/',
     PIXEL_FIRE_DELAY = 3000;
-  function getSettings(key) {
-    var pbjs = window.pbjs;
-    if (pbjs && pbjs.bidderSettings) {
-      var c1xSettings = pbjs.bidderSettings['c1x'];
-      if (c1xSettings) {
-        return c1xSettings[key];
-      }
-    }
-    return null;
-  }
-  // inject the audience pixel only if pbjs.bidderSettings['c1x'].pixelId is set.
-  function injectAudiencePixel() {
-    var pixelId = getSettings('pixelId');
+  
+  // inject the audience pixel only if pixelId is set.
+  function injectAudiencePixel(pixelId) {    
     if (pixelId) {
       window.setTimeout(function() {
         var pixel = document.createElement('img');
@@ -43,27 +33,55 @@ var C1XAdapter = function C1XAdapter() {
       }, PIXEL_FIRE_DELAY);
     }
   }
+
   function _callBids(params) {
-    injectAudiencePixel();
     // serialize all the arguments and send it to C1X header bidder.
     // example: ?site=goodsite.com&adunits=2&a1=gpt-34-banner1&a1s=[300x250]&a2=gpt-36-right-center&a2s=[300x200,300x600]
-    var siteId = getSettings('siteId');
-    if (!siteId) {
-      utils.logError('c1x: error - no site id supplied!');
-      return;
-    }
+    
     var bids = params.bids,
-      options = ['adunits=' + bids.length];
-    options.push('site=' + siteId);
+      options = ['adunits=' + bids.length],
+      siteId = null,
+      dspId = null,
+      c1xEndpoint = ENDPOINT;
+    
     for (var i = 0; i < bids.length; i++) {
-      options.push('a' + (i + 1) + '=' + bids[i].placementCode);
-      var sizes = bids[i].sizes,
+      var bid = bids[i];
+      
+      if (!bid.params.siteId) {
+        utils.logError('c1x: error - no site id supplied!');
+        continue;
+      }
+
+      // siteid should be set only once in request
+      if (siteId == null) {
+        siteId = bid.params.siteId;
+        options.push('site=' + siteId);
+      }
+
+      // dspid should be set only once in request
+      if (dspId == null && bid.params.dspid) {        
+        dspId = bid.params.dspid;
+      }
+
+      if(bid.params.pixelId){
+        injectAudiencePixel(bid.params.pixelId);
+      }
+
+      // use default endpoint if not provided dynamically
+      if (bid.params.endpoint) {
+        c1xEndpoint = bid.params.endpoint;
+      }
+      
+      options.push('a' + (i + 1) + '=' + bid.placementCode);
+      var sizes = bid.sizes,
         sizeStr = sizes.reduce(function(prev, current) { return prev + (prev === '' ? '' : ',') + current.join('x') }, '');
+      
       // send floor price if the setting is available.
-      var floorPriceMap = getSettings('floorPriceMap');
-      console.log('floor price map: ', floorPriceMap);
-      console.log('size: ' + sizes[0]);
+      var floorPriceMap = bid.params.floorPriceMap;
+      utils.logInfo('floor price map: ', floorPriceMap);
+      utils.logInfo('size: ' + sizes[0]);
       if (floorPriceMap) {
+        // are we sure that we should not check for other sizes ?
         var adUnitSize = sizes[0].join('x');
         if (adUnitSize in floorPriceMap) {
           options.push('a' + (i + 1) + 'p=' + floorPriceMap[adUnitSize]);
@@ -71,15 +89,19 @@ var C1XAdapter = function C1XAdapter() {
       }
       options.push('a' + (i + 1) + 's=[' + sizeStr + ']');
     }
+
+    // no need to call server if there are no bids to request
+    if (options.length == 1) {
+      utils.logError('c1x: error - no site id supplied for any bid!');
+      return;
+    }
+    
     options.push('rnd=' + new Date().getTime());
     options.push('cbmn=_inuxuAdzebraResponse');
     // cache busting
-    var c1xEndpoint = ENDPOINT;
-    if (getSettings('endpoint')) {
-      c1xEndpoint = getSettings('endpoint');
-    }
-    if (getSettings('dspid')) {
-      options.push('dspid=' + getSettings('dspid'));
+
+    if (dspId) {
+      options.push('dspid=' + dspId);
     }
     var url = c1xEndpoint + '?' + options.join('&');
     window._inuxuAdzebraResponse = function(response) {
