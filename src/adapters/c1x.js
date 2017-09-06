@@ -42,6 +42,7 @@ var C1XAdapter = function C1XAdapter() {
       options = ['adunits=' + bids.length],
       siteId = null,
       dspId = null,
+      pixelId = null,
       c1xEndpoint = ENDPOINT;
     
     for (var i = 0; i < bids.length; i++) {
@@ -63,8 +64,10 @@ var C1XAdapter = function C1XAdapter() {
         dspId = bid.params.dspid;
       }
 
-      if(bid.params.pixelId){
-        injectAudiencePixel(bid.params.pixelId);
+      // only one pixel should be executed
+      if(pixelId == null && bid.params.pixelId){
+        pixelId = bid.params.pixelId;
+        injectAudiencePixel(pixelId);
       }
 
       // use default endpoint if not provided dynamically
