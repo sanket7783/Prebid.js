@@ -3,7 +3,7 @@ var bidmanager = require('src/bidmanager.js');
 
 var EPlanningAdapter = function EPlanningAdapter() {
   (function() {
-    var win = window, doc = win.document, pbjs = win.pbjs, _global = {}, _default = { 'sv': 'ads.us.e-planning.net', 't': 0 }, rnd, FILE = 'file', CALLBACK_FUNCTION = 'hbpb.rH', NULL_SIZE = '1x1', _csRequested = [], PROTO = location.protocol === 'https:' ? 'https:' : 'http:', ISV = 'aklc.img.e-planning.net';
+    var win = window, doc = win.document, _global = {}, _default = { 'sv': 'ads.us.e-planning.net', 't': 0 }, rnd, FILE = 'file', CALLBACK_FUNCTION = 'hbpb.rH', NULL_SIZE = '1x1', _csRequested = [], PROTO = location.protocol === 'https:' ? 'https:' : 'http:', ISV = 'aklc.img.e-planning.net';
     function Hbpb() {
       var slots = (function() {
         var _data = [];
@@ -153,7 +153,7 @@ var EPlanningAdapter = function EPlanningAdapter() {
             params.push('fr=' + getReferrerURL());
           }
           params.push('cb=' + getCallbackFunction());
-          params.push('r=pbjs');
+          params.push('r=' + preBidNameSpace);
           url += params.join('&');
           load(url);
         } else if (t) {
@@ -167,8 +167,8 @@ var EPlanningAdapter = function EPlanningAdapter() {
         doc.body.appendChild(script);
       }
       function callback(response) {
-        if (pbjs && pbjs.processEPlanningResponse && typeof pbjs.processEPlanningResponse === 'function') {
-          pbjs.processEPlanningResponse(response);
+        if ($$PREBID_GLOBAL$$ && $$PREBID_GLOBAL$$.processEPlanningResponse && typeof $$PREBID_GLOBAL$$.processEPlanningResponse === 'function') {
+          $$PREBID_GLOBAL$$.processEPlanningResponse(response);
         }
       }
       function syncUsers(cs) {
@@ -237,8 +237,8 @@ var EPlanningAdapter = function EPlanningAdapter() {
     win.hbpb = win.hbpb || new Hbpb();
   })();
 
-  window.pbjs = window.pbjs || {};
-  window.pbjs.processEPlanningResponse = function(response) {
+  //window.pbjs = window.pbjs || {};
+  $$PREBID_GLOBAL$$.processEPlanningResponse = function(response) {
     var bids, bidObject, i;
     if (response) {
       bids = response.bids;

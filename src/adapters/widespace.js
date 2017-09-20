@@ -10,7 +10,7 @@ const WS_ADAPTER_VERSION = '1.0.2';
 function WidespaceAdapter() {
   let useSSL = document.location.protocol === 'https:',
     baseURL = (useSSL ? 'https:' : 'http:') + '//engine.widespace.com/map/engine/hb/dynamic?',
-    callbackName = '$$PREBID_GLOBAL$$.widespaceHandleCB';
+    callbackName = preBidNameSpace + '.widespaceHandleCB';
 
   function _callBids(params) {
     let bids = params && params.bids || [];
