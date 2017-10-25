@@ -114,44 +114,6 @@ var PubmaticServerAdapter = function PubmaticServerAdapter() {
     return conf;
   }
 
-  function _cleanSlots(slots) {
-    var i,
-      len = slots.length,
-      tempSlot,
-      tempSlots = [];
-
-    for (i = 0; i < len; i++) {
-      tempSlot = slots[i];
-      // istanbul ignore else
-      if (utils.isStr(tempSlot)) {
-        tempSlot = tempSlot.replace(/^\s+/g, '').replace(/\s+$/g, '');
-        // istanbul ignore else
-        if (tempSlot.length > 0) {
-          tempSlots.push(tempSlot);
-        }
-      }
-    }
-
-    return tempSlots;
-  }
-
-  function _legacyExecution(conf, slots) {
-    var url = _generateLegacyCall(conf, slots);
-    iframe = utils.createInvisibleIframe();
-    var elToAppend = document.getElementsByTagName('head')[0];
-    elToAppend.insertBefore(iframe, elToAppend.firstChild);
-    var iframeDoc = utils.getIframeDocument(iframe);
-    var content = utils.createContentToExecuteExtScriptInFriendlyFrame(url);
-    content = content.replace(`<!--POST_SCRIPT_TAG_MACRO-->`, `<script>window.parent.`+preBidNameSpace+`.handlePubmaticCallback(window.bidDetailsMap, window.progKeyValueMap);</script>`);
-    iframeDoc.write(content);
-    iframeDoc.close();
-  }
-
-  function _generateLegacyCall(conf, slots) {
-    var request_url = 'gads.pubmatic.com/AdServer/AdCallAggregator';
-    return _protocol + request_url + '?' + utils.parseQueryStringParameters(conf) + 'adslots=' + encodeURIComponent('[' + slots.join(',') + ']');
-  }
-
   function _initUserSync(pubId) {
     // istanbul ignore else
     if (!usersync) {
@@ -294,21 +256,6 @@ var PubmaticServerAdapter = function PubmaticServerAdapter() {
     console.log(json);
     request_url += 'json='+encodeURIComponent(JSON.stringify(json));
     console.log(request_url);
-
-  /*
-    for (var i = 0; i < bids.length; i++) {
-      var bid = bids[i];
-      conf.pubId = conf.pubId || bid.params.publisherId;
-      conf = _handleCustomParams(bid.params, conf);
-      slots.push(bid.params.adSlot);
-    }
-    slots = _cleanSlots(slots);
-
-    // istanbul ignore else
-    if (conf.pubId && slots.length > 0) {
-      _legacyExecution(conf, slots);
-    }
-  */
 
     _initUserSync(conf.pubId);
   }
