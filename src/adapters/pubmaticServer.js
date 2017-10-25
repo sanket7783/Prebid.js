@@ -49,7 +49,7 @@ var PubmaticServerAdapter = function PubmaticServerAdapter() {
     conf.wp = 'PreBid';
     conf.js = 1;
     conf.wv = constants.REPO_AND_VERSION;
-    _secure && (conf.sec = 1);
+    conf.sec = _secure ? 1 : 0;
     conf.screenResolution = screen.width + 'x' + screen.height;
     conf.ranreq = Math.random();
     conf.inIframe = window != top ? '1' : '0';
