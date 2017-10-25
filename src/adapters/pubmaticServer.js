@@ -248,7 +248,7 @@ var PubmaticServerAdapter = function PubmaticServerAdapter() {
         };
 
         for(var sizeIndex=0, sizeIndexMax=sizes.length; sizeIndex<sizeIndexMax; sizeIndex++){
-          anImp.bamner.format.push({w: sizes[sizeIndex][0], h: sizes[sizeIndex][1]});
+          anImp.banner.format.push({w: sizes[sizeIndex][0], h: sizes[sizeIndex][1]});
         }
 
         json.imp.push(anImp);
