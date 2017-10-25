@@ -219,7 +219,7 @@ var PubmaticServerAdapter = function PubmaticServerAdapter() {
       // adding slots info
       for(var i= 0, l = slots.length; i < l; i++){
 
-        conf.pubId = conf.pubId || bid.params.publisherId;
+        conf.pubId = conf.pubId || slot.params.publisherId;
         conf = _handleCustomParams(slot.params, conf);
 
         var slot = slots[i];
