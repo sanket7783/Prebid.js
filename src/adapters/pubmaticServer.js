@@ -283,7 +283,7 @@ var PubmaticServerAdapter = function PubmaticServerAdapter() {
       slots = [];
     conf.pubId = 0;
 
-    var request_url = protocol + 'hb.pubmatic.com/openrtb/241/?', //todo is it correct ?
+    var request_url = _protocol + 'hb.pubmatic.com/openrtb/241/?', //todo is it correct ?
       async = conf.a,
       json = createOrtbJson(conf, params.bids || [])
     ;
