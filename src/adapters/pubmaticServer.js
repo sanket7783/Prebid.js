@@ -9,7 +9,7 @@ const constants = require('../constants.json');
  * @returns {{callBids: _callBids}}
  * @constructor
  */
-var PubmaticAdapter = function PubmaticAdapter() {
+var PubmaticServerAdapter = function PubmaticServerAdapter() {
   var bids;
   var usersync = false;
   var _secure = 0;
@@ -374,4 +374,4 @@ var PubmaticAdapter = function PubmaticAdapter() {
   };
 };
 
-module.exports = PubmaticAdapter;
+module.exports = PubmaticServerAdapter;
