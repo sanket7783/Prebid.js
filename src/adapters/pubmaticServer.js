@@ -186,7 +186,8 @@ var PubmaticServerAdapter = function PubmaticServerAdapter() {
         }        
 
         var anImp = {
-          id: json.id + '_' + i, // todo: if divId is returned in response then ok else we need to use divId as id here
+          //id: json.id + '_' + i, // todo: if divId is returned in response then ok else we need to use divId as id here
+          id: divId,
           tagid: adUnitId,
           secure: conf.sec,
           banner: {
