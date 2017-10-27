@@ -151,18 +151,10 @@ var PubmaticServerAdapter = function PubmaticServerAdapter() {
         return null;
       }
 
-      // todo: do we need this block; I think we should pass kvp for each slot separately
-      if(conf.kval_param_slot){
-        try{
-          kval_param_slot = JSON.parse(decodeURIC(conf.kval_param_slot));
-        }catch(e){}
-        delete conf.kval_param_slot;
-      }      
-
       // setting up the schema
       json = {
-        id : '' + new Date().getTime(), //todo is it ok ?
-        at: 2, // todo : change to what ?
+        id : '' + new Date().getTime(),
+        at: 2,
         cur: ["USD"],
         imp: [],
         site: {
@@ -199,13 +191,11 @@ var PubmaticServerAdapter = function PubmaticServerAdapter() {
           secure: conf.sec,
           banner: {
             pos: 0,
-            format: [], //todo: how to pass multiple sizes
+            format: [],
           },
           ext: {
               div: divId,
-              slotIndex: adUnitIndex,
-              // todo: do we need this ? I think we should pass kvp for each slot separately
-              //"keyValue": kval_param_slot.hasOwnProperty(slot) ? kval_param_slot[slot] : {}
+              slotIndex: adUnitIndex              
           }
         };
 
@@ -243,7 +233,7 @@ var PubmaticServerAdapter = function PubmaticServerAdapter() {
       slots = [];
     conf.pubId = 0;
 
-    var request_url = _protocol + 'hb.pubmatic.com/openrtb/241/?', //todo is it correct ?
+    var request_url = _protocol + 'hb.pubmatic.com/openrtb/241/?',
       async = conf.a,
       json = createOrtbJson(conf, params.bids || [])
     ;
