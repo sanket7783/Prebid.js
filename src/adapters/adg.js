@@ -76,7 +76,7 @@ var AdgAdapter = function AdgAdapter() {
       let bid = bidfactory.createBid(STATUS.GOOD, bidRequest);
       bid.bidderCode = bidRequest.bidder;
       bid.cpm = res.cpm || 0;
-      bid.dealId = res.dealid || {};
+      bid.dealId = res.dealid || '';
 
       let ad = `<!-- adgen -->${res.ad}`;
       ad = insertBeforeBody(ad, res.beacon);
