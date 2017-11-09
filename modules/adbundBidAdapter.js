@@ -48,7 +48,7 @@ function AdBundAdapter() {
     };
     var param = Object.assign({}, bid.params, info);
     param.sizes = JSON.stringify(param.sizes || bid.sizes);
-    param.callback = preBidNameSpace + '.adbundResponse';
+    param.callback = '$$PREBID_GLOBAL$$.adbundResponse';
     $$PREBID_GLOBAL$$.adbundResponse = _createCallback(bid);
     adloader.loadScript(bidAPI + '?' + _stringify(param));
   }
