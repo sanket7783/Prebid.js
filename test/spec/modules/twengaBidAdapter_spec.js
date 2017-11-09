@@ -50,7 +50,7 @@ describe('twenga adapter tests', function () {
     expect(parsedBidUrl.pathname).to.equal('/Bid');
 
     expect(parsedBidUrlQueryString).to.have.property('s').and.to.equal('h');
-    expect(parsedBidUrlQueryString).to.have.property('callback').and.to.equal(preBidNameSpace + '.handleTwCB');
+    expect(parsedBidUrlQueryString).to.have.property('callback').and.to.equal('$$PREBID_GLOBAL$$.handleTwCB');
     expect(parsedBidUrlQueryString).to.have.property('callback_uid').and.to.equal('tw_abcd1234');
     expect(parsedBidUrlQueryString).to.have.property('id').and.to.equal('test');
 
