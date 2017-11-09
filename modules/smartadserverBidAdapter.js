@@ -38,7 +38,7 @@ var SmartAdServer = function SmartAdServer() {
         var adCall = url.parse(bid.params.domain);
         adCall.pathname = '/prebid';
         adCall.search = {
-          'pbjscbk': preBidNameSpace + '.' + generateCallback(bid),
+          'pbjscbk': '$$PREBID_GLOBAL$$.' + generateCallback(bid),
           'siteid': bid.params.siteId,
           'pgid': bid.params.pageId,
           'fmtid': bid.params.formatId,

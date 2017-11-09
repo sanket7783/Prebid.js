@@ -73,7 +73,7 @@ function SekindoUMAdapter() {
     scriptSrc = utils.tryAppendQueryString(scriptSrc, 'pubUrl', pubUrl);
     scriptSrc = utils.tryAppendQueryString(scriptSrc, 'hbcb', callbackId);
     scriptSrc = utils.tryAppendQueryString(scriptSrc, 'hbver', '3');
-    scriptSrc = utils.tryAppendQueryString(scriptSrc, 'hbobj', preBidNameSpace);
+    scriptSrc = utils.tryAppendQueryString(scriptSrc, 'hbobj', '$$PREBID_GLOBAL$$');
     scriptSrc = utils.tryAppendQueryString(scriptSrc, 'dcpmflr', bidfloor);
     scriptSrc = utils.tryAppendQueryString(scriptSrc, 'hbto', config.getConfig('bidderTimeout'));
     scriptSrc = utils.tryAppendQueryString(scriptSrc, 'protocol', protocol);
