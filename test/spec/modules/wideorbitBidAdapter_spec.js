@@ -98,7 +98,7 @@ describe('wideorbit adapter tests', function () {
       expect(parsedBidUrlQueryString).to.have.property('cts').to.have.length.above(0);
       expect(parsedBidUrlQueryString).to.have.property('arp').and.to.equal('0');
       expect(parsedBidUrlQueryString).to.have.property('fl').and.to.equal('0');
-      expect(parsedBidUrlQueryString).to.have.property('jscb').and.to.equal('window.' + preBidNameSpace + '.handleWideOrbitCallback');
+      expect(parsedBidUrlQueryString).to.have.property('jscb').and.to.equal('window.$$PREBID_GLOBAL$$.handleWideOrbitCallback');
       expect(parsedBidUrlQueryString).to.have.property('mpp').and.to.equal('0');
       expect(parsedBidUrlQueryString).to.have.property('cb').to.have.length.above(0);
       expect(parsedBidUrlQueryString).to.have.property('hb').and.to.equal('1');
@@ -174,7 +174,7 @@ describe('wideorbit adapter tests', function () {
         expect(parsedBidUrlQueryString).to.have.property('cts').to.have.length.above(0);
         expect(parsedBidUrlQueryString).to.have.property('arp').and.to.equal('0');
         expect(parsedBidUrlQueryString).to.have.property('fl').and.to.equal('0');
-        expect(parsedBidUrlQueryString).to.have.property('jscb').and.to.equal('window.' + preBidNameSpace + '.handleWideOrbitCallback');
+        expect(parsedBidUrlQueryString).to.have.property('jscb').and.to.equal('window.$$PREBID_GLOBAL$$.handleWideOrbitCallback');
         expect(parsedBidUrlQueryString).to.have.property('mpp').and.to.equal('0');
         expect(parsedBidUrlQueryString).to.have.property('cb').to.have.length.above(0);
         expect(parsedBidUrlQueryString).to.have.property('hb').and.to.equal('1');
@@ -247,7 +247,7 @@ describe('wideorbit adapter tests', function () {
         expect(parsedBidUrlQueryString).to.have.property('cts').to.have.length.above(0);
         expect(parsedBidUrlQueryString).to.have.property('arp').and.to.equal('0');
         expect(parsedBidUrlQueryString).to.have.property('fl').and.to.equal('0');
-        expect(parsedBidUrlQueryString).to.have.property('jscb').and.to.equal('window.' + preBidNameSpace + '.handleWideOrbitCallback');
+        expect(parsedBidUrlQueryString).to.have.property('jscb').and.to.equal('window.$$PREBID_GLOBAL$$.handleWideOrbitCallback');
         expect(parsedBidUrlQueryString).to.have.property('mpp').and.to.equal('0');
         expect(parsedBidUrlQueryString).to.have.property('cb').to.have.length.above(0);
         expect(parsedBidUrlQueryString).to.have.property('hb').and.to.equal('1');
