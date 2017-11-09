@@ -60,7 +60,7 @@ var PiximediaAdapter = function PiximediaAdapter() {
           }
         }
 
-        url = tryAppendPixiQueryString(url, 'jsonp', preBidNameSpace + '.handlePiximediaCallback');
+        url = tryAppendPixiQueryString(url, 'jsonp', '$$PREBID_GLOBAL$$.handlePiximediaCallback');
         url = tryAppendPixiQueryString(url, 'sizes', encodeURIComponent(sizes.join(',')));
         url = tryAppendPixiQueryString(url, 'cbid', encodeURIComponent(cbid));
         url = tryAppendPixiQueryString(url, 'rand', String(Math.floor(Math.random() * 1000000000)));

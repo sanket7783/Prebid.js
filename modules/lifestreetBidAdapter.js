@@ -93,13 +93,13 @@ const LifestreetAdapter = function LifestreetAdapter() {
             return;
           }
           if (object.message && object.message === PREBID_REQUEST_MESSAGE && object.slotName &&
-              $$PREBID_GLOBAL$$[object.slotName]) {
+              window.$$PREBID_GLOBAL$$[object.slotName]) {
             ev.source.postMessage(JSON.stringify({
               message: PREBID_RESPONSE_MESSAGE,
-              slotObject: $$PREBID_GLOBAL$$[object.slotName]
+              slotObject: window.$$PREBID_GLOBAL$$[object.slotName]
             }), '*');
-            $$PREBID_GLOBAL$$[object.slotName].destroy();
-            $$PREBID_GLOBAL$$[object.slotName] = null;
+            window.$$PREBID_GLOBAL$$[object.slotName].destroy();
+            window.$$PREBID_GLOBAL$$[object.slotName] = null;
           }
         }, false);
       } else {

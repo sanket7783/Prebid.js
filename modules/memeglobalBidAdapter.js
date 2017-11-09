@@ -64,7 +64,7 @@ var MemeGlobalAdapter = function MemeGlobalAdapter() {
       }
     };
 
-    var scriptUrl = '//' + bidder + '?callback=window.' + preBidNameSpace + '.mgres' +
+    var scriptUrl = '//' + bidder + '?callback=window.$$PREBID_GLOBAL$$.mgres' +
       '&src=' + CONSTANTS.REPO_AND_VERSION +
       '&br=' + encodeURIComponent(JSON.stringify(bidRequest));
     adloader.loadScript(scriptUrl);
