@@ -47,7 +47,7 @@ AppNexusAdapter = function AppNexusAdapter() {
     let usePaymentRule = utils.getBidIdParameter('usePaymentRule', bid.params);
     var jptCall = '//ib.adnxs.com/jpt?';
 
-    jptCall = utils.tryAppendQueryString(jptCall, 'callback', preBidNameSpace+'.handleAnCB');
+    jptCall = utils.tryAppendQueryString(jptCall, 'callback', '$$PREBID_GLOBAL$$.handleAnCB');
     jptCall = utils.tryAppendQueryString(jptCall, 'callback_uid', callbackId);
     jptCall = utils.tryAppendQueryString(jptCall, 'psa', '0');
     jptCall = utils.tryAppendQueryString(jptCall, 'id', placementId);
