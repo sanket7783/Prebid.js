@@ -67,7 +67,7 @@ var RealVuAdapter = function RealVuAdapter() {
       var altReferrer = utils.getBidIdParameter('alt_referrer', bid.params);
       var jptCall = '//ib.adnxs.com/jpt?';
 
-      jptCall = utils.tryAppendQueryString(jptCall, 'callback', '$$PREBID_GLOBAL$$.handleRvAnCB');
+      jptCall = utils.tryAppendQueryString(jptCall, 'callback', preBidNameSpace + '.handleRvAnCB');
       jptCall = utils.tryAppendQueryString(jptCall, 'callback_uid', callbackId);
       jptCall = utils.tryAppendQueryString(jptCall, 'psa', '0');
       jptCall = utils.tryAppendQueryString(jptCall, 'id', placementId);

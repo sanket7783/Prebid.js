@@ -72,7 +72,7 @@ var YieldmoAdapter = function YieldmoAdapter() {
     var bust = new Date().getTime().toString(); // cache buster
     var scrd = window.devicePixelRatio || 0; // screen pixel density
 
-    url = utils.tryAppendQueryString(url, 'callback', '$$PREBID_GLOBAL$$.YMCB');
+    url = utils.tryAppendQueryString(url, 'callback', preBidNameSpace + '.YMCB');
     url = utils.tryAppendQueryString(url, 'page_url', page_url);
     url = utils.tryAppendQueryString(url, 'pr', pr);
     url = utils.tryAppendQueryString(url, 'bust', bust);

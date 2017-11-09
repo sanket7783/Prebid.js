@@ -76,7 +76,7 @@ var AdbladeAdapter = function AdbladeAdapter() {
           utils.tryAppendQueryString(
             BASE_URI,
             'callback',
-            '$$PREBID_GLOBAL$$.adbladeResponse'
+            preBidNameSpace + '.adbladeResponse'
           ),
           'json',
           JSON.stringify(

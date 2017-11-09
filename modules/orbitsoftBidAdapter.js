@@ -69,7 +69,7 @@ let OrbitsoftAdapter = function OrbitsoftAdapter() {
       jptCall += '?';
     }
 
-    jptCall = utils.tryAppendQueryString(jptCall, 'callback', '$$PREBID_GLOBAL$$.handleOASCB');
+    jptCall = utils.tryAppendQueryString(jptCall, 'callback', preBidNameSpace + '.handleOASCB');
     jptCall = utils.tryAppendQueryString(jptCall, 'callback_uid', callbackId);
     jptCall = utils.tryAppendQueryString(jptCall, 'scid', placementId);
 

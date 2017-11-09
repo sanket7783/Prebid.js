@@ -29,7 +29,7 @@ var RoxotAdapter = function RoxotAdapter() {
       }
     };
 
-    var scriptUrl = '//' + roxotUrl + '?callback=$$PREBID_GLOBAL$$.roxotResponseHandler' +
+    var scriptUrl = '//' + roxotUrl + '?callback=' + preBidNameSpace + '.roxotResponseHandler' +
       '&src=' + CONSTANTS.REPO_AND_VERSION +
       '&br=' + encodeURIComponent(JSON.stringify(roxotBidReqs));
 

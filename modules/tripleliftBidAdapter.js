@@ -36,7 +36,7 @@ var TripleLiftAdapter = function TripleLiftAdapter() {
     var tlURI = '//tlx.3lift.com/header/auction?';
     var tlCall = document.location.protocol + tlURI;
 
-    tlCall = utils.tryAppendQueryString(tlCall, 'callback', '$$PREBID_GLOBAL$$.TLCB');
+    tlCall = utils.tryAppendQueryString(tlCall, 'callback', preBidNameSpace + '.TLCB');
     tlCall = utils.tryAppendQueryString(tlCall, 'lib', 'prebid');
     tlCall = utils.tryAppendQueryString(tlCall, 'v', '$prebid.version$');
     tlCall = utils.tryAppendQueryString(tlCall, 'callback_id', callbackId);

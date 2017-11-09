@@ -16,9 +16,9 @@ const EMPTY_MESSAGE = 'Bid returned empty or error response';
 const ERROR_MESSAGE = 'Bid returned empty or error response';
 const AVAILABLE_MESSAGE = 'Bid available';
 
-const CYGNUS_REQUEST_BASE_URL_INSECURE = 'http://as.casalemedia.com/cygnus?v=8&fn=$$PREBID_GLOBAL$$.handleCygnusResponse&s=6&r=';
+const CYGNUS_REQUEST_BASE_URL_INSECURE = 'http://as.casalemedia.com/cygnus?v=8&fn=' + preBidNameSpace + '.handleCygnusResponse&s=6&r=';
 
-const CYGNUS_REQUEST_BASE_URL_SECURE = 'https://as-sec.casalemedia.com/cygnus?v=8&fn=$$PREBID_GLOBAL$$.handleCygnusResponse&s=6&r=';
+const CYGNUS_REQUEST_BASE_URL_SECURE = 'https://as-sec.casalemedia.com/cygnus?v=8&fn=' + preBidNameSpace + '.handleCygnusResponse&s=6&r=';
 
 const DEFAULT_MIMES_MAP = {
   FLASH: ['video/mp4', 'video/x-flv'],

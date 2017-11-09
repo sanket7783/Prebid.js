@@ -12,7 +12,7 @@ import { loadScript } from './adloader';
 import { setAjaxTimeout } from './ajax';
 import { config } from './config';
 
-var $$PREBID_GLOBAL$$ = getGlobal();
+$$PREBID_GLOBAL$$ = getGlobal();
 
 var CONSTANTS = require('./constants.json');
 var utils = require('./utils.js');

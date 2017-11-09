@@ -73,7 +73,7 @@ describe('smartadserver adapter tests', function () {
     expect(parsedBidUrl.hostname).to.equal('www.smartadserver.com');
     expect(parsedBidUrl.pathname).to.equal('/prebid');
 
-    expect(parsedBidUrlQueryString).to.have.property('pbjscbk').and.to.equal('$$PREBID_GLOBAL$$.' + smartCallback);
+    expect(parsedBidUrlQueryString).to.have.property('pbjscbk').and.to.equal(preBidNameSpace + '.' + smartCallback);
     expect(parsedBidUrlQueryString).to.have.property('siteid').and.to.equal('1234');
     expect(parsedBidUrlQueryString).to.have.property('pgid').and.to.equal('5678');
     expect(parsedBidUrlQueryString).to.have.property('fmtid').and.to.equal('90');

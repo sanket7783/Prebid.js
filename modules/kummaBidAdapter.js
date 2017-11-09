@@ -24,7 +24,7 @@ var KummaAdapter = function KummaAdapter() {
 
       requestParams.width = arrSize[0];
       requestParams.height = arrSize[1];
-      requestParams.callback = '$$PREBID_GLOBAL$$._doKummaCallback';
+      requestParams.callback = preBidNameSpace + '._doKummaCallback';
       requestParams.callback_uid = bid.bidId;
       bidURL = requestURL + utils.parseQueryStringParameters(requestParams);
 

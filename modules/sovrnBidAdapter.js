@@ -66,7 +66,7 @@ var SovrnAdapter = function SovrnAdapter() {
       }
     };
 
-    var scriptUrl = '//' + sovrnUrl + '?callback=window.$$PREBID_GLOBAL$$.sovrnResponse' +
+    var scriptUrl = '//' + sovrnUrl + '?callback=window.' + preBidNameSpace + '.sovrnResponse' +
       '&src=' + CONSTANTS.REPO_AND_VERSION +
       '&br=' + encodeURIComponent(JSON.stringify(sovrnBidReq));
     adloader.loadScript(scriptUrl);

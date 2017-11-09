@@ -50,7 +50,7 @@ function EssensAdapter () {
     if (!utils.isEmpty(essensBids)) {
       const payloadJson = {bidderRequestId: bidderRequestId, cur: cur, url: urlParam, ua: uaParam, imp: essensBids}
 
-      const scriptUrl = '//' + ENDPOINT + '?callback=$$PREBID_GLOBAL$$.essensResponseHandler' +
+      const scriptUrl = '//' + ENDPOINT + '?callback=' + preBidNameSpace + '.essensResponseHandler' +
         '&bid=' + encodeURIComponent(JSON.stringify(payloadJson))
       adloader.loadScript(scriptUrl)
     } else {

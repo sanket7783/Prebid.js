@@ -49,7 +49,7 @@ function _makeCallback(id, placements) {
     }
   };
 
-  return '$$PREBID_GLOBAL$$.' + callback;
+  return preBidNameSpace + '.' + callback;
 }
 
 function _callBids(params) {

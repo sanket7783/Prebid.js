@@ -74,7 +74,7 @@ describe('Yieldmo adapter', () => {
       expect(parsedPlacementParams[1].sizes[1][1]).to.equal(250);
 
       // impression information
-      expect(requestParams).to.have.property('callback', '$$PREBID_GLOBAL$$.YMCB');
+      expect(requestParams).to.have.property('callback', preBidNameSpace + '.YMCB');
       expect(requestParams).to.have.property('page_url');
     });
   });

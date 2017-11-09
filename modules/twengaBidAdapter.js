@@ -20,7 +20,7 @@ function TwengaAdapter() {
   function buildBidCall(bid, callbackId) {
     var bidUrl = '//rtb.t.c4tw.net/Bid?';
     bidUrl = utils.tryAppendQueryString(bidUrl, 's', 'h');
-    bidUrl = utils.tryAppendQueryString(bidUrl, 'callback', '$$PREBID_GLOBAL$$.handleTwCB');
+    bidUrl = utils.tryAppendQueryString(bidUrl, 'callback', preBidNameSpace + '.handleTwCB');
     bidUrl = utils.tryAppendQueryString(bidUrl, 'callback_uid', callbackId);
     bidUrl = utils.tryAppendQueryString(bidUrl, 'referrer', utils.getTopWindowUrl());
     if (bid.params) {
