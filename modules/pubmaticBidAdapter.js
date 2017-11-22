@@ -10,20 +10,20 @@ const constants = require('src/constants.json');
  * @returns {{callBids: _callBids}}
  * @constructor
  */
-var PubmaticAdapter = function PubmaticAdapter() {
-  var bids;
-  var usersync = false;
-  var _secure = 0;
+const PubmaticAdapter = function PubmaticAdapter() {
+  let bids;
+  let usersync = false;
+  let _secure = 0;
   let _protocol = (window.location.protocol === 'https:' ? (_secure = 1, 'https') : 'http') + '://';
   let iframe;
 
-  var dealChannelValues = {
+  let dealChannelValues = {
     1: 'PMP',
     5: 'PREF',
     6: 'PMPG'
   };
 
-  var customPars = {
+  let customPars = {
     'kadgender': 'gender',
     'age': 'kadage',
     'dctr': 'dctr', // Custom Targeting
@@ -127,7 +127,7 @@ var PubmaticAdapter = function PubmaticAdapter() {
     elToAppend.insertBefore(iframe, elToAppend.firstChild);
     var iframeDoc = utils.getIframeDocument(iframe);
     var content = utils.createContentToExecuteExtScriptInFriendlyFrame(url);
-    content = content.replace(`<!--POST_SCRIPT_TAG_MACRO-->`, `<script>window.parent.` + preBidNameSpace + `.handlePubmaticCallback(window.bidDetailsMap, window.progKeyValueMap);</script>`);
+    content = content.replace(`<!--POST_SCRIPT_TAG_MACRO-->`, `<script>window.parent.$$PREBID_GLOBAL$$.handlePubmaticCallback(window.bidDetailsMap, window.progKeyValueMap);</script>`);
     iframeDoc.write(content);
     iframeDoc.close();
   }
