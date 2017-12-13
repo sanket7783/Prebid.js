@@ -47,7 +47,7 @@ SpringServeAdapter = function SpringServeAdapter() {
 
     spCall += '&domain=';
     spCall += domain;
-    spCall += '&callback=$$PREBID_GLOBAL$$.handleSpringServeCB';
+    spCall += '&callback=' + preBidNameSpace + '.handleSpringServeCB';
 
     return spCall;
   }

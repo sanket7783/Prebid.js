@@ -112,7 +112,7 @@ describe('aardvark adapter tests', function () {
     it('should load script', () => {
       sinon.assert.calledOnce(adloader.loadScript);
       expect(adloader.loadScript.firstCall.args[0]).to.eql(
-        '//thor.rtk.io/AH5S/BirH_661h/aardvark/?jsonp=$$PREBID_GLOBAL$$.aardvarkResponse&rtkreferer=localhost:9876&BirH=bidId1&661h=bidId2');
+        '//thor.rtk.io/AH5S/BirH_661h/aardvark/?jsonp=' + preBidNameSpace + '.aardvarkResponse&rtkreferer=localhost:9876&BirH=bidId1&661h=bidId2');
     });
   });
 
@@ -124,7 +124,7 @@ describe('aardvark adapter tests', function () {
     it('should load script', () => {
       sinon.assert.calledOnce(adloader.loadScript);
       expect(adloader.loadScript.firstCall.args[0]).to.eql(
-        '//custom.server.com/AH5S/BirH_661h/aardvark/?jsonp=$$PREBID_GLOBAL$$.aardvarkResponse&rtkreferer=localhost:9876&BirH=bidId1&661h=bidId2');
+        '//custom.server.com/AH5S/BirH_661h/aardvark/?jsonp=' + preBidNameSpace + '.aardvarkResponse&rtkreferer=localhost:9876&BirH=bidId1&661h=bidId2');
     });
   });
 

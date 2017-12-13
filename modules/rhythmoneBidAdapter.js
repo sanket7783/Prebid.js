@@ -146,7 +146,7 @@ function RhythmoneAdapter (bidManager, global, loader) {
 
     configuredPlacements = [];
 
-    p('hbv', global.$$PREBID_GLOBAL$$.version.replace(fat, '') + ',' + version.replace(fat, ''));
+    p('hbv', $$PREBID_GLOBAL$$.version.replace(fat, '') + ',' + version.replace(fat, ''));
 
     for (; i < bids.length; i++) {
       const th = [];
@@ -200,7 +200,7 @@ function RhythmoneAdapter (bidManager, global, loader) {
       data.url = window.document.location.href.toString();
     }
 
-    var prebid_instance = global.$$PREBID_GLOBAL$$;
+    var prebid_instance = $$PREBID_GLOBAL$$;
 
     data.prebid_version = prebid_instance.version.replace(fat, '');
     data.response_ms = (new Date()).getTime() - loadStart;

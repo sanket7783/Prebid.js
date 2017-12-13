@@ -96,7 +96,7 @@ describe('Piximedia adapter tests', function () {
 
       expect(parsedBidUrl.hostname).to.equal('static.adserver.pm');
       expect(parsedBidUrl.query).to.equal('');
-      expect(parsedBidUrl.pathname.replace(/cbid=[a-f0-9]+/, 'cbid=210af5668b1e23').replace(/rand=[0-9]+$/, 'rand=42')).to.equal('/prebid/site_id=TEST/placement_id=TEST/jsonp=$$PREBID_GLOBAL$$.handlePiximediaCallback/sizes=300x250/cbid=210af5668b1e23/rand=42');
+      expect(parsedBidUrl.pathname.replace(/cbid=[a-f0-9]+/, 'cbid=210af5668b1e23').replace(/rand=[0-9]+$/, 'rand=42')).to.equal('/prebid/site_id=TEST/placement_id=TEST/jsonp=' + preBidNameSpace + '.handlePiximediaCallback/sizes=300x250/cbid=210af5668b1e23/rand=42');
     });
 
     it('should call the correct Prebid URL when using the default URL with a deal and custom data', function () {
@@ -124,7 +124,7 @@ describe('Piximedia adapter tests', function () {
 
       expect(parsedBidUrl.hostname).to.equal('static.adserver.pm');
       expect(parsedBidUrl.query).to.equal('');
-      expect(parsedBidUrl.pathname.replace(/cbid=[a-f0-9]+/, 'cbid=210af5668b1e23').replace(/rand=[0-9]+$/, 'rand=42')).to.equal('/prebid/site_id=TEST/placement_id=TEST/l_id=1295/custom=bespoke/custom2=bespoke2/custom3=/custom4=/jsonp=$$PREBID_GLOBAL$$.handlePiximediaCallback/sizes=300x250/cbid=210af5668b1e23/rand=42');
+      expect(parsedBidUrl.pathname.replace(/cbid=[a-f0-9]+/, 'cbid=210af5668b1e23').replace(/rand=[0-9]+$/, 'rand=42')).to.equal('/prebid/site_id=TEST/placement_id=TEST/l_id=1295/custom=bespoke/custom2=bespoke2/custom3=/custom4=/jsonp=' + preBidNameSpace + '.handlePiximediaCallback/sizes=300x250/cbid=210af5668b1e23/rand=42');
     });
 
     it('should call the correct Prebid URL when using the default URL and overridding sizes', function () {
@@ -152,7 +152,7 @@ describe('Piximedia adapter tests', function () {
 
       expect(parsedBidUrl.hostname).to.equal('static.adserver.pm');
       expect(parsedBidUrl.query).to.equal('');
-      expect(parsedBidUrl.pathname.replace(/cbid=[a-f0-9]+/, 'cbid=210af5668b1e23').replace(/rand=[0-9]+$/, 'rand=42')).to.equal('/prebid/site_id=TEST/placement_id=TEST/jsonp=$$PREBID_GLOBAL$$.handlePiximediaCallback/sizes=300x600%2C728x90/cbid=210af5668b1e23/rand=42');
+      expect(parsedBidUrl.pathname.replace(/cbid=[a-f0-9]+/, 'cbid=210af5668b1e23').replace(/rand=[0-9]+$/, 'rand=42')).to.equal('/prebid/site_id=TEST/placement_id=TEST/jsonp=' + preBidNameSpace + '.handlePiximediaCallback/sizes=300x600%2C728x90/cbid=210af5668b1e23/rand=42');
     });
 
     it('should call the correct Prebid URL when supplying a custom URL', function () {
@@ -180,7 +180,7 @@ describe('Piximedia adapter tests', function () {
 
       expect(parsedBidUrl.hostname).to.equal('resources.pm');
       expect(parsedBidUrl.query).to.equal('');
-      expect(parsedBidUrl.pathname.replace(/cbid=[a-f0-9]+/, 'cbid=210af5668b1e23').replace(/rand=[0-9]+$/, 'rand=42')).to.equal('/tests/prebid/bids.js/site_id=TEST/placement_id=TEST/jsonp=$$PREBID_GLOBAL$$.handlePiximediaCallback/sizes=300x250/cbid=210af5668b1e23/rand=42');
+      expect(parsedBidUrl.pathname.replace(/cbid=[a-f0-9]+/, 'cbid=210af5668b1e23').replace(/rand=[0-9]+$/, 'rand=42')).to.equal('/tests/prebid/bids.js/site_id=TEST/placement_id=TEST/jsonp=' + preBidNameSpace + '.handlePiximediaCallback/sizes=300x250/cbid=210af5668b1e23/rand=42');
     });
   });
 

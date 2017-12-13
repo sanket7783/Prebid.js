@@ -19,7 +19,10 @@ module.exports = {
     ],
   },
   output: {
-    jsonpFunction: prebid.globalVarName+"Chunk"
+    /* https://webpack.js.org/configuration/output/#output-jsonpfunction
+      This function dosen't affect any build process
+    */
+    jsonpFunction: 'pbjsChunk'
   },
   module: {
     rules: [

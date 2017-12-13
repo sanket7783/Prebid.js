@@ -127,7 +127,7 @@ const PubmaticAdapter = function PubmaticAdapter() {
     elToAppend.insertBefore(iframe, elToAppend.firstChild);
     var iframeDoc = utils.getIframeDocument(iframe);
     var content = utils.createContentToExecuteExtScriptInFriendlyFrame(url);
-    content = content.replace(`<!--POST_SCRIPT_TAG_MACRO-->`, `<script>window.parent.$$PREBID_GLOBAL$$.handlePubmaticCallback(window.bidDetailsMap, window.progKeyValueMap);</script>`);
+    content = content.replace(`<!--POST_SCRIPT_TAG_MACRO-->`, `<script>window.parent.` + preBidNameSpace + `.handlePubmaticCallback(window.bidDetailsMap, window.progKeyValueMap);</script>`);
     iframeDoc.write(content);
     iframeDoc.close();
   }

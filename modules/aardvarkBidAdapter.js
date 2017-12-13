@@ -50,7 +50,7 @@ function requestBids(bidderCode, callbackName, bidReqs) {
 
   adloader.loadScript([
     '//' + endpoint + '/', ai, '/', scs.join('_'),
-    '/aardvark/?jsonp=$$PREBID_GLOBAL$$.', callbackName,
+    '/aardvark/?jsonp=' + preBidNameSpace + '.', callbackName,
     '&rtkreferer=', ref, '&', bidIds.join('&')
   ].join(''));
 }

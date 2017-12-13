@@ -64,7 +64,7 @@ function ImonomyAdapter() {
         connectiontype: connectiontype,
         requestId: params['requestId'],
         bidderRequestId: params['bidderRequestId'],
-        callback: '$$PREBID_GLOBAL$$.' + callbackName,
+        callback: preBidNameSpace + '.' + callbackName,
         publisher_id: params['bids'][0]['params']['publisher_id'],
         bids: encodeURIComponent(JSON.stringify(params['bids']))
       };

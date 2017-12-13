@@ -60,7 +60,7 @@ function TrionAdapter() {
 
     var trionUrl = BID_REQUEST_BASE_URL;
 
-    trionUrl = utils.tryAppendQueryString(trionUrl, 'callback', '$$PREBID_GLOBAL$$.handleTrionCB');
+    trionUrl = utils.tryAppendQueryString(trionUrl, 'callback', preBidNameSpace + '.handleTrionCB');
     trionUrl = utils.tryAppendQueryString(trionUrl, 'bidId', bidId);
     trionUrl = utils.tryAppendQueryString(trionUrl, 'pubId', pubId);
     trionUrl = utils.tryAppendQueryString(trionUrl, 'sectionId', sectionId);

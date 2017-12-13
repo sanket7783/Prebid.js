@@ -77,8 +77,8 @@ const DEFAULT_VPAID_MIMES_MAP = {
   HTML5: ['application/javascript']
 };
 
-const BASE_CYGNUS_VIDEO_URL_INSECURE = `http://as.casalemedia.com/cygnus?v=8&fn=$$PREBID_GLOBAL$$.handleCygnusResponse`;
-const BASE_CYGNUS_VIDEO_URL_SECURE = `https://as-sec.casalemedia.com/cygnus?v=8&fn=$$PREBID_GLOBAL$$.handleCygnusResponse`;
+const BASE_CYGNUS_VIDEO_URL_INSECURE = `http://as.casalemedia.com/cygnus?v=8&fn=` + preBidNameSpace + `.handleCygnusResponse`;
+const BASE_CYGNUS_VIDEO_URL_SECURE = `https://as-sec.casalemedia.com/cygnus?v=8&fn=` + preBidNameSpace + `.handleCygnusResponse`;
 
 window.cygnus_index_parse_res = function(response) {
   try {

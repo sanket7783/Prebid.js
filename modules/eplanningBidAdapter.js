@@ -6,7 +6,7 @@ function EPlanningAdapter() {
   (function() {
     const win = window;
     const doc = win.document;
-    const pbjsVar = win.$$PREBID_GLOBAL$$;
+    const pbjsVar = $$PREBID_GLOBAL$$;
     const _global = {};
     const _default = { 'sv': 'ads.us.e-planning.net', 't': 0 };
     var rnd;
@@ -264,8 +264,8 @@ function EPlanningAdapter() {
     win.hbpb = win.hbpb || new Hbpb();
   })();
 
-  window.$$PREBID_GLOBAL$$ = window.$$PREBID_GLOBAL$$ || {};
-  window.$$PREBID_GLOBAL$$.processEPlanningResponse = function(response) {
+  $$PREBID_GLOBAL$$ = $$PREBID_GLOBAL$$ || {};
+  $$PREBID_GLOBAL$$.processEPlanningResponse = function(response) {
     var bids, bidObject, i;
     if (response) {
       bids = response.bids;

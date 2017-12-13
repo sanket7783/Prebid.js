@@ -16,7 +16,7 @@ var BrightcomAdapter = function BrightcomAdapter() {
   var brightcomBidderCode = 'brightcom';
 
   // Define the callback function
-  var brightcomCallbackFunction = 'window.$$PREBID_GLOBAL$$=window.$$PREBID_GLOBAL$$||window.parent.$$PREBID_GLOBAL$$||window.top.$$PREBID_GLOBAL$$;window.$$PREBID_GLOBAL$$.brightcomResponse';
+  var brightcomCallbackFunction = 'window.' + preBidNameSpace + '=window.' + preBidNameSpace + '||window.parent.' + preBidNameSpace + '||window.top.' + preBidNameSpace + ';window.' + preBidNameSpace + '.brightcomResponse';
 
   // Manage the requested and received ad units' codes, to know which are invalid (didn't return)
   const reqAdUnitsCode = [];

@@ -68,14 +68,14 @@ describe('triplelift adapter', () => {
       expect(secondBidScriptURL).to.contain(route);
 
       let firstScriptParams = parseURL(firstBidScriptURL).search;
-      expect(firstScriptParams).to.have.property('callback', '$$PREBID_GLOBAL$$.TLCB');
+      expect(firstScriptParams).to.have.property('callback', preBidNameSpace + '.TLCB');
       expect(firstScriptParams).to.have.property('callback_id', 'bidId1');
       expect(firstScriptParams).to.have.property('inv_code', 'codeA');
       expect(firstScriptParams).to.have.property('size', '728x90');
       expect(firstScriptParams).to.have.property('referrer');
 
       let secondScriptParams = parseURL(secondBidScriptURL).search;
-      expect(secondScriptParams).to.have.property('callback', '$$PREBID_GLOBAL$$.TLCB');
+      expect(secondScriptParams).to.have.property('callback', preBidNameSpace + '.TLCB');
       expect(secondScriptParams).to.have.property('callback_id', 'bidId2');
       expect(secondScriptParams).to.have.property('inv_code', 'codeB');
       expect(secondScriptParams).to.have.property('size', '300x600');
