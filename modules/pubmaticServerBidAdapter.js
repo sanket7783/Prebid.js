@@ -1,6 +1,7 @@
 var utils = require('src/utils.js');
 var bidfactory = require('src/bidfactory.js');
 var bidmanager = require('src/bidmanager.js');
+var adaptermanager = require('src/adaptermanager');
 const constants = require('src/constants.json');
 
 /**
