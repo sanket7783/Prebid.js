@@ -1,319 +1,271 @@
-var utils = require('src/utils.js');
-var bidfactory = require('src/bidfactory.js');
-var bidmanager = require('src/bidmanager.js');
-var adaptermanager = require('src/adaptermanager');
+import * as utils from 'src/utils';
+import { registerBidder } from 'src/adapters/bidderFactory';
 const constants = require('src/constants.json');
 
-/**
- * Adapter for requesting bids from Pubmatic.
- *
- * @returns {{callBids: _callBids}}
- * @constructor
- */
-var PubmaticServerAdapter = function PubmaticServerAdapter() {
-  var bids;
-  var usersync = false;
-  var _secure = 0;
-  let _protocol = (window.location.protocol === 'https:' ? (_secure = 1, 'https') : 'http') + '://';
-  let iframe;
-
-  var dealChannelValues = {
-    1: 'PMP',
-    5: 'PREF',
-    6: 'PMPG'
-  };
-
-  var customPars = {
-    'kadgender': 'gender',
-    'age': 'kadage',
-    'dctr': 'dctr', // Custom Targeting
-    'wiid': 'wiid', // Wrapper Impression ID
-    'profId': 'profId', // Legacy: Profile ID
-    'verId': 'verId', // Legacy: version ID
-    'pmzoneid': { // Zone ID
-      n: 'pmZoneId',
-      m: function(zoneId) {
-        if (utils.isStr(zoneId)) {
-          return zoneId.split(',').slice(0, 50).join();
-        } else {
-          return '';
-        }
-      }
-    }
-  };
-
-  function _initConf() {
-    var conf = {},
-      currTime = new Date();
-
-    conf.SAVersion = '1100';
-    conf.wp = 'PreBid';
-    conf.js = 1;
-    conf.wv = constants.REPO_AND_VERSION;
-    conf.sec = _secure ? 1 : 0;
-    conf.screenResolution = screen.width + 'x' + screen.height;
-    conf.ranreq = Math.random();
-    conf.inIframe = window != top ? '1' : '0';
-
-    // istanbul ignore else
-    if (window.navigator.cookieEnabled === false) {
-      conf.fpcd = '1';
-    }
-
-    try {
-      conf.pageURL = window.top.location.href;
-      conf.refurl = window.top.document.referrer;
-    } catch (e) {
-      conf.pageURL = window.location.href;
-      conf.refurl = window.document.referrer;
-    }
-
-    conf.kltstamp = currTime.getFullYear() +
-      '-' + (currTime.getMonth() + 1) +
-      '-' + currTime.getDate() +
-      ' ' + currTime.getHours() +
-      ':' + currTime.getMinutes() +
-      ':' + currTime.getSeconds();
-    conf.timezone = currTime.getTimezoneOffset() / 60 * -1;
-
-    return conf;
-  }
-
-  function _handleCustomParams(params, conf) {
-    // istanbul ignore else
-    if (!conf.kadpageurl) {
-      conf.kadpageurl = conf.pageURL;
-    }
-
-    var key, value, entry;
-    for (key in customPars) {
-      // istanbul ignore else
-      if (customPars.hasOwnProperty(key)) {
-        value = params[key];
-        // istanbul ignore else
-        if (value) {
-          entry = customPars[key];
-
-          if (typeof entry === 'object') {
-            value = entry.m(value, conf);
-            key = entry.n;
-          } else {
-            if (utils.isStr(value)) {
-              key = customPars[key];
-            } else {
-              utils.logWarn('PubMatic: Ignoring param key: ' + customPars[key] + ', expects string-value, found ' + typeof value);
-            }
-          }
-
-          // istanbul ignore else
-          if (value) {
-            conf[key] = value;
-          }
-        }
-      }
-    }
-    return conf;
-  }
-
-  function _initUserSync(pubId) {
-    // istanbul ignore else
-    if (!usersync) {
-      var iframe = utils.createInvisibleIframe();
-      iframe.src = _protocol + 'ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=' + pubId;
-      utils.insertElement(iframe, document);
-      usersync = true;
-    }
-  }
-
-  function copyFromConfAndDeleteFromConf(conf, key, dmExtension){
-    if(conf[key]){
-      dmExtension[key] = decodeURIComponent(conf[key]);
-      delete conf[key];
-    }
-  }
-
-  function convertAllValuesToString(obj){
-    var newObj = {};
-    for(var key in obj){
-      if(obj.hasOwnProperty(key)){
-        newObj[key] = String(obj[key]);
-      }
-    }
-    return newObj;
-  }
-
-  function createOrtbJson(conf, slots){
-      var json = {},
-        passTheseConfParamsIntoDmExtension = ['a', 'pm_cb', 'pubId', 'ctype', 'kval_param', 'lmk'],
-        kval_param_slot = {}
-      ;
-
-      if(slots.length == 0){
-        return null;
-      }
-
-      // setting up the schema
-      json = {
-        id : '' + new Date().getTime(),
-        at: 2,
-        cur: ["USD"],
-        imp: [],
-        site: {
-          domain: location.hostname,
-          page: location.href,
-          publisher: {
-            id: ''
-          }
-        },
-        device: {
-          ua: navigator.userAgent
-        },
-        ext: {}
-      };
-
-      // adding slots info
-      for(var i= 0, l = slots.length; i < l; i++){
-        var slot = slots[i];
-        conf.pubId = conf.pubId || slot.params.publisherId;
-        conf = _handleCustomParams(slot.params, conf);        
-        var adUnitIndex = slot.params.adUnitIndex || 0;
-        var adUnitId = slot.params.adUnitId || '';
-        var divId = slot.params.divId || '';
-        var sizes = slot.sizes;
-
-        if(! adUnitId && divId && sizes.length > 0){          
-          // log: mandatory params are missing
-          continue;
-        }        
-
-        //todo move to a function
-        var anImp = {
-          //id: json.id + '_' + i, // todo: if divId is returned in response then ok else we need to use divId as id here
-          id: divId,
-          tagid: adUnitId,
-          secure: conf.sec,
-          banner: {
-            pos: 0,
-            format: [],
-          },
-          ext: {
-              div: divId,
-              slotIndex: adUnitIndex              
-          }
-        };
-
-        // todo: foreachArray
-        for(var sizeIndex=0, sizeIndexMax=sizes.length; sizeIndex<sizeIndexMax; sizeIndex++){
-          anImp.banner.format.push({w: sizes[sizeIndex][0], h: sizes[sizeIndex][1]});
-        }
-
-        json.imp.push(anImp);
-      }
-
-      //if there are no json.imp then return undefined
-      if(json.imp.length == 0){
-        return null;
-      }
-
-      // setting pub id
-      json.site.publisher.id = '' + conf.pubId;
-
-      // DM specific params
-      var dmExtension = {
-        rs: 2
-      };      
-      for(var i=0, l = passTheseConfParamsIntoDmExtension.length; i < l; i++){
-        copyFromConfAndDeleteFromConf(conf, passTheseConfParamsIntoDmExtension[i], dmExtension);
-      }     
-      json.ext['dm'] = dmExtension;
-      // AdServer specific params to be passed, as it is
-      json.ext['as'] = convertAllValuesToString(conf);
-
-      return json;
-    }
-
-  function _callBids(params) {
-    var conf = _initConf(),
-      slots = [];
-    conf.pubId = 0;
-
-    var request_url = _protocol + 'hb.pubmatic.com/openrtb/241/?',
-      async = conf.a,
-      json = createOrtbJson(conf, params.bids || [])
-    ;
-
-    if(json === null){
-      //todo: log the failure
-      return;
-    }
-
-    console.log(json);
-    request_url += 'json='+encodeURIComponent(JSON.stringify(json));
-    console.log(request_url);
-
-    //todo use ajax call and post data, callback should have request and response
-
-    _initUserSync(conf.pubId);
-  }
-
-  //todo: need to write code for response handling
-  $$PREBID_GLOBAL$$.handlePubmaticCallback = function(bidDetailsMap, progKeyValueMap) {
-    var i;
-    var adUnit;
-    var adUnitInfo;
-    var bid;
-    var bidResponseMap = bidDetailsMap;
-    var bidInfoMap = progKeyValueMap;
-
-    if (!bidResponseMap || !bidInfoMap) {
-      return;
-    }  
-
-    for (i = 0; i < bids.length; i++) {
-      var adResponse;
-      bid = bids[i].params;
-      adUnit = bidResponseMap[bid.adSlot] || {};
-      // adUnitInfo example: bidstatus=0;bid=0.0000;bidid=39620189@320x50;wdeal=
-      // if using DFP GPT, the params string comes in the format:
-      // "bidstatus;1;bid;5.0000;bidid;hb_test@468x60;wdeal;"
-      // the code below detects and handles this.
-      // istanbul ignore else
-      if (bidInfoMap[bid.adSlot] && bidInfoMap[bid.adSlot].indexOf('=') === -1) {
-        bidInfoMap[bid.adSlot] = bidInfoMap[bid.adSlot].replace(/([a-z]+);(.[^;]*)/ig, '$1=$2');
-      }
-
-      adUnitInfo = (bidInfoMap[bid.adSlot] || '').split(';').reduce(function(result, pair) {
-        var parts = pair.split('=');
-        result[parts[0]] = parts[1];
-        return result;
-      }, {});
-
-      if (adUnitInfo.bidstatus === '1') {
-        adResponse = bidfactory.createBid(1);
-        adResponse.bidderCode = 'pubmatic';
-        adResponse.adSlot = bid.adSlot;
-        adResponse.cpm = Number(adUnitInfo.bid);
-        adResponse.ad = unescape(adUnit.creative_tag);
-        adResponse.ad += utils.createTrackPixelIframeHtml(decodeURIComponent(adUnit.tracking_url));
-        adResponse.width = adUnit.width;
-        adResponse.height = adUnit.height;
-        adResponse.dealId = adUnitInfo.wdeal;
-        adResponse.dealChannel = dealChannelValues[adUnit.deal_channel] || null;
-
-        bidmanager.addBidResponse(bids[i].placementCode, adResponse);
-      } else {
-        // Indicate an ad was not returned
-        adResponse = bidfactory.createBid(2);
-        adResponse.bidderCode = 'pubmatic';
-        bidmanager.addBidResponse(bids[i].placementCode, adResponse);
-      }
-    }
-  };
-
-  return {
-    callBids: _callBids
-  };
+const BIDDER_CODE = 'pubmaticServer';
+const ENDPOINT = '//openbid.pubmatic.com/translator?source=prebid-client';
+const USYNCURL = '//ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=';
+const CURRENCY = 'USD';
+const AUCTION_TYPE = 2;
+const UNDEFINED = undefined;
+const CUSTOM_PARAMS = {
+  'kadpageurl': '', // Custom page url
+  'gender': '', // User gender
+  'yob': '', // User year of birth
+  'lat': '', // User location - Latitude
+  'lon': '', // User Location - Longitude
+  'wiid': '', // OpenWrap Wrapper Impression ID
+  'profId': '', // OpenWrap Legacy: Profile ID
+  'verId': '' // OpenWrap Legacy: version ID  
 };
-//todo 
-adaptermanager.registerBidAdapter(new PubmaticServerAdapter(), 'pubmaticServer');
-module.exports = PubmaticServerAdapter;
+
+let publisherId = 0;
+
+function _getDomainFromURL(url){
+  let anchor = document.createElement('a');
+  anchor.href = url;
+  return anchor.hostname;
+}
+
+function _parseSlotParam(paramName, paramValue){
+  if (!utils.isStr(paramValue)) {    
+    paramValue && utils.logWarn('PubMaticServer: Ignoring param key: '+paramName+', expects string-value, found ' + typeof paramValue);
+    return UNDEFINED;
+  }
+
+  switch(paramName){
+    case 'pmzoneid':
+      return paramValue.split(',').slice(0, 50).join();
+    case 'kadfloor':
+      return parseFloat(paramValue) || UNDEFINED;
+    default:
+      return paramValue;
+  }
+}
+
+function _cleanSlot(slotName) {
+  if (utils.isStr(slotName)) {
+    return slotName.replace(/^\s+/g, '').replace(/\s+$/g, '');
+  }
+  return '';
+}
+
+function _parseAdSlot(bid){
+  
+  bid.params.adUnit = '';
+  bid.params.adUnitIndex = '0';
+  bid.params.width = 0;
+  bid.params.height = 0;
+
+  bid.params.adSlot = _cleanSlot(bid.params.adSlot);
+
+  var slot = bid.params.adSlot;
+  var splits = slot.split(':');
+
+  slot = splits[0];
+  if(splits.length == 2){
+    bid.params.adUnitIndex = splits[1];
+  }
+  splits = slot.split('@');
+  if(splits.length != 2){
+    return;
+  }       
+  bid.params.adUnit = splits[0];
+  splits = splits[1].split('x');
+  if(splits.length != 2){
+    return;
+  }
+  bid.params.width = parseInt(splits[0]);
+  bid.params.height = parseInt(splits[1]);
+}
+
+function _initConf() {
+  var conf = {};
+  conf.pageURL = utils.getTopWindowUrl();  
+  conf.refURL = utils.getTopWindowReferrer();
+  return conf;
+}
+
+function _handleCustomParams(params, conf) {
+  // istanbul ignore else
+  if (!conf.kadpageurl) {
+    conf.kadpageurl = conf.pageURL;
+  }
+
+  var key, value, entry;
+  for (key in CUSTOM_PARAMS) {
+    // istanbul ignore else
+    if (CUSTOM_PARAMS.hasOwnProperty(key)) {
+      value = params[key];
+      // istanbul ignore else
+      if (value) {
+        entry = CUSTOM_PARAMS[key];
+
+        if (typeof entry === 'object') {
+          // will be used in future when we want to process a custom param before using
+          // 'keyname': {f: function(){}}
+          value = entry.f(value, conf);
+        }
+
+        if (utils.isStr(value)) {
+          conf[key] = value;
+        } else {
+          utils.logWarn('PubMaticServer: Ignoring param key: ' + CUSTOM_PARAMS[key] + ', expects string-value, found ' + typeof value);
+        }
+      }
+    }
+  }
+  return conf;
+}
+
+function _createOrtbTemplate(conf){
+  return {
+    id : '' + new Date().getTime(),
+    at: AUCTION_TYPE,
+    cur: [CURRENCY],
+    imp: [],
+    site: {
+      page: conf.pageURL,
+      ref: conf.refURL,
+      publisher: {}
+    },
+    device: {
+      ua: navigator.userAgent,
+      js: 1,
+      dnt: (navigator.doNotTrack == "yes" || navigator.doNotTrack == "1" || navigator.msDoNotTrack == "1") ? 1 : 0,
+      h: screen.height,
+      w: screen.width,
+      language: navigator.language
+    },
+    user: {},
+    ext: {}
+  };
+}
+
+function _createImpressionObject(bid, conf){
+  return {
+    id: bid.bidId,
+    tagid: bid.params.adUnit,
+    bidfloor: _parseSlotParam('kadfloor', bid.params.kadfloor),
+    secure: window.location.protocol === 'https:' ? 1 : 0,
+    banner: {
+      pos: 0,
+      w: bid.params.width, 
+      h: bid.params.height,
+      topframe: utils.inIframe() ? 0 : 1,
+    },
+    ext: {
+      pmZoneId: _parseSlotParam('pmzoneid', bid.params.pmzoneid)
+    }
+  };
+}
+
+export const spec = {
+  code: BIDDER_CODE,
+
+  /**
+  * Determines whether or not the given bid request is valid. Valid bid request must have placementId and hbid
+  *
+  * @param {BidRequest} bid The bid params to validate.
+  * @return boolean True if this is a valid bid, and false otherwise.
+  */
+  isBidRequestValid: bid => {
+    return !!(bid && bid.params && utils.isStr(bid.params.publisherId) && utils.isStr(bid.params.adSlot));
+  },
+
+  /**
+  * Make a server request from the list of BidRequests.
+  *
+  * @param {validBidRequests[]} - an array of bids
+  * @return ServerRequest Info describing the request to the server.
+  */
+  buildRequests: validBidRequests => {
+    var conf = _initConf();
+    var payload = _createOrtbTemplate(conf);
+    validBidRequests.forEach(bid => {
+      _parseAdSlot(bid);
+      if(! (bid.params.adSlot && bid.params.adUnit && bid.params.adUnitIndex && bid.params.width && bid.params.height)){
+        utils.logWarn('PubMaticServer: Skipping the non-standard adslot:', bid.params.adSlot, bid);
+        return;
+      }
+      conf.pubId = conf.pubId || bid.params.publisherId;
+      conf = _handleCustomParams(bid.params, conf);
+      conf.transactionId = bid.transactionId;
+      payload.imp.push(_createImpressionObject(bid, conf));
+    });
+    
+    if(payload.imp.length == 0){
+      return;
+    }
+
+    payload.site.publisher.id = conf.pubId;
+    publisherId = conf.pubId;
+    payload.ext.wrapper = {};
+    payload.ext.wrapper.profile = conf.profId || UNDEFINED;
+    payload.ext.wrapper.version = conf.verId || UNDEFINED;
+    payload.ext.wrapper.wiid = conf.wiid || UNDEFINED;
+    payload.ext.wrapper.wv = constants.REPO_AND_VERSION;
+    payload.ext.wrapper.transactionId = conf.transactionId;
+    payload.ext.wrapper.wp = 'pbjs';
+    payload.user.gender = conf.gender || UNDEFINED;
+    payload.user.lat = conf.lat || UNDEFINED;
+    payload.user.lon = conf.lon || UNDEFINED;
+    payload.user.yob = conf.yob || UNDEFINED;
+    payload.site.page = conf.kadpageurl || payload.site.page;
+    payload.site.domain = _getDomainFromURL(payload.site.page);
+    return {
+      method: 'POST',
+      url: ENDPOINT,
+      data: JSON.stringify(payload)
+    };
+  },
+
+  /**
+  * Unpack the response from the server into a list of bids.
+  *
+  * @param {*} response A successful response from the server.
+  * @return {Bid[]} An array of bids which were nested inside the server.
+  */
+  interpretResponse: (response, request) => {
+    const bidResponses = [];
+    try {
+      if (response.body && response.body.seatbid && response.body.seatbid[0] && response.body.seatbid[0].bid) {
+        response.body.seatbid[0].bid.forEach(bid => {
+          let newBid = {
+            requestId: bid.impid,
+            cpm: (parseFloat(bid.price)||0).toFixed(2),
+            width: bid.w,
+            height: bid.h,
+            creativeId: bid.crid || bid.id,
+            dealId: bid.dealid,
+            currency: CURRENCY,
+            netRevenue: true,
+            ttl: 300,
+            referrer: utils.getTopWindowUrl(),
+            ad: bid.adm
+          };
+          bidResponses.push(newBid);
+        });
+      }
+    } catch (error) {
+      utils.logError(error);
+    }
+    return bidResponses;
+  },
+
+  /**
+  * Register User Sync.
+  */
+  getUserSyncs: syncOptions => {
+    if (syncOptions.iframeEnabled) {
+      return [{
+        type: 'iframe',
+        url: USYNCURL + publisherId
+      }];
+    }else{
+      utils.logWarn('PubMaticServer: Please enable iframe based user sync.');
+    }
+  }
+};
+
+registerBidder(spec);
