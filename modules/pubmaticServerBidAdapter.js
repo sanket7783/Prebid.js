@@ -150,12 +150,22 @@ function _createImpressionObject(bid, conf){
     secure: window.location.protocol === 'https:' ? 1 : 0,
     banner: {
       pos: 0,
-      w: bid.params.width, 
-      h: bid.params.height,
       topframe: utils.inIframe() ? 0 : 1,
-    },
+      format: (function(){
+        var arr = [];
+        for(let i = 0, l = bid.sizes.length; i<l; i++){
+          arr.push({
+            w: bid.sizes[i][0], 
+            h: bid.sizes[i][1]
+          });          
+        }
+        return arr;
+      })()      
+    },    
     ext: {
-      pmZoneId: _parseSlotParam('pmzoneid', bid.params.pmzoneid)
+      pmZoneId: _parseSlotParam('pmzoneid', bid.params.pmzoneid),
+      div: bid.params.divId
+
     }
   };
 }
@@ -200,13 +210,16 @@ export const spec = {
 
     payload.site.publisher.id = conf.pubId;
     publisherId = conf.pubId;
-    payload.ext.wrapper = {};
-    payload.ext.wrapper.profile = conf.profId || UNDEFINED;
-    payload.ext.wrapper.version = conf.verId || UNDEFINED;
-    payload.ext.wrapper.wiid = conf.wiid || UNDEFINED;
-    payload.ext.wrapper.wv = constants.REPO_AND_VERSION;
-    payload.ext.wrapper.transactionId = conf.transactionId;
-    payload.ext.wrapper.wp = 'pbjs';
+    payload.ext.dm = {
+      rs: 1,
+      pubId: conf.pubId,      
+      wp: 'pbjs',
+      wv: constants.REPO_AND_VERSION,
+      transactionId: conf.transactionId,
+      profileid: conf.profId || UNDEFINED,
+      versionid: conf.verId || UNDEFINED,
+      wiid: conf.wiid || UNDEFINED
+    };
     payload.user.gender = conf.gender || UNDEFINED;
     payload.user.lat = conf.lat || UNDEFINED;
     payload.user.lon = conf.lon || UNDEFINED;
