@@ -3,7 +3,8 @@ import { registerBidder } from 'src/adapters/bidderFactory';
 const constants = require('src/constants.json');
 
 const BIDDER_CODE = 'pubmaticServer';
-const ENDPOINT = '//openbid.pubmatic.com/translator?source=prebid-client';
+//const ENDPOINT = '//hb.pubmatic.com/openrtb/241/?';
+const ENDPOINT = '//172.16.4.65:8001/openrtb/241/?';
 const USYNCURL = '//ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=';
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 2;
@@ -145,7 +146,7 @@ function _createOrtbTemplate(conf){
 function _createImpressionObject(bid, conf){
   return {
     id: bid.bidId,
-    tagid: bid.params.adUnit,
+    tagid: bid.params.divId,
     bidfloor: _parseSlotParam('kadfloor', bid.params.kadfloor),
     secure: window.location.protocol === 'https:' ? 1 : 0,
     banner: {
@@ -160,12 +161,13 @@ function _createImpressionObject(bid, conf){
           });          
         }
         return arr;
-      })()      
+      })()
     },    
     ext: {
       pmZoneId: _parseSlotParam('pmzoneid', bid.params.pmzoneid),
-      div: bid.params.divId
-
+      div: bid.params.divId,
+      adunit: bid.params.adUnitId,
+      slotIndex: ""+bid.params.adUnitIndex
     }
   };
 }
@@ -180,7 +182,8 @@ export const spec = {
   * @return boolean True if this is a valid bid, and false otherwise.
   */
   isBidRequestValid: bid => {
-    return !!(bid && bid.params && utils.isStr(bid.params.publisherId) && utils.isStr(bid.params.adSlot));
+    //todo expect adUnitIndex as string and not mandatory(???) default to 0
+    return !!(bid && bid.params && utils.isStr(bid.params.publisherId) && utils.isStr(bid.params.adUnitId) && utils.isStr(bid.params.divId) && utils.isNumber(bid.params.adUnitIndex));
   },
 
   /**
@@ -193,8 +196,8 @@ export const spec = {
     var conf = _initConf();
     var payload = _createOrtbTemplate(conf);
     validBidRequests.forEach(bid => {
-      _parseAdSlot(bid);
-      if(! (bid.params.adSlot && bid.params.adUnit && bid.params.adUnitIndex && bid.params.width && bid.params.height)){
+      //_parseAdSlot(bid);
+      if(! (bid.params.adSlot && bid.params.adUnitId && utils.isNumber(bid.params.adUnitIndex))){
         utils.logWarn('PubMaticServer: Skipping the non-standard adslot:', bid.params.adSlot, bid);
         return;
       }
@@ -212,14 +215,29 @@ export const spec = {
     publisherId = conf.pubId;
     payload.ext.dm = {
       rs: 1,
+      //a: "1",
+      //pm_cb: "window.PWT.PubmaticAdapterCallback",
       pubId: conf.pubId,      
       wp: 'pbjs',
       wv: constants.REPO_AND_VERSION,
       transactionId: conf.transactionId,
       profileid: conf.profId || UNDEFINED,
-      versionid: conf.verId || UNDEFINED,
+      versionid: conf.verId || "1",
       wiid: conf.wiid || UNDEFINED
     };
+    /*
+    payload.ext.as = {
+        "SAVersion": "1000",
+        "kltstamp": "2016-8-18 12:37:28",
+        "timezone": 5.5,
+        "screenResolution": "1366x768",
+        "ranreq": 0.35227230576370405,
+        "pageURL": "2kmtcentral.com",
+        "refurl": "",
+        "inIframe": "0",
+        "kadpageurl": "2kmtcentral.com"
+    };
+    */
     payload.user.gender = conf.gender || UNDEFINED;
     payload.user.lat = conf.lat || UNDEFINED;
     payload.user.lon = conf.lon || UNDEFINED;
