@@ -17,33 +17,40 @@ const CUSTOM_PARAMS = {
   'lon': '', // User Location - Longitude
   'wiid': '', // OpenWrap Wrapper Impression ID
   'profId': '', // OpenWrap Legacy: Profile ID
-  'verId': '' // OpenWrap Legacy: version ID  
+  'verId': '' // OpenWrap Legacy: version ID
 };
 
 let publisherId = 0;
 
-function _getDomainFromURL(url){
+function _getDomainFromURL(url) {
   let anchor = document.createElement('a');
   anchor.href = url;
   return anchor.hostname;
 }
 
-function _parseSlotParam(paramName, paramValue){
-  if (!utils.isStr(paramValue)) {    
-    paramValue && utils.logWarn('PubMaticServer: Ignoring param key: '+paramName+', expects string-value, found ' + typeof paramValue);
+function _parseSlotParam(paramName, paramValue) {
+  if (!utils.isStr(paramValue)) {
+    paramValue && utils.logWarn('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
     return UNDEFINED;
   }
 
-  switch(paramName){
+  switch (paramName) {
     case 'pmzoneid':
       return paramValue.split(',').slice(0, 50).join();
     case 'kadfloor':
       return parseFloat(paramValue) || UNDEFINED;
+    case 'lat':
+      return parseFloat(paramValue) || UNDEFINED;
+    case 'lon':
+      return parseFloat(paramValue) || UNDEFINED;
+    case 'yob':
+      return parseInt(paramValue) || UNDEFINED;
     default:
       return paramValue;
   }
 }
 
+//todo: remove code ??
 function _cleanSlot(slotName) {
   if (utils.isStr(slotName)) {
     return slotName.replace(/^\s+/g, '').replace(/\s+$/g, '');
@@ -51,8 +58,7 @@ function _cleanSlot(slotName) {
   return '';
 }
 
-function _parseAdSlot(bid){
-  
+function _parseAdSlot(bid) {
   bid.params.adUnit = '';
   bid.params.adUnitIndex = '0';
   bid.params.width = 0;
@@ -64,16 +70,18 @@ function _parseAdSlot(bid){
   var splits = slot.split(':');
 
   slot = splits[0];
-  if(splits.length == 2){
+  if (splits.length == 2) {
     bid.params.adUnitIndex = splits[1];
   }
   splits = slot.split('@');
-  if(splits.length != 2){
+  if (splits.length != 2) {
+    utils.logWarn('AdSlot Error: adSlot not in required format');
     return;
-  }       
+  }
   bid.params.adUnit = splits[0];
   splits = splits[1].split('x');
-  if(splits.length != 2){
+  if (splits.length != 2) {
+    utils.logWarn('AdSlot Error: adSlot not in required format');
     return;
   }
   bid.params.width = parseInt(splits[0]);
@@ -82,11 +90,12 @@ function _parseAdSlot(bid){
 
 function _initConf() {
   var conf = {};
-  conf.pageURL = utils.getTopWindowUrl();  
+  conf.pageURL = utils.getTopWindowUrl();
   conf.refURL = utils.getTopWindowReferrer();
   return conf;
 }
 
+//todo: remove code ?? is it required ??
 function _handleCustomParams(params, conf) {
   // istanbul ignore else
   if (!conf.kadpageurl) {
@@ -104,14 +113,14 @@ function _handleCustomParams(params, conf) {
 
         if (typeof entry === 'object') {
           // will be used in future when we want to process a custom param before using
-          // 'keyname': {f: function(){}}
+          // 'keyname': {f: function() {}}
           value = entry.f(value, conf);
         }
 
         if (utils.isStr(value)) {
           conf[key] = value;
         } else {
-          utils.logWarn('PubMaticServer: Ignoring param key: ' + CUSTOM_PARAMS[key] + ', expects string-value, found ' + typeof value);
+          utils.logWarn('PubMatic: Ignoring param : ' + key + ' with value : ' + CUSTOM_PARAMS[key] + ', expects string-value, found ' + typeof value);
         }
       }
     }
@@ -119,7 +128,7 @@ function _handleCustomParams(params, conf) {
   return conf;
 }
 
-function _createOrtbTemplate(conf){
+function _createOrtbTemplate(conf) {
   return {
     id : '' + new Date().getTime(),
     at: AUCTION_TYPE,
@@ -133,7 +142,7 @@ function _createOrtbTemplate(conf){
     device: {
       ua: navigator.userAgent,
       js: 1,
-      dnt: (navigator.doNotTrack == "yes" || navigator.doNotTrack == "1" || navigator.msDoNotTrack == "1") ? 1 : 0,
+      dnt: (navigator.doNotTrack == 'yes' || navigator.doNotTrack == '1' || navigator.msDoNotTrack == '1') ? 1 : 0,
       h: screen.height,
       w: screen.width,
       language: navigator.language
@@ -143,7 +152,7 @@ function _createOrtbTemplate(conf){
   };
 }
 
-function _createImpressionObject(bid, conf){
+function _createImpressionObject(bid, conf) {
   return {
     id: bid.bidId,
     tagid: bid.params.divId,
@@ -196,7 +205,7 @@ export const spec = {
     var conf = _initConf();
     var payload = _createOrtbTemplate(conf);
     validBidRequests.forEach(bid => {
-      //_parseAdSlot(bid);
+      //_parseAdSlot(bid); //todo: remove code
       if(! (bid.params.adSlot && bid.params.adUnitId && utils.isNumber(bid.params.adUnitIndex))){
         utils.logWarn('PubMaticServer: Skipping the non-standard adslot:', bid.params.adSlot, bid);
         return;
@@ -206,8 +215,8 @@ export const spec = {
       conf.transactionId = bid.transactionId;
       payload.imp.push(_createImpressionObject(bid, conf));
     });
-    
-    if(payload.imp.length == 0){
+
+    if (payload.imp.length == 0) {
       return;
     }
 
@@ -264,7 +273,7 @@ export const spec = {
         response.body.seatbid[0].bid.forEach(bid => {
           let newBid = {
             requestId: bid.impid,
-            cpm: (parseFloat(bid.price)||0).toFixed(2),
+            cpm: (parseFloat(bid.price) || 0).toFixed(2),
             width: bid.w,
             height: bid.h,
             creativeId: bid.crid || bid.id,
