@@ -246,8 +246,7 @@ export const spec = {
     publisherId = conf.pubId;
     payload.ext.dm = {
       rs: 1,
-      //a: "1",
-      //pm_cb: "window.PWT.PubmaticAdapterCallback",
+      ssauction: 1,
       pubId: conf.pubId,      
       wp: 'pbjs',
       wv: constants.REPO_AND_VERSION,
