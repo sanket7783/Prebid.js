@@ -30,9 +30,11 @@ function _getDomainFromURL(url) {
 
 function _parseSlotParam(paramName, paramValue) {
   if (!utils.isStr(paramValue)) {
-    paramValue && utils.logWarn('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
+    paramValue && utils.logWarn('PubMaticServer: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
     return UNDEFINED;
   }
+
+  paramValue = paramValue.trim();
 
   switch (paramName) {
     case 'pmzoneid':
@@ -45,6 +47,7 @@ function _parseSlotParam(paramName, paramValue) {
       return parseFloat(paramValue) || UNDEFINED;
     case 'yob':
       return parseInt(paramValue) || UNDEFINED;
+    case 'gender':    
     default:
       return paramValue;
   }
@@ -130,7 +133,7 @@ function _handleCustomParams(params, conf) {
 
 function _createOrtbTemplate(conf) {
   return {
-    id : '' + new Date().getTime(),
+    id: '' + new Date().getTime(),
     at: AUCTION_TYPE,
     cur: [CURRENCY],
     imp: [],
@@ -176,7 +179,7 @@ function _createImpressionObject(bid, conf) {
       pmZoneId: _parseSlotParam('pmzoneid', bid.params.pmzoneid),
       div: bid.params.divId,
       adunit: bid.params.adUnitId,
-      slotIndex: ""+bid.params.adUnitIndex
+      slotIndex: bid.params.adUnitIndex
     }
   };
 }
@@ -191,8 +194,27 @@ export const spec = {
   * @return boolean True if this is a valid bid, and false otherwise.
   */
   isBidRequestValid: bid => {
-    //todo expect adUnitIndex as string and not mandatory(???) default to 0
-    return !!(bid && bid.params && utils.isStr(bid.params.publisherId) && utils.isStr(bid.params.adUnitId) && utils.isStr(bid.params.divId) && utils.isNumber(bid.params.adUnitIndex));
+    //todo: can we improve the logwarn message from dupicating ?
+    if (bid && bid.params) {
+      if (!utils.isStr(bid.params.publisherId)) {
+        utils.logWarn('PubMaticServer: publisherId is mandatory and it should be a string.');
+        return false;
+      }
+      if (!utils.isStr(bid.params.adUnitId)) {
+        utils.logWarn('PubMaticServer: adUnitId is mandatory and it should be a string.');
+        return false;
+      }
+      if (!utils.isStr(bid.params.divId)) {
+        utils.logWarn('PubMaticServer: divId is mandatory and it should be a string.');
+        return false;
+      }
+      if (!utils.isStr(bid.params.adUnitIndex)) {
+        utils.logWarn('PubMaticServer: adUnitIndex is mandatory and it should be a string.');
+        return false;
+      }
+      return true;
+    }
+    return false;
   },
 
   /**
@@ -206,10 +228,10 @@ export const spec = {
     var payload = _createOrtbTemplate(conf);
     validBidRequests.forEach(bid => {
       //_parseAdSlot(bid); //todo: remove code
-      if(! (bid.params.adSlot && bid.params.adUnitId && utils.isNumber(bid.params.adUnitIndex))){
-        utils.logWarn('PubMaticServer: Skipping the non-standard adslot:', bid.params.adSlot, bid);
-        return;
-      }
+      //if(! (bid.params.adSlot && bid.params.adUnitId && utils.isNumber(bid.params.adUnitIndex))){
+      //  utils.logWarn('PubMaticServer: Skipping the non-standard adslot:', bid.params.adSlot, bid);
+      //  return;
+      //}
       conf.pubId = conf.pubId || bid.params.publisherId;
       conf = _handleCustomParams(bid.params, conf);
       conf.transactionId = bid.transactionId;
@@ -220,7 +242,7 @@ export const spec = {
       return;
     }
 
-    payload.site.publisher.id = conf.pubId;
+    payload.site.publisher.id = conf.pubId.trim();
     publisherId = conf.pubId;
     payload.ext.dm = {
       rs: 1,
@@ -247,10 +269,12 @@ export const spec = {
         "kadpageurl": "2kmtcentral.com"
     };
     */
-    payload.user.gender = conf.gender || UNDEFINED;
-    payload.user.lat = conf.lat || UNDEFINED;
-    payload.user.lon = conf.lon || UNDEFINED;
-    payload.user.yob = conf.yob || UNDEFINED;
+    payload.user.gender = _parseSlotParam('gender', conf.gender);
+    payload.user.yob = _parseSlotParam('yob', conf.yob);
+    payload.user.geo = {};
+    payload.user.geo.lat = _parseSlotParam('lat', conf.lat);
+    payload.user.geo.lon = _parseSlotParam('lon', conf.lon);
+    payload.device.geo = payload.user.geo;
     payload.site.page = conf.kadpageurl || payload.site.page;
     payload.site.domain = _getDomainFromURL(payload.site.page);
     return {
@@ -273,6 +297,7 @@ export const spec = {
         response.body.seatbid[0].bid.forEach(bid => {
           let newBid = {
             requestId: bid.impid,
+            bidderCode: BIDDER_CODE,//todo add bidder name from response
             cpm: (parseFloat(bid.price) || 0).toFixed(2),
             width: bid.w,
             height: bid.h,
@@ -285,6 +310,8 @@ export const spec = {
             ad: bid.adm
           };
           bidResponses.push(newBid);
+
+          //todo : also add bids from summary
         });
       }
     } catch (error) {
