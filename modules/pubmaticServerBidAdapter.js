@@ -235,7 +235,7 @@ export const spec = {
       //  return;
       //}
       conf.pubId = conf.pubId || bid.params.publisherId;
-      conf = _handleCustomParams(bid.params, conf);
+      conf = _handleCustomParams(bid.params, conf);//todo is it required ?
       conf.transactionId = bid.transactionId;
       payload.imp.push(_createImpressionObject(bid, conf));
     });
@@ -301,20 +301,21 @@ export const spec = {
               // index handling: 0th summary is actually summary of winning bid, 
               // other summaries are loosing bids
               if(summary.bidder){
+                let firstSummary = index === 0;
                 let newBid = {
                   requestId: bid.impid,
-                  bidderCode: BIDDER_CODE, //summary.bidder, //todo add bidder name from response
+                  bidderCode: BIDDER_CODE,
                   originalBidder: summary.bidder,
                   cpm: (parseFloat(summary.bid) || 0).toFixed(2),
                   width: summary.width, //todo can we change this to w ?
                   height: summary.height, //todo can we change this to h ?
-                  creativeId: bid.crid || bid.id,// todo: index handling // todo: needed
-                  dealId: bid.dealid || UNDEFINED,// todo: index handling
+                  creativeId: firstSummary ? (bid.crid || bid.id) : bid.id,
+                  dealId: firstSummary ? (bid.dealid || UNDEFINED) : UNDEFINED,
                   currency: CURRENCY,
                   netRevenue: true,
                   ttl: 300,
                   referrer: utils.getTopWindowUrl(),
-                  ad: bid.adm // todo: index handling
+                  ad: firstSummary ? bid.adm : ''
                 };
                 bidResponses.push(newBid);
               }
@@ -331,7 +332,31 @@ export const spec = {
   /**
   * Register User Sync.
   */
-  getUserSyncs: syncOptions => {
+  getUserSyncs: (syncOptions, serverResponses) => {
+    let serverResponse;
+    let urls = [];
+    if(serverResponses.length > 0){
+      serverResponse = serverResponses[0];
+    }
+
+    if(serverResponse.ext && serverResponse.ext.extension && utils.isArray(serverResponse.ext.extension) ){
+      serverResponse.ext.extension.forEach(partner => {
+        if(!partner.error && partner.usersync && partner.usersync.url){
+          if(partner.usersync.type === 'iframe'){//todo: move 'iframe' to const
+            if (syncOptions.iframeEnabled) {
+              urls.push({
+                type: 'iframe',
+                url: partner.usersync.url
+              });
+            }else{
+              utils.logWarn('PubMaticServer: Please enable iframe based user sync.');
+            }
+          }
+          //todo: handle other types as well
+        }
+      });
+    }
+
     if (syncOptions.iframeEnabled) {
       return [{
         type: 'iframe',
