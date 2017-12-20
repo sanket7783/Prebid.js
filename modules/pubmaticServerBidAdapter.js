@@ -9,6 +9,7 @@ const USYNCURL = '//ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=';
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 2;
 const UNDEFINED = undefined;
+//todo: is it required ?
 const CUSTOM_PARAMS = {
   'kadpageurl': '', // Custom page url
   'gender': '', // User gender
@@ -61,6 +62,7 @@ function _cleanSlot(slotName) {
   return '';
 }
 
+//todo: is it required ?
 function _parseAdSlot(bid) {
   bid.params.adUnit = '';
   bid.params.adUnitIndex = '0';
@@ -245,8 +247,7 @@ export const spec = {
     payload.site.publisher.id = conf.pubId.trim();
     publisherId = conf.pubId;
     payload.ext.dm = {
-      rs: 1,
-      ssauction: 1,
+      rs: 1,      
       pubId: conf.pubId,      
       wp: 'pbjs',
       wv: constants.REPO_AND_VERSION,
@@ -294,23 +295,31 @@ export const spec = {
     try {
       if (response.body && response.body.seatbid && response.body.seatbid[0] && response.body.seatbid[0].bid) {
         response.body.seatbid[0].bid.forEach(bid => {
-          let newBid = {
-            requestId: bid.impid,
-            bidderCode: BIDDER_CODE,//todo add bidder name from response
-            cpm: (parseFloat(bid.price) || 0).toFixed(2),
-            width: bid.w,
-            height: bid.h,
-            creativeId: bid.crid || bid.id,
-            dealId: bid.dealid,
-            currency: CURRENCY,
-            netRevenue: true,
-            ttl: 300,
-            referrer: utils.getTopWindowUrl(),
-            ad: bid.adm
-          };
-          bidResponses.push(newBid);
 
-          //todo : also add bids from summary
+          if(bid.id !== null && bid.ext.summary){
+            bid.ext.summary.forEach((summary, index) => {
+              // index handling: 0th summary is actually summary of winning bid, 
+              // other summaries are loosing bids
+              if(summary.bidder){
+                let newBid = {
+                  requestId: bid.impid,
+                  bidderCode: BIDDER_CODE, //summary.bidder, //todo add bidder name from response
+                  originalBidder: summary.bidder,
+                  cpm: (parseFloat(summary.bid) || 0).toFixed(2),
+                  width: summary.width, //todo can we change this to w ?
+                  height: summary.height, //todo can we change this to h ?
+                  creativeId: bid.crid || bid.id,// todo: index handling // todo: needed
+                  dealId: bid.dealid || UNDEFINED,// todo: index handling
+                  currency: CURRENCY,
+                  netRevenue: true,
+                  ttl: 300,
+                  referrer: utils.getTopWindowUrl(),
+                  ad: bid.adm // todo: index handling
+                };
+                bidResponses.push(newBid);
+              }
+            });
+          }
         });
       }
     } catch (error) {
