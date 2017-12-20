@@ -342,7 +342,7 @@ export const spec = {
     if(serverResponse.ext && serverResponse.ext.extension && utils.isArray(serverResponse.ext.extension) ){
       serverResponse.ext.extension.forEach(partner => {
         if(!partner.error && partner.usersync && partner.usersync.url){
-          if(partner.usersync.type === 'iframe'){//todo: move 'iframe' to const
+          if(partner.usersync.type === 'iframe'){
             if (syncOptions.iframeEnabled) {
               urls.push({
                 type: 'iframe',
@@ -351,19 +351,18 @@ export const spec = {
             }else{
               utils.logWarn('PubMaticServer: Please enable iframe based user sync.');
             }
+          }else if(partner.usersync.type === 'image' || partner.usersync.type === 'redirect'){
+            if (syncOptions.pixelEnabled ) {
+              urls.push({
+                type: 'image',
+                url: partner.usersync.url
+              });
+            }else{
+              utils.logWarn('PubMaticServer: Please enable pixel based user sync.');
+            }
           }
-          //todo: handle other types as well
         }
       });
-    }
-
-    if (syncOptions.iframeEnabled) {
-      return [{
-        type: 'iframe',
-        url: USYNCURL + publisherId
-      }];
-    }else{
-      utils.logWarn('PubMaticServer: Please enable iframe based user sync.');
     }
   }
 };
