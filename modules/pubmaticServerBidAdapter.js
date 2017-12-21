@@ -338,24 +338,23 @@ export const spec = {
     if(serverResponses.length > 0){
       serverResponse = serverResponses[0];
     }
-
-    if(serverResponse.ext && serverResponse.ext.extension && utils.isArray(serverResponse.ext.extension) ){
-      serverResponse.ext.extension.forEach(partner => {
-        if(!partner.error && partner.usersync && partner.usersync.url){
-          if(partner.usersync.type === 'iframe'){
+    if(serverResponse.ext && serverResponse.ext.bidderstatus && utils.isArray(serverResponse.ext.bidderstatus) ){
+      serverResponse.ext.bidderstatus.forEach(bidder => {
+        if(!bidder.error && bidder.usersync && bidder.usersync.url){
+          if(bidder.usersync.type === 'iframe'){
             if (syncOptions.iframeEnabled) {
               urls.push({
                 type: 'iframe',
-                url: partner.usersync.url
+                url: bidder.usersync.url
               });
             }else{
               utils.logWarn('PubMaticServer: Please enable iframe based user sync.');
             }
-          }else if(partner.usersync.type === 'image' || partner.usersync.type === 'redirect'){
+          }else if(bidder.usersync.type === 'image' || bidder.usersync.type === 'redirect'){
             if (syncOptions.pixelEnabled ) {
               urls.push({
                 type: 'image',
-                url: partner.usersync.url
+                url: bidder.usersync.url
               });
             }else{
               utils.logWarn('PubMaticServer: Please enable pixel based user sync.');
