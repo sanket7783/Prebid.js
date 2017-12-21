@@ -338,7 +338,7 @@ export const spec = {
     if(serverResponses.length > 0){
       serverResponse = serverResponses[0];
     }
-    if(serverResponse.ext && serverResponse.ext.bidderstatus && utils.isArray(serverResponse.ext.bidderstatus) ){
+    if(serverResponse && serverResponse.ext && serverResponse.ext.bidderstatus && utils.isArray(serverResponse.ext.bidderstatus) ){
       serverResponse.ext.bidderstatus.forEach(bidder => {
         if(!bidder.error && bidder.usersync && bidder.usersync.url){
           if(bidder.usersync.type === 'iframe'){
