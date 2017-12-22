@@ -9,7 +9,8 @@ const USYNCURL = '//ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=';
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 2;
 const UNDEFINED = undefined;
-//todo: is it required ?
+const IFRAME = 'iframe';
+const IMAGE = 'image';
 const CUSTOM_PARAMS = {
   'kadpageurl': '', // Custom page url
   'gender': '', // User gender
@@ -29,9 +30,13 @@ function _getDomainFromURL(url) {
   return anchor.hostname;
 }
 
+function logNonStringParam(paramName, paramValue){
+  utils.logWarn('PubMaticServer: Ignoring param : ' + paramName + ' with value : ' + paramValue + ', expects string-value, found ' + typeof paramValue);
+}
+
 function _parseSlotParam(paramName, paramValue) {
   if (!utils.isStr(paramValue)) {
-    paramValue && utils.logWarn('PubMaticServer: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
+    paramValue && logNonStringParam(paramName, paramValue);
     return UNDEFINED;
   }
 
@@ -39,7 +44,7 @@ function _parseSlotParam(paramName, paramValue) {
 
   switch (paramName) {
     case 'pmzoneid':
-      return paramValue.split(',').slice(0, 50).join();
+      return paramValue.split(',').slice(0, 50).map(id => id.trim()).join();
     case 'kadfloor':
       return parseFloat(paramValue) || UNDEFINED;
     case 'lat':
@@ -54,53 +59,13 @@ function _parseSlotParam(paramName, paramValue) {
   }
 }
 
-//todo: remove code ??
-function _cleanSlot(slotName) {
-  if (utils.isStr(slotName)) {
-    return slotName.replace(/^\s+/g, '').replace(/\s+$/g, '');
-  }
-  return '';
-}
-
-//todo: is it required ?
-function _parseAdSlot(bid) {
-  bid.params.adUnit = '';
-  bid.params.adUnitIndex = '0';
-  bid.params.width = 0;
-  bid.params.height = 0;
-
-  bid.params.adSlot = _cleanSlot(bid.params.adSlot);
-
-  var slot = bid.params.adSlot;
-  var splits = slot.split(':');
-
-  slot = splits[0];
-  if (splits.length == 2) {
-    bid.params.adUnitIndex = splits[1];
-  }
-  splits = slot.split('@');
-  if (splits.length != 2) {
-    utils.logWarn('AdSlot Error: adSlot not in required format');
-    return;
-  }
-  bid.params.adUnit = splits[0];
-  splits = splits[1].split('x');
-  if (splits.length != 2) {
-    utils.logWarn('AdSlot Error: adSlot not in required format');
-    return;
-  }
-  bid.params.width = parseInt(splits[0]);
-  bid.params.height = parseInt(splits[1]);
-}
-
 function _initConf() {
   var conf = {};
-  conf.pageURL = utils.getTopWindowUrl();
-  conf.refURL = utils.getTopWindowReferrer();
+  conf.pageURL = utils.getTopWindowUrl().trim();
+  conf.refURL = utils.getTopWindowReferrer().trim();
   return conf;
 }
 
-//todo: remove code ?? is it required ??
 function _handleCustomParams(params, conf) {
   // istanbul ignore else
   if (!conf.kadpageurl) {
@@ -115,7 +80,6 @@ function _handleCustomParams(params, conf) {
       // istanbul ignore else
       if (value) {
         entry = CUSTOM_PARAMS[key];
-
         if (typeof entry === 'object') {
           // will be used in future when we want to process a custom param before using
           // 'keyname': {f: function() {}}
@@ -125,7 +89,7 @@ function _handleCustomParams(params, conf) {
         if (utils.isStr(value)) {
           conf[key] = value;
         } else {
-          utils.logWarn('PubMatic: Ignoring param : ' + key + ' with value : ' + CUSTOM_PARAMS[key] + ', expects string-value, found ' + typeof value);
+          logNonStringParam(key, CUSTOM_PARAMS[key]);
         }
       }
     }
@@ -186,6 +150,14 @@ function _createImpressionObject(bid, conf) {
   };
 }
 
+function mandatoryParamCheck(paramName, paramValue){
+  if (!utils.isStr(paramValue)) {
+    utils.logWarn('PubMaticServer: ' + paramName + ' is mandatory and it should be a string, , found ' + typeof paramValue);
+    return false;
+  }
+  return true;
+}
+
 export const spec = {
   code: BIDDER_CODE,
 
@@ -196,25 +168,11 @@ export const spec = {
   * @return boolean True if this is a valid bid, and false otherwise.
   */
   isBidRequestValid: bid => {
-    //todo: can we improve the logwarn message from dupicating ?
     if (bid && bid.params) {
-      if (!utils.isStr(bid.params.publisherId)) {
-        utils.logWarn('PubMaticServer: publisherId is mandatory and it should be a string.');
-        return false;
-      }
-      if (!utils.isStr(bid.params.adUnitId)) {
-        utils.logWarn('PubMaticServer: adUnitId is mandatory and it should be a string.');
-        return false;
-      }
-      if (!utils.isStr(bid.params.divId)) {
-        utils.logWarn('PubMaticServer: divId is mandatory and it should be a string.');
-        return false;
-      }
-      if (!utils.isStr(bid.params.adUnitIndex)) {
-        utils.logWarn('PubMaticServer: adUnitIndex is mandatory and it should be a string.');
-        return false;
-      }
-      return true;
+      return mandatoryParamCheck('publisherId', bid.params.publisherId) && 
+        mandatoryParamCheck('adUnitId', bid.params.adUnitId) &&
+        mandatoryParamCheck('divId', bid.params.divId) &&
+        mandatoryParamCheck('adUnitIndex', bid.params.adUnitIndex);
     }
     return false;
   },
@@ -229,13 +187,8 @@ export const spec = {
     var conf = _initConf();
     var payload = _createOrtbTemplate(conf);
     validBidRequests.forEach(bid => {
-      //_parseAdSlot(bid); //todo: remove code
-      //if(! (bid.params.adSlot && bid.params.adUnitId && utils.isNumber(bid.params.adUnitIndex))){
-      //  utils.logWarn('PubMaticServer: Skipping the non-standard adslot:', bid.params.adSlot, bid);
-      //  return;
-      //}
       conf.pubId = conf.pubId || bid.params.publisherId;
-      conf = _handleCustomParams(bid.params, conf);//todo is it required ?
+      conf = _handleCustomParams(bid.params, conf);
       conf.transactionId = bid.transactionId;
       payload.imp.push(_createImpressionObject(bid, conf));
     });
@@ -256,19 +209,6 @@ export const spec = {
       versionid: conf.verId || "1",
       wiid: conf.wiid || UNDEFINED
     };
-    /*
-    payload.ext.as = {
-        "SAVersion": "1000",
-        "kltstamp": "2016-8-18 12:37:28",
-        "timezone": 5.5,
-        "screenResolution": "1366x768",
-        "ranreq": 0.35227230576370405,
-        "pageURL": "2kmtcentral.com",
-        "refurl": "",
-        "inIframe": "0",
-        "kadpageurl": "2kmtcentral.com"
-    };
-    */
     payload.user.gender = _parseSlotParam('gender', conf.gender);
     payload.user.yob = _parseSlotParam('yob', conf.yob);
     payload.user.geo = {};
@@ -295,20 +235,17 @@ export const spec = {
     try {
       if (response.body && response.body.seatbid && response.body.seatbid[0] && response.body.seatbid[0].bid) {
         response.body.seatbid[0].bid.forEach(bid => {
-
           if(bid.id !== null && bid.ext.summary){
             bid.ext.summary.forEach((summary, index) => {
-              // index handling: 0th summary is actually summary of winning bid, 
-              // other summaries are loosing bids
               if(summary.bidder){
-                let firstSummary = index === 0;
-                let newBid = {
+                const firstSummary = index === 0;
+                const newBid = {
                   requestId: bid.impid,
                   bidderCode: BIDDER_CODE,
                   originalBidder: summary.bidder,
                   cpm: (parseFloat(summary.bid) || 0).toFixed(2),
-                  width: summary.width, //todo can we change this to w ?
-                  height: summary.height, //todo can we change this to h ?
+                  width: summary.width,
+                  height: summary.height,
                   creativeId: firstSummary ? (bid.crid || bid.id) : bid.id,
                   dealId: firstSummary ? (bid.dealid || UNDEFINED) : UNDEFINED,
                   currency: CURRENCY,
@@ -341,19 +278,19 @@ export const spec = {
     if(serverResponse && serverResponse.ext && serverResponse.ext.bidderstatus && utils.isArray(serverResponse.ext.bidderstatus) ){
       serverResponse.ext.bidderstatus.forEach(bidder => {
         if(bidder.usersync && bidder.usersync.url){
-          if(bidder.usersync.type === 'iframe'){
+          if(bidder.usersync.type === IFRAME){
             if (syncOptions.iframeEnabled) {
               urls.push({
-                type: 'iframe',
+                type: IFRAME,
                 url: bidder.usersync.url
               });
             }else{
               utils.logWarn('PubMaticServer: Please enable iframe based user sync.');
             }
-          }else if(bidder.usersync.type === 'image' || bidder.usersync.type === 'redirect'){
+          }else if(bidder.usersync.type === IMAGE || bidder.usersync.type === 'redirect'){
             if (syncOptions.pixelEnabled ) {
               urls.push({
-                type: 'image',
+                type: IMAGE,
                 url: bidder.usersync.url
               });
             }else{
