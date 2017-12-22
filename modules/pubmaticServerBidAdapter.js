@@ -176,7 +176,7 @@ function _createImpressionObject(bid, conf) {
         }
         return arr;
       })()
-    },    
+    },
     ext: {
       pmZoneId: _parseSlotParam('pmzoneid', bid.params.pmzoneid),
       div: bid.params.divId,
@@ -335,12 +335,12 @@ export const spec = {
   getUserSyncs: (syncOptions, serverResponses) => {
     let serverResponse;
     let urls = [];
-    if(serverResponses.length > 0){
-      serverResponse = serverResponses[0];
+    if(serverResponses.length > 0 && serverResponses[0] && serverResponses[0].body){
+      serverResponse = serverResponses[0].body;
     }
     if(serverResponse && serverResponse.ext && serverResponse.ext.bidderstatus && utils.isArray(serverResponse.ext.bidderstatus) ){
       serverResponse.ext.bidderstatus.forEach(bidder => {
-        if(!bidder.error && bidder.usersync && bidder.usersync.url){
+        if(bidder.usersync && bidder.usersync.url){
           if(bidder.usersync.type === 'iframe'){
             if (syncOptions.iframeEnabled) {
               urls.push({
@@ -361,8 +361,9 @@ export const spec = {
             }
           }
         }
-      });
+      });      
     }
+    return urls;
   }
 };
 
