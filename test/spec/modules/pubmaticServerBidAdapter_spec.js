@@ -47,13 +47,13 @@ describe('PubMaticServer adapter', () => {
             'adm': 'image3.pubmatic.com Layer based creative',
             'h': 250,
             'w': 300,
-            "ext": {
-                "summary": [{
-                    "bidder": "pubmatic",
-                    "bid": 1.3,
-                    "width": 300,
-                    "height": 250
-                }]
+            'ext': {
+              'summary': [{
+                'bidder': 'pubmatic',
+                'bid': 1.3,
+                'width': 300,
+                'height': 250
+              }]
             }
           }]
         }]
@@ -69,8 +69,8 @@ describe('PubMaticServer adapter', () => {
 	        params: {
 	          publisherId: '301',
 	          adUnitId: '/15671365/DMDemo',
-            adUnitIndex: '0',
-            divId: '/19968336/header-bid-tag-1'
+              adUnitIndex: '0',
+              divId: '/19968336/header-bid-tag-1'
 	        }
 	      },
 	      isValid = spec.isBidRequestValid(validBid);
@@ -82,8 +82,8 @@ describe('PubMaticServer adapter', () => {
 	        bidder: 'pubmatic',
 	        params: {
 	          adUnitId: '/15671365/DMDemo',
-            adUnitIndex: '0',
-            divId: '/19968336/header-bid-tag-1'
+              adUnitIndex: '0',
+              divId: '/19968336/header-bid-tag-1'
 	        }
 	      },
 	      isValid = spec.isBidRequestValid(validBid);
@@ -108,10 +108,10 @@ describe('PubMaticServer adapter', () => {
   		  let validBid = {
 	        bidder: 'pubmatic',
 	        params: {
-	          publisherId: '301',            
-            adUnitIndex: '0',
-            divId: '/19968336/header-bid-tag-1'
-	        }
+	          publisherId: '301',
+              adUnitIndex: '0',
+              divId: '/19968336/header-bid-tag-1'
+	          }
 	      },
 	      isValid = spec.isBidRequestValid(validBid);
 	      expect(isValid).to.equal(false);
@@ -119,27 +119,27 @@ describe('PubMaticServer adapter', () => {
 
       it('invalid bid case: adUnitIndex not passed', () => {
         let validBid = {
-          bidder: 'pubmatic',
-          params: {
-            publisherId: '301',
-            adUnitId: '/15671365/DMDemo',
-            divId: '/19968336/header-bid-tag-1'
-          }
-        },
-        isValid = spec.isBidRequestValid(validBid);
+            bidder: 'pubmatic',
+            params: {
+              publisherId: '301',
+              adUnitId: '/15671365/DMDemo',
+              divId: '/19968336/header-bid-tag-1'
+            }
+          },
+          isValid = spec.isBidRequestValid(validBid);
         expect(isValid).to.equal(false);
       });
 
       it('invalid bid case: divId not passed', () => {
         let validBid = {
-          bidder: 'pubmatic',
-          params: {
-            publisherId: '301',
-            adUnitId: '/15671365/DMDemo',
-            adUnitIndex: '0'
-          }
-        },
-        isValid = spec.isBidRequestValid(validBid);
+            bidder: 'pubmatic',
+            params: {
+              publisherId: '301',
+              adUnitId: '/15671365/DMDemo',
+              adUnitIndex: '0'
+            }
+          },
+          isValid = spec.isBidRequestValid(validBid);
         expect(isValid).to.equal(false);
       });
 
@@ -184,7 +184,6 @@ describe('PubMaticServer adapter', () => {
           isValid = spec.isBidRequestValid(validBid);
         expect(isValid).to.equal(false);
       });
-
     });
 
   	describe('Request formation', () => {
@@ -195,8 +194,8 @@ describe('PubMaticServer adapter', () => {
   		});
 
   		it('Request params check', () => {
-  		  let request = spec.buildRequests(bidRequests);        
-  		  let data = JSON.parse(request.data);        
+  		  let request = spec.buildRequests(bidRequests);
+  		  let data = JSON.parse(request.data);
   		  expect(data.at).to.equal(2); // auction type
   		  expect(data.cur[0]).to.equal('USD'); // currency
   		  expect(data.site.domain).to.be.a('string'); // domain should be set
@@ -223,7 +222,7 @@ describe('PubMaticServer adapter', () => {
   		  expect(data.imp[0].ext.pmZoneId).to.equal(bidRequests[0].params.pmzoneid.split(',').slice(0, 50).map(id => id.trim()).join()); // pmzoneid
         expect(data.imp[0].ext.adunit).to.equal(bidRequests[0].params.adUnitId); // adUnitId
         expect(data.imp[0].ext.slotIndex).to.equal(bidRequests[0].params.adUnitIndex); // adUnitIndex
-        expect(data.imp[0].ext.div).to.equal(bidRequests[0].params.divId); // div        
+        expect(data.imp[0].ext.div).to.equal(bidRequests[0].params.divId); // div
   		});
   	});
 

@@ -4,7 +4,8 @@ const constants = require('src/constants.json');
 
 const BIDDER_CODE = 'pubmaticServer';
 const ENDPOINT = '//hb.pubmatic.com/openrtb/241/?';
-const USYNCURL = '//ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=';
+// Var USYNCURL is not used, hence commenting it for eslinting
+// const USYNCURL = '//ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=';
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 2;
 const UNDEFINED = undefined;
@@ -21,7 +22,8 @@ const CUSTOM_PARAMS = {
   'verId': '' // OpenWrap Legacy: version ID
 };
 
-let publisherId = 0;
+// not used, hence commenting it for eslinting
+// let publisherId = 0;
 
 function _getDomainFromURL(url) {
   let anchor = document.createElement('a');
@@ -29,7 +31,7 @@ function _getDomainFromURL(url) {
   return anchor.hostname;
 }
 
-function logNonStringParam(paramName, paramValue){
+function logNonStringParam(paramName, paramValue) {
   utils.logWarn('PubMaticServer: Ignoring param : ' + paramName + ' with value : ' + paramValue + ', expects string-value, found ' + typeof paramValue);
 }
 
@@ -52,7 +54,7 @@ function _parseSlotParam(paramName, paramValue) {
       return parseFloat(paramValue) || UNDEFINED;
     case 'yob':
       return parseInt(paramValue) || UNDEFINED;
-    case 'gender':    
+    case 'gender':
     default:
       return paramValue;
   }
@@ -129,13 +131,13 @@ function _createImpressionObject(bid, conf) {
     banner: {
       pos: 0,
       topframe: utils.inIframe() ? 0 : 1,
-      format: (function(){
+      format: (function() {
         var arr = [];
-        for(let i = 0, l = bid.sizes.length; i<l; i++){
+        for (let i = 0, l = bid.sizes.length; i < l; i++) {
           arr.push({
-            w: bid.sizes[i][0], 
+            w: bid.sizes[i][0],
             h: bid.sizes[i][1]
-          });          
+          });
         }
         return arr;
       })()
@@ -149,7 +151,7 @@ function _createImpressionObject(bid, conf) {
   };
 }
 
-function mandatoryParamCheck(paramName, paramValue){
+function mandatoryParamCheck(paramName, paramValue) {
   if (!utils.isStr(paramValue)) {
     utils.logWarn('PubMaticServer: ' + paramName + ' is mandatory and it should be a string, , found ' + typeof paramValue);
     return false;
@@ -168,7 +170,7 @@ export const spec = {
   */
   isBidRequestValid: bid => {
     if (bid && bid.params) {
-      return mandatoryParamCheck('publisherId', bid.params.publisherId) && 
+      return mandatoryParamCheck('publisherId', bid.params.publisherId) &&
         mandatoryParamCheck('adUnitId', bid.params.adUnitId) &&
         mandatoryParamCheck('divId', bid.params.divId) &&
         mandatoryParamCheck('adUnitIndex', bid.params.adUnitIndex);
@@ -199,13 +201,13 @@ export const spec = {
     payload.site.publisher.id = conf.pubId.trim();
     publisherId = conf.pubId;
     payload.ext.dm = {
-      rs: 1,      
-      pubId: conf.pubId,      
+      rs: 1,
+      pubId: conf.pubId,
       wp: 'pbjs',
       wv: constants.REPO_AND_VERSION,
       transactionId: conf.transactionId,
       profileid: conf.profId || UNDEFINED,
-      versionid: conf.verId || "1",
+      versionid: conf.verId || '1',
       wiid: conf.wiid || UNDEFINED
     };
     payload.user.gender = _parseSlotParam('gender', conf.gender);
@@ -234,9 +236,9 @@ export const spec = {
     try {
       if (response.body && response.body.seatbid && response.body.seatbid[0] && response.body.seatbid[0].bid) {
         response.body.seatbid[0].bid.forEach(bid => {
-          if(bid.id !== null && bid.ext.summary){
+          if (bid.id !== null && bid.ext.summary) {
             bid.ext.summary.forEach((summary, index) => {
-              if(summary.bidder){
+              if (summary.bidder) {
                 const firstSummary = index === 0;
                 const newBid = {
                   requestId: bid.impid,
@@ -272,33 +274,33 @@ export const spec = {
   getUserSyncs: (syncOptions, serverResponses) => {
     let serverResponse;
     let urls = [];
-    if(serverResponses.length > 0 && serverResponses[0] && serverResponses[0].body){
+    if (serverResponses.length > 0 && serverResponses[0] && serverResponses[0].body) {
       serverResponse = serverResponses[0].body;
     }
-    if(serverResponse && serverResponse.ext && serverResponse.ext.bidderstatus && utils.isArray(serverResponse.ext.bidderstatus) ){
+    if (serverResponse && serverResponse.ext && serverResponse.ext.bidderstatus && utils.isArray(serverResponse.ext.bidderstatus)) {
       serverResponse.ext.bidderstatus.forEach(bidder => {
-        if(bidder.usersync && bidder.usersync.url){
-          if(bidder.usersync.type === IFRAME){
+        if (bidder.usersync && bidder.usersync.url) {
+          if (bidder.usersync.type === IFRAME) {
             if (syncOptions.iframeEnabled) {
               urls.push({
                 type: IFRAME,
                 url: bidder.usersync.url
               });
-            }else{
+            } else {
               utils.logWarn('PubMaticServer: Please enable iframe based user sync.');
             }
-          }else if(bidder.usersync.type === IMAGE || bidder.usersync.type === 'redirect'){
-            if (syncOptions.pixelEnabled ) {
+          } else if (bidder.usersync.type === IMAGE || bidder.usersync.type === 'redirect') {
+            if (syncOptions.pixelEnabled) {
               urls.push({
                 type: IMAGE,
                 url: bidder.usersync.url
               });
-            }else{
+            } else {
               utils.logWarn('PubMaticServer: Please enable pixel based user sync.');
             }
           }
         }
-      });      
+      });
     }
     return urls;
   }
