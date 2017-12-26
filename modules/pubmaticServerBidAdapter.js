@@ -3,8 +3,7 @@ import { registerBidder } from 'src/adapters/bidderFactory';
 const constants = require('src/constants.json');
 
 const BIDDER_CODE = 'pubmaticServer';
-//const ENDPOINT = '//hb.pubmatic.com/openrtb/241/?';
-const ENDPOINT = '//172.16.4.65:8001/openrtb/241/?';
+const ENDPOINT = '//hb.pubmatic.com/openrtb/241/?';
 const USYNCURL = '//ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=';
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 2;
