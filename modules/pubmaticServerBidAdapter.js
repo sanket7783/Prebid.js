@@ -242,6 +242,7 @@ export const spec = {
                   requestId: bid.impid,
                   bidderCode: BIDDER_CODE,
                   originalBidder: summary.bidder,
+                  pubmaticServerErrorCode: summary.errorCode,
                   cpm: (parseFloat(summary.bid) || 0).toFixed(2),
                   width: summary.width,
                   height: summary.height,

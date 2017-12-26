@@ -250,6 +250,6 @@ describe('PubMaticServer adapter', () => {
         expect(response[0].originalBidder).to.equal(bidResponses.body.seatbid[0].bid[0].ext.summary[0].bidder);
         expect(response[0].bidderCode).to.equal(spec.code);
       });
-    });    
+    });
   });
 });
