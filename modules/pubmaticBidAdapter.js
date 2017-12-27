@@ -27,11 +27,25 @@ function _getDomainFromURL(url) {
   return anchor.hostname;
 }
 
+function logNonStringParam(paramName, paramValue) {
+  utils.logWarn('PubMaticServer: Ignoring param : ' + paramName + ' with value : ' + paramValue + ', expects string-value, found ' + typeof paramValue);
+}
+
+function mandatoryParamCheck(paramName, paramValue) {
+  if (!utils.isStr(paramValue)) {
+    utils.logWarn('PubMaticServer: ' + paramName + ' is mandatory and it should be a string, , found ' + typeof paramValue);
+    return false;
+  }
+  return true;
+}
+
 function _parseSlotParam(paramName, paramValue) {
   if (!utils.isStr(paramValue)) {
-    paramValue && utils.logWarn('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
+    paramValue && logNonStringParam(paramName, paramValue);
     return UNDEFINED;
   }
+
+  paramValue = paramValue.trim();
 
   switch (paramName) {
     case 'pmzoneid':
@@ -44,6 +58,7 @@ function _parseSlotParam(paramName, paramValue) {
       return parseFloat(paramValue) || UNDEFINED;
     case 'yob':
       return parseInt(paramValue) || UNDEFINED;
+    case 'gender':
     default:
       return paramValue;
   }
@@ -88,8 +103,8 @@ function _parseAdSlot(bid) {
 
 function _initConf() {
   var conf = {};
-  conf.pageURL = utils.getTopWindowUrl();
-  conf.refURL = utils.getTopWindowReferrer();
+  conf.pageURL = utils.getTopWindowUrl().trim();
+  conf.refURL = utils.getTopWindowReferrer().trim();
   return conf;
 }
 
@@ -117,7 +132,7 @@ function _handleCustomParams(params, conf) {
         if (utils.isStr(value)) {
           conf[key] = value;
         } else {
-          utils.logWarn('PubMatic: Ignoring param : ' + key + ' with value : ' + CUSTOM_PARAMS[key] + ', expects string-value, found ' + typeof value);
+          logNonStringParam(key, CUSTOM_PARAMS[key]);
         }
       }
     }
@@ -178,15 +193,8 @@ export const spec = {
   */
   isBidRequestValid: bid => {
     if (bid && bid.params) {
-      if (!utils.isStr(bid.params.publisherId)) {
-        utils.logWarn('PubMatic Error: publisherId is mandatory and cannot be numeric. Call to OpenBid will not be sent.');
-        return false;
-      }
-      if (!utils.isStr(bid.params.adSlot)) {
-        utils.logWarn('PubMatic: adSlotId is mandatory and cannot be numeric. Call to OpenBid will not be sent.');
-        return false;
-      }
-      return true;
+      return mandatoryParamCheck('publisherId', bid.params.publisherId) &&
+        mandatoryParamCheck('adSlot', bid.params.adSlot);
     }
     return false;
     // return !!(bid && bid.params && utils.isStr(bid.params.publisherId) && utils.isStr(bid.params.adSlot));
@@ -219,21 +227,23 @@ export const spec = {
 
     payload.site.publisher.id = conf.pubId.trim();
     publisherId = conf.pubId.trim();
-    payload.ext.wrapper = {};
-    payload.ext.wrapper.profile = conf.profId || UNDEFINED;
-    payload.ext.wrapper.version = conf.verId || UNDEFINED;
-    payload.ext.wrapper.wiid = conf.wiid || UNDEFINED;
-    payload.ext.wrapper.wv = constants.REPO_AND_VERSION;
-    payload.ext.wrapper.transactionId = conf.transactionId;
-    payload.ext.wrapper.wp = 'pbjs';
-    payload.user.gender = (conf.gender ? conf.gender.trim() : UNDEFINED);
-    payload.user.geo = {};
-    payload.user.geo.lat = _parseSlotParam('lat', conf.lat);
-    payload.user.geo.lon = _parseSlotParam('lon', conf.lon);
-    payload.user.yob = _parseSlotParam('yob', conf.yob);
-    payload.device.geo = {};
-    payload.device.geo.lat = _parseSlotParam('lat', conf.lat);
-    payload.device.geo.lon = _parseSlotParam('lon', conf.lon);
+    payload.ext.wrapper = {
+      profile: conf.profId || UNDEFINED,
+      version: conf.verId || UNDEFINED,
+      wiid: conf.wiid || UNDEFINED,
+      wv: constants.REPO_AND_VERSION,
+      transactionId: conf.transactionId,
+      wp: 'pbjs'
+    };
+    payload.user = {
+      gender: (conf.gender ? conf.gender.trim() : UNDEFINED),
+      geo: {
+        lat: _parseSlotParam('lat', conf.lat),
+        lon: _parseSlotParam('lon', conf.lon)
+      },
+      yob: _parseSlotParam('yob', conf.yob)
+    };
+    payload.device.geo = payload.user.geo;
     payload.site.page = conf.kadpageurl.trim() || payload.site.page.trim();
     payload.site.domain = _getDomainFromURL(payload.site.page);
     return {
@@ -287,6 +297,7 @@ export const spec = {
       }];
     } else {
       utils.logWarn('PubMatic: Please enable iframe based user sync.');
+      return [];
     }
   }
 };
