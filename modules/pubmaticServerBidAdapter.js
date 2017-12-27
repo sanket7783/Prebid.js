@@ -23,7 +23,7 @@ const CUSTOM_PARAMS = {
 };
 
 // not used, hence commenting it for eslinting
-// let publisherId = 0;
+let publisherId = 0;
 
 function _getDomainFromURL(url) {
   let anchor = document.createElement('a');
