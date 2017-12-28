@@ -4,13 +4,13 @@ const constants = require('src/constants.json');
 
 const BIDDER_CODE = 'pubmaticServer';
 const ENDPOINT = '//ow.pubmatic.com/openrtb/241/?';
-// const ENDPOINT = '//172.16.4.192:9494/openrtb/241/?';
+// const ENDPOINT = '//172.16.4.65:8001/openrtb/241/?';
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 1; // PubMaticServer just picking highest bidding bid from the partners configured
 const UNDEFINED = undefined;
 const IFRAME = 'iframe';
 const IMAGE = 'image';
-const DEFAULT_VERSION_ID = 1;
+const DEFAULT_VERSION_ID = '1';
 
 const CUSTOM_PARAMS = {
   'kadpageurl': '', // Custom page url
@@ -207,7 +207,7 @@ export const spec = {
     };
     payload.device.geo = payload.user.geo;
     payload.site.page = conf.kadpageurl || payload.site.page;
-    payload.site.domain = utils.getTopWindowUrl();
+    payload.site.domain = utils.getTopWindowHostName();
     return {
       method: 'POST',
       url: ENDPOINT,
