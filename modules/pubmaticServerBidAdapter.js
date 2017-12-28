@@ -4,6 +4,7 @@ const constants = require('src/constants.json');
 
 const BIDDER_CODE = 'pubmaticServer';
 const ENDPOINT = '//ow.pubmatic.com/openrtb/241/?';
+// const ENDPOINT = '//172.16.4.192:9494/openrtb/241/?';
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 1; // PubMaticServer just picking highest bidding bid from the partners configured
 const UNDEFINED = undefined;
@@ -18,7 +19,8 @@ const CUSTOM_PARAMS = {
   'lon': '', // User Location - Longitude
   'wiid': '', // OpenWrap Wrapper Impression ID
   'profId': '', // OpenWrap Legacy: Profile ID
-  'verId': '' // OpenWrap Legacy: version ID
+  'verId': '', // OpenWrap Legacy: version ID
+  'divId': '' // OpenWrap new
 };
 
 function logNonStringParam(paramName, paramValue) {
@@ -122,7 +124,7 @@ function _createImpressionObject(bid, conf) {
       pos: 0,
       topframe: utils.inIframe() ? 0 : 1,
       format: (function() {
-        var arr = [];
+        let arr = [];
         for (let i = 0, l = bid.sizes.length; i < l; i++) {
           arr.push({
             w: bid.sizes[i][0],
@@ -151,7 +153,7 @@ export const spec = {
   */
   isBidRequestValid: bid => {
     if (bid && bid.params) {
-      const requiredParamsArr = ['publisherId', 'adUnitId', 'divId', 'profId', 'verId'];
+      const requiredParamsArr = ['publisherId', 'adUnitId', 'profId'];
       return utils.hasValidBidRequest(
         bid.params,
         requiredParamsArr,
@@ -171,7 +173,7 @@ export const spec = {
     let conf = _initConf();
     let payload = _createOrtbTemplate(conf);
 
-    if (validBidRequests.length === 0) {
+    if (utils.isEmpty(validBidRequests)) {
       utils.logWarn('No Valid Bid Request found for given adUnits');
       return;
     }
@@ -190,8 +192,8 @@ export const spec = {
       wp: 'pbjs',
       wv: constants.REPO_AND_VERSION,
       transactionId: conf.transactionId,
-      profileid: bid.params.profId || UNDEFINED,
-      versionid: bid.params.verId || UNDEFINED,
+      profileid: conf.profId || UNDEFINED,
+      versionid: conf.verId || 1,
       wiid: conf.wiid || UNDEFINED
     };
     payload.user = {
@@ -272,7 +274,7 @@ export const spec = {
     if (serverResponse && serverResponse.ext && serverResponse.ext.bidderstatus && utils.isArray(serverResponse.ext.bidderstatus)) {
       serverResponse.ext.bidderstatus.forEach(bidder => {
         if (bidder.usersync && bidder.usersync.url) {
-          if (syncOptions.iframeEnabled) {
+          if (syncOptions.iframeEnabled && bidder.usersync.type === IFRAME) {
             urls.push({
               type: IFRAME,
               url: bidder.usersync.url
