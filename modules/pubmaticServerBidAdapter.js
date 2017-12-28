@@ -10,6 +10,7 @@ const AUCTION_TYPE = 1; // PubMaticServer just picking highest bidding bid from 
 const UNDEFINED = undefined;
 const IFRAME = 'iframe';
 const IMAGE = 'image';
+const DEFAULT_VERSION_ID = 1;
 
 const CUSTOM_PARAMS = {
   'kadpageurl': '', // Custom page url
@@ -193,7 +194,7 @@ export const spec = {
       wv: constants.REPO_AND_VERSION,
       transactionId: conf.transactionId,
       profileid: conf.profId || UNDEFINED,
-      versionid: conf.verId || 1,
+      versionid: conf.verId || DEFAULT_VERSION_ID,
       wiid: conf.wiid || UNDEFINED
     };
     payload.user = {
