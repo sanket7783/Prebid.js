@@ -70,7 +70,8 @@ describe('PubMaticServer adapter', () => {
 	          publisherId: '301',
 	          adUnitId: '/15671365/DMDemo',
               adUnitIndex: '0',
-              divId: '/19968336/header-bid-tag-1'
+              divId: '/19968336/header-bid-tag-1',
+              profId: 1
 	        }
 	      },
 	      isValid = spec.isBidRequestValid(validBid);
@@ -189,14 +190,14 @@ describe('PubMaticServer adapter', () => {
   	describe('Request formation', () => {
   		it('Endpoint checking', () => {
   		  let request = spec.buildRequests(bidRequests);
-        expect(request.url).to.equal('//hb.pubmatic.com/openrtb/241/?');
+        expect(request.url).to.equal('//ow.pubmatic.com/openrtb/241/?');
         expect(request.method).to.equal('POST');
   		});
 
   		it('Request params check', () => {
   		  let request = spec.buildRequests(bidRequests);
   		  let data = JSON.parse(request.data);
-  		  expect(data.at).to.equal(2); // auction type
+  		  expect(data.at).to.equal(1); // auction type
   		  expect(data.cur[0]).to.equal('USD'); // currency
   		  expect(data.site.domain).to.be.a('string'); // domain should be set
   		  expect(data.site.page).to.equal(bidRequests[0].params.kadpageurl); // forced pageURL
@@ -221,7 +222,7 @@ describe('PubMaticServer adapter', () => {
         expect(data.imp[0].banner.format[1].h).to.equal(600); // height
   		  expect(data.imp[0].ext.pmZoneId).to.equal(bidRequests[0].params.pmzoneid.split(',').slice(0, 50).map(id => id.trim()).join()); // pmzoneid
         expect(data.imp[0].ext.adunit).to.equal(bidRequests[0].params.adUnitId); // adUnitId
-        expect(data.imp[0].ext.slotIndex).to.equal(bidRequests[0].params.adUnitIndex); // adUnitIndex
+        // expect(data.imp[0].ext.slotIndex).to.equal(bidRequests[0].params.adUnitIndex); // adUnitIndex
         expect(data.imp[0].ext.div).to.equal(bidRequests[0].params.divId); // div
   		});
   	});
