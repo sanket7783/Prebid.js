@@ -31,19 +31,14 @@ pbjs.que.push(function() {
             publisherId: '301',                  // required
             adSlot: '/15671365/DMDemo@728x90',   // required
             profileid: '',                       // required
-            versionid: '',                       // optional (Default 1)
+            versionid: '',                       // optional (Default 0)
             divId: '',                           // optional
 
             // openRTB params
             lat: '40.712775',                    // optional
             lon: '-74.005973',                   // optional
             yob: '1982',                         // optional
-            gender: 'M',                         // optional
-
-            // PubMatic Specific Params
-            pmzoneid: 'zone1, zone11',           // optional
-            kadpageurl: 'www.test.com',          // optional							
-            kadfloor: '0.50'                     // optional 									
+            gender: 'M'                          // optional						
           }
         }]
     }];

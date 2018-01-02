@@ -10,7 +10,8 @@ const AUCTION_TYPE = 1; // PubMaticServer just picking highest bidding bid from 
 const UNDEFINED = undefined;
 const IFRAME = 'iframe';
 const IMAGE = 'image';
-const DEFAULT_VERSION_ID = '1';
+const REDIRECT = 'redirect';
+const DEFAULT_VERSION_ID = '0';
 
 const CUSTOM_PARAMS = {
   'kadpageurl': '', // Custom page url
@@ -275,16 +276,37 @@ export const spec = {
     if (serverResponse && serverResponse.ext && serverResponse.ext.bidderstatus && utils.isArray(serverResponse.ext.bidderstatus)) {
       serverResponse.ext.bidderstatus.forEach(bidder => {
         if (bidder.usersync && bidder.usersync.url) {
-          if (syncOptions.iframeEnabled && bidder.usersync.type === IFRAME) {
-            urls.push({
-              type: IFRAME,
-              url: bidder.usersync.url
-            });
-          } else if (bidder.usersync.type === IMAGE || bidder.usersync.type === 'redirect') {
-            urls.push({
-              type: IMAGE,
-              url: bidder.usersync.url
-            });
+          // In case of OpenWrap first case is always true we are setting both options enabled
+          if (syncOptions.iframeEnabled && syncOptions.pixelEnabled) {
+            if (bidder.usersync.type === IMAGE || bidder.usersync.type === REDIRECT) {
+              urls.push({
+                type: IMAGE,
+                url: bidder.usersync.url
+              });
+            } else if (bidder.usersync.type === IFRAME) {
+              urls.push({
+                type: IFRAME,
+                url: bidder.usersync.url
+              });
+            }
+          } else if (syncOptions.iframeEnabled) {
+            if (bidder.usersync.type === IFRAME) {
+              urls.push({
+                type: IFRAME,
+                url: bidder.usersync.url
+              });
+            } else {
+              utils.logWarn(bidder.bidder + ': Please enable pixel based user sync.');
+            }
+          } else if (syncOptions.pixelEnabled) {
+            if (bidder.usersync.type === IMAGE || bidder.usersync.type === REDIRECT) {
+              urls.push({
+                type: IMAGE,
+                url: bidder.usersync.url
+              });
+            } else {
+              utils.logWarn(bidder.bidder + ': Please enable pixel based user sync.');
+            }
           } else {
             utils.logWarn(bidder.bidder + ': Please enable pixel based user sync.');
           }
