@@ -143,6 +143,14 @@ function _createImpressionObject(bid, conf) {
   };
 }
 
+function mandatoryParamCheck(paramName, paramValue) {
+  if (!utils.isStr(paramValue)) {
+    utils.logWarn(BIDDER_CODE + ': ' + paramName + ' is mandatory and it should be a string, , found ' + typeof paramValue);
+    return false;
+  }
+  return true;
+}
+
 export const spec = {
   code: BIDDER_CODE,
 
@@ -154,12 +162,10 @@ export const spec = {
   */
   isBidRequestValid: bid => {
     if (bid && bid.params) {
-      const requiredParamsArr = ['publisherId', 'adUnitId', 'profId', 'divId'];
-      return utils.hasValidBidRequest(
-        bid.params,
-        requiredParamsArr,
-        bid.bidder || 'pubmaticServer'
-      );
+      return mandatoryParamCheck('publisherId', bid.params.publisherId) &&
+        mandatoryParamCheck('adUnitId', bid.params.adUnitId) &&
+        mandatoryParamCheck('divId', bid.params.divId) &&
+        mandatoryParamCheck('adUnitIndex', bid.params.adUnitIndex);
     }
     return false;
   },
@@ -276,41 +282,26 @@ export const spec = {
     if (serverResponse && serverResponse.ext && serverResponse.ext.bidderstatus && utils.isArray(serverResponse.ext.bidderstatus)) {
       serverResponse.ext.bidderstatus.forEach(bidder => {
         if (bidder.usersync && bidder.usersync.url) {
-          // In case of OpenWrap first case is always true we are setting both options enabled
-          if (syncOptions.iframeEnabled && syncOptions.pixelEnabled) {
-            if (bidder.usersync.type === IMAGE || bidder.usersync.type === REDIRECT) {
-              urls.push({
-                type: IMAGE,
-                url: bidder.usersync.url
-              });
-            } else if (bidder.usersync.type === IFRAME) {
+          if (bidder.usersync.type === IFRAME) {
+            if (syncOptions.iframeEnabled) {
               urls.push({
                 type: IFRAME,
                 url: bidder.usersync.url
               });
             } else {
-              utils.logWarn(bidder.bidder + ': Please provide valid usersync type');
+              utils.logWarn(bidder.bidder + ': Please enable iframe based user sync.');
             }
-          } else if (syncOptions.iframeEnabled) {
-            if (bidder.usersync.type === IFRAME) {
-              urls.push({
-                type: IFRAME,
-                url: bidder.usersync.url
-              });
-            } else {
-              utils.logWarn(bidder.bidder + ': Dose not support iframe based user sync.');
-            }
-          } else if (syncOptions.pixelEnabled) {
-            if (bidder.usersync.type === IMAGE || bidder.usersync.type === REDIRECT) {
+          } else if (bidder.usersync.type === IMAGE || bidder.usersync.type === REDIRECT) {
+            if (syncOptions.pixelEnabled) {
               urls.push({
                 type: IMAGE,
                 url: bidder.usersync.url
               });
             } else {
-              utils.logWarn(bidder.bidder + ': Dose not support pixel based user sync.');
+              utils.logWarn(bidder.bidder + ': Please enable pixel based user sync.');
             }
           } else {
-            utils.logWarn(bidder.bidder + ': Please enable pixel or iframe based user sync.');
+            utils.logWarn(bidder.bidder + ': Please provide valid user sync type.');
           }
         }
       });
