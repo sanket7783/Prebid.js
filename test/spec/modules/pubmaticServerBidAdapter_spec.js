@@ -222,7 +222,6 @@ describe('PubMaticServer adapter', () => {
         expect(data.imp[0].banner.format[1].h).to.equal(600); // height
   		  expect(data.imp[0].ext.pmZoneId).to.equal(bidRequests[0].params.pmzoneid.split(',').slice(0, 50).map(id => id.trim()).join()); // pmzoneid
         expect(data.imp[0].ext.adunit).to.equal(bidRequests[0].params.adUnitId); // adUnitId
-        // expect(data.imp[0].ext.slotIndex).to.equal(bidRequests[0].params.adUnitIndex); // adUnitIndex
         expect(data.imp[0].ext.div).to.equal(bidRequests[0].params.divId); // div
   		});
   	});

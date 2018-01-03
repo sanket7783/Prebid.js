@@ -4,7 +4,6 @@ const constants = require('src/constants.json');
 
 const BIDDER_CODE = 'pubmaticServer';
 const ENDPOINT = '//ow.pubmatic.com/openrtb/241/?';
-// const ENDPOINT = '//172.16.4.65:8001/openrtb/241/?';
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 1; // PubMaticServer just picking highest bidding bid from the partners configured
 const UNDEFINED = undefined;
@@ -139,7 +138,7 @@ function _createImpressionObject(bid, conf) {
     ext: {
       pmZoneId: _parseSlotParam('pmzoneid', bid.params.pmzoneid),
       div: bid.params.divId,
-      adunit: (bid.params.adUnitId.split(':')[0]) // Removing :XX structure if any found
+      adunit: bid.params.adUnitId
     }
   };
 }
@@ -155,7 +154,7 @@ export const spec = {
   */
   isBidRequestValid: bid => {
     if (bid && bid.params) {
-      const requiredParamsArr = ['publisherId', 'adUnitId', 'profId'];
+      const requiredParamsArr = ['publisherId', 'adUnitId', 'profId', 'divId'];
       return utils.hasValidBidRequest(
         bid.params,
         requiredParamsArr,
@@ -227,6 +226,7 @@ export const spec = {
     try {
       if (response.body && response.body.seatbid) {
         // Supporting multiple bid responses for same adSize
+        const referrer = utils.getTopWindowUrl();
         response.body.seatbid.forEach(seatbidder => {
           seatbidder.bid &&
           seatbidder.bid.forEach(bid => {
@@ -247,7 +247,7 @@ export const spec = {
                     currency: CURRENCY,
                     netRevenue: true,
                     ttl: 300,
-                    referrer: utils.getTopWindowUrl(),
+                    referrer: referrer,
                     ad: firstSummary ? bid.adm : ''
                   };
                   bidResponses.push(newBid);
@@ -288,6 +288,8 @@ export const spec = {
                 type: IFRAME,
                 url: bidder.usersync.url
               });
+            } else {
+              utils.logWarn(bidder.bidder + ': Please provide valid usersync type');
             }
           } else if (syncOptions.iframeEnabled) {
             if (bidder.usersync.type === IFRAME) {
@@ -296,7 +298,7 @@ export const spec = {
                 url: bidder.usersync.url
               });
             } else {
-              utils.logWarn(bidder.bidder + ': Please enable pixel based user sync.');
+              utils.logWarn(bidder.bidder + ': Dose not support iframe based user sync.');
             }
           } else if (syncOptions.pixelEnabled) {
             if (bidder.usersync.type === IMAGE || bidder.usersync.type === REDIRECT) {
@@ -305,10 +307,10 @@ export const spec = {
                 url: bidder.usersync.url
               });
             } else {
-              utils.logWarn(bidder.bidder + ': Please enable pixel based user sync.');
+              utils.logWarn(bidder.bidder + ': Dose not support pixel based user sync.');
             }
           } else {
-            utils.logWarn(bidder.bidder + ': Please enable pixel based user sync.');
+            utils.logWarn(bidder.bidder + ': Please enable pixel or iframe based user sync.');
           }
         }
       });
