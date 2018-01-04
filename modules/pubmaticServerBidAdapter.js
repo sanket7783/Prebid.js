@@ -3,7 +3,7 @@ import { registerBidder } from 'src/adapters/bidderFactory';
 const constants = require('src/constants.json');
 
 const BIDDER_CODE = 'pubmaticServer';
-const ENDPOINT = '//ow.pubmatic.com/openrtb/241/?';
+const ENDPOINT = '//ow.pubmatic.com/openrtb/2.4/';
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 1; // PubMaticServer just picking highest bidding bid from the partners configured
 const UNDEFINED = undefined;
