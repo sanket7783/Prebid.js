@@ -118,7 +118,7 @@ function _createOrtbTemplate(conf) {
 function _createImpressionObject(bid, conf) {
   return {
     id: bid.bidId,
-    tagid: bid.params.divId,
+    tagid: bid.params.adUnitId,
     bidfloor: _parseSlotParam('kadfloor', bid.params.kadfloor),
     secure: window.location.protocol === 'https:' ? 1 : 0,
     banner: {
@@ -137,8 +137,7 @@ function _createImpressionObject(bid, conf) {
     },
     ext: {
       pmZoneId: _parseSlotParam('pmzoneid', bid.params.pmzoneid),
-      div: bid.params.divId,
-      adunit: bid.params.adUnitId
+      div: bid.params.divId
     }
   };
 }
