@@ -138,8 +138,8 @@ describe('AolAdapter', () => {
 
       expect(formattedBidResponse.ad).to.equal(
         '<script>logInfo(\'ad\');</script>' +
-        '<script>if(!parent.$$PREBID_GLOBAL$$.aolGlobals.pixelsDropped){' +
-        'parent.$$PREBID_GLOBAL$$.aolGlobals.pixelsDropped=true;' +
+        '<script>if(!parent.' + preBidNameSpace + '.aolGlobals.pixelsDropped){' +
+        'parent.' + preBidNameSpace + '.aolGlobals.pixelsDropped=true;' +
         'document.write(\'<img src="pixel.gif">\');}</script>'
       );
     });

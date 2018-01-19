@@ -1,10 +1,11 @@
 [
-	"appnexusBidAdapter",	
+	"appnexusBidAdapter",
 	"sekindoUMBidAdapter",
-	"pulsepointBidAdapter",		
-	"audienceNetworkBidAdapter",		
-	"openxBidAdapter",  
+	"pulsepointBidAdapter",
+	"audienceNetworkBidAdapter",
+	"openxBidAdapter",
 	"rubiconBidAdapter",
 	"sovrnBidAdapter",
-	"pubmaticBidAdapter"
+	"pubmaticBidAdapter",
+	"pubmaticServerBidAdapter"
 ]

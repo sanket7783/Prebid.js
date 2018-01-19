@@ -184,11 +184,11 @@ describe('TapSenseAdapter', () => {
         expect(adloader.loadScript.firstCall.args[0]).to.match(
           /price_floor=0\.01&/
         );
-        
-        //TODO: need to fix this case
+
+        // TODO: need to fix this case
         expect(adloader.loadScript.firstCall.args[0]).to.match(
-          //callback=$$PREBID_GLOBAL$$\.tapsense\.callback_with_price_.+&/
-          new RegExp('callback='+ preBidNameSpace +'.tapsense.callback_with_price_')
+          // callback=$$PREBID_GLOBAL$$\.tapsense\.callback_with_price_.+&/
+          new RegExp('callback=' + preBidNameSpace + '.tapsense.callback_with_price_')
         );
       })
     })
