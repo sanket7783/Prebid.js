@@ -169,6 +169,8 @@ function _createImpressionObject(bid, conf) {
 export const spec = {
   code: BIDDER_CODE,
 
+  aliases: ['pubmaticClient'],
+
   /**
   * Determines whether or not the given bid request is valid. Valid bid request must have placementId and hbid
   *
