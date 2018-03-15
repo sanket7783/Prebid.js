@@ -14,6 +14,7 @@ var KarmaServer = require('karma').Server;
 var karmaConfMaker = require('./karma.conf.maker');
 var opens = require('open');
 var webpackConfig = require('./webpack.conf');
+var controllerConfig = require('./controller.conf');
 var helpers = require('./gulpHelpers');
 var del = require('del');
 var gulpDocumentation = require('gulp-documentation');
@@ -92,7 +93,11 @@ function bundle(dev, moduleArr) {
     }
   }
 
-  var entries = [helpers.getBuiltPrebidCoreFile(dev)].concat(helpers.getBuiltModules(dev, modules));
+  var entries = [helpers.getBuiltPrebidCoreFile(dev)]
+    .concat(helpers.getBuiltModules(dev, modules));
+    // .concat(helpers.getBuiltControllerFile(dev));
+
+  var controllerJS = fs.readFileSync('./build/dist/controller.js');
 
   var outputFileName = argv.bundleName ? argv.bundleName : 'prebid.js';
 
@@ -104,6 +109,7 @@ function bundle(dev, moduleArr) {
   gutil.log('Concatenating files:\n', entries);
   gutil.log('Appending ' + prebid.globalVarName + '.processQueue();');
   gutil.log('Generating bundle:', outputFileName);
+  gutil.log('controller file path:', helpers.getBuiltControllerFile(dev));
 
   return gulp.src(
       entries
@@ -111,9 +117,11 @@ function bundle(dev, moduleArr) {
     .pipe(gulpif(dev, sourcemaps.init({loadMaps: true})))
     .pipe(concat(outputFileName))
     .pipe(gulpif(!argv.manualEnable, footer('\n<%= global %>.processQueue();', {
-        global: prebid.globalVarName
-      }
-    )))
+      global: prebid.globalVarName
+    })))
+    .pipe(header('\nfunction pwtCreatePrebidNamespace(preBidNameSpace) {\nwindow[preBidNameSpace] = window[preBidNameSpace] || {}; window[preBidNameSpace].que = window[preBidNameSpace].que || [];\n'))
+    .pipe(footer('\n}'))
+    .pipe(footer(controllerJS))
     .pipe(gulpif(dev, sourcemaps.write('.')));
 }
 
@@ -130,7 +138,7 @@ function newKarmaCallback(done) {
 }
 
 gulp.task('build-bundle-dev', ['devpack'], gulpBundle.bind(null, true));
-gulp.task('build-bundle-prod', ['webpack'], gulpBundle.bind(null, false));
+gulp.task('build-bundle-prod', ['webpack', 'webpackController'], gulpBundle.bind(null, false));
 gulp.task('bundle', gulpBundle.bind(null, false)); // used for just concatenating pre-built files with no build step
 
 gulp.task('bundle-to-stdout', function() {
@@ -169,6 +177,19 @@ gulp.task('webpack', ['clean'], function () {
     .pipe(replace('$prebid.version$', prebid.version))
     .pipe(uglify())
     .pipe(gulpif(file => file.basename === 'prebid-core.js', header(banner, { prebid: prebid })))
+    .pipe(optimizejs())
+    .pipe(gulp.dest('build/dist'))
+    .pipe(connect.reload());
+});
+
+gulp.task('webpackController', ['clean'], function () {
+  var cloned = _.cloneDeep(controllerConfig);
+
+  delete cloned.devtool;
+
+  return gulp.src(['src/controllers/owt.js'])
+    .pipe(webpackStream(cloned, webpack))
+    .pipe(uglify())
     .pipe(optimizejs())
     .pipe(gulp.dest('build/dist'))
     .pipe(connect.reload());

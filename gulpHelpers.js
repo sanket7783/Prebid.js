@@ -102,6 +102,10 @@ module.exports = {
     return path.join(__dirname, dev ? DEV_PATH : BUILD_PATH, 'prebid-core' + '.js');
   },
 
+  getBuiltControllerFile: function(dev) {
+    return path.join(__dirname, dev ? DEV_PATH : BUILD_PATH, 'controller' + '.js');
+  },
+
   getModulePaths: function(externalModules) {
     var modules = this.getModules(externalModules);
     return Object.keys(modules);

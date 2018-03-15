@@ -11,6 +11,10 @@ import { targeting } from './targeting';
 import { createHook } from 'src/hook';
 import includes from 'core-js/library/fn/array/includes';
 
+// import util from './controllers/util.js';
+// import controller from '%%PATH_TO_CONTROLLER%%';
+// import bidManager from './controllers/bidManager.js';
+
 var $$PREBID_GLOBAL$$ = getGlobal();
 
 const CONSTANTS = require('./constants.json');
@@ -668,3 +672,98 @@ $$PREBID_GLOBAL$$.processQueue = function() {
   processQueue($$PREBID_GLOBAL$$.que);
   processQueue($$PREBID_GLOBAL$$.cmd);
 };
+
+// var GLOBAL_WINDOW = getGlobalWindow();
+// var metaInfo = util.getMetaInfo(GLOBAL_WINDOW);
+//
+// GLOBAL_WINDOW.pwtCreatePrebidNamespace = function(preBidNameSpace) {
+//   GLOBAL_WINDOW[preBidNameSpace] = GLOBAL_WINDOW[preBidNameSpace] || {};
+//   GLOBAL_WINDOW[preBidNameSpace].que = GLOBAL_WINDOW[preBidNameSpace].que || [];
+// };
+//
+// GLOBAL_WINDOW.PWT = getGlobalPWT() || {};
+// GLOBAL_WINDOW.PWT.bidMap = GLOBAL_WINDOW.PWT.bidMap || {};
+// GLOBAL_WINDOW.PWT.bidIdMap = GLOBAL_WINDOW.PWT.bidIdMap || {};
+// GLOBAL_WINDOW.PWT.isIframe = GLOBAL_WINDOW.PWT.isIframe || metaInfo.isInIframe;
+// GLOBAL_WINDOW.PWT.protocol = GLOBAL_WINDOW.PWT.protocol || metaInfo.protocol;
+// GLOBAL_WINDOW.PWT.secure = GLOBAL_WINDOW.PWT.secure || metaInfo.secure;
+// GLOBAL_WINDOW.PWT.pageURL = GLOBAL_WINDOW.PWT.pageURL || metaInfo.pageURL;
+// GLOBAL_WINDOW.PWT.refURL = GLOBAL_WINDOW.PWT.refURL || metaInfo.refURL;
+// GLOBAL_WINDOW.PWT.isSafeFrame = GLOBAL_WINDOW.PWT.isSafeFrame || false;
+// GLOBAL_WINDOW.PWT.safeFrameMessageListenerAdded = GLOBAL_WINDOW.PWT.safeFrameMessageListenerAdded || false;
+// // usingDifferentProfileVersion
+// GLOBAL_WINDOW.PWT.udpv = GLOBAL_WINDOW.PWT.udpv || util.findQueryParamInURL(metaInfo.isIframe ? metaInfo.refURL : metaInfo.pageURL, 'pwtv');
+//
+// util.findQueryParamInURL(metaInfo.isIframe ? metaInfo.refURL : metaInfo.pageURL, 'pwtc') && util.enableDebugLog();
+// util.findQueryParamInURL(metaInfo.isIframe ? metaInfo.refURL : metaInfo.pageURL, 'pwtvc') && util.enableVisualDebugLog();
+//
+// GLOBAL_WINDOW.PWT.displayCreative = function(theDocument, bidID) {
+//   util.log('In displayCreative for: ' + bidID);
+//   bidManager.displayCreative(theDocument, bidID);
+// };
+//
+// GLOBAL_WINDOW.PWT.displayPMPCreative = function(theDocument, values, priorityArray) {
+//   util.log('In displayPMPCreative for: ' + values);
+//   var bidID = util.getBididForPMP(values, priorityArray);
+//   bidID && bidManager.displayCreative(theDocument, bidID);
+// };
+//
+// GLOBAL_WINDOW.PWT.sfDisplayCreative = function(theDocument, bidID) {
+//   util.log('In sfDisplayCreative for: ' + bidID);
+//   this.isSafeFrame = true;
+//   GLOBAL_WINDOW.parent.postMessage(
+//     JSON.stringify({
+//       pwt_type: '1',
+//       pwt_bidID: bidID,
+//       pwt_origin: GLOBAL_WINDOW.location.protocol + '//' + GLOBAL_WINDOW.location.hostname
+//     }),
+//     '*'
+//   );
+// };
+//
+// GLOBAL_WINDOW.PWT.sfDisplayPMPCreative = function(theDocument, values, priorityArray) {
+//   util.log('In sfDisplayPMPCreative for: ' + values);
+//   this.isSafeFrame = true;
+//   GLOBAL_WINDOW.parent.postMessage(
+//     JSON.stringify({
+//       pwt_type: '1',
+//       pwt_bidID: util.getBididForPMP(values, priorityArray),
+//       pwt_origin: GLOBAL_WINDOW.location.protocol + '//' + GLOBAL_WINDOW.location.hostname
+//     }),
+//     '*'
+//   );
+// };
+//
+// GLOBAL_WINDOW.OWT = {
+//   notifyCount: 0, // To maintain the id which should be return after externalBidder registered
+//   externalBidderStatuses: {}
+// };
+//
+// GLOBAL_WINDOW.OWT.registerExternalBidders = function(divIds) {
+//   GLOBAL_WINDOW.OWT.notifyCount++;
+//
+//   util.forEachOnArray(divIds, function (key, divId) {
+//     util.log('registerExternalBidders: ' + divId);
+//     GLOBAL_WINDOW.OWT.externalBidderStatuses[divId] = {
+//       id: GLOBAL_WINDOW.OWT.notifyCount,
+//       status: false
+//     };
+//   });
+//
+//   return GLOBAL_WINDOW.OWT.notifyCount;
+// };
+//
+// GLOBAL_WINDOW.OWT.notifyExternalBiddingComplete = function(notifyId) {
+//   util.forEachOnObject(GLOBAL_WINDOW.OWT.externalBidderStatuses, function (key, obj) {
+//     if (obj && (obj.id === notifyId)) {
+//       util.log('notify externalBidding complete: ' + key);
+//       GLOBAL_WINDOW.OWT.externalBidderStatuses[key] = {
+//         id: obj.id,
+//         status: true
+//       };
+//     }
+//   });
+// };
+//
+// console.log('GLobal window object:', GLOBAL_WINDOW);
+// controller.init(GLOBAL_WINDOW);

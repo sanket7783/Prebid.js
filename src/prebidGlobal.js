@@ -4,6 +4,16 @@ window.$$PREBID_GLOBAL$$ = (window.$$PREBID_GLOBAL$$ || {});
 window.$$PREBID_GLOBAL$$.cmd = window.$$PREBID_GLOBAL$$.cmd || [];
 window.$$PREBID_GLOBAL$$.que = window.$$PREBID_GLOBAL$$.que || [];
 
+window.PWT = window.PWT || {};
+
 export function getGlobal() {
   return window.$$PREBID_GLOBAL$$;
 }
+
+// export function getGlobalWindow() {
+//   return window;
+// }
+//
+// export function getGlobalPWT() {
+//   return window.PWT;
+// }

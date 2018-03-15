@@ -1,6 +1,7 @@
 var prebid = require('./package.json');
 var StringReplacePlugin = require('string-replace-webpack-plugin');
 var path = require('path');
+// var conf = require('./src/controllers/conf.js');
 var webpack = require('webpack');
 var helpers = require('./gulpHelpers');
 var RequireEnsureWithoutJsonp = require('./plugins/RequireEnsureWithoutJsonp.js');
@@ -9,6 +10,11 @@ var RequireEnsureWithoutJsonp = require('./plugins/RequireEnsureWithoutJsonp.js'
 var neverBundle = [
   'AnalyticsAdapter.js'
 ];
+
+// var controllerPaths = {
+//   UAS: './controllers/controllers/uas.js',
+//   DFP: './controllers/controllers/gpt.js'
+// };
 
 module.exports = {
   devtool: 'source-map',
@@ -19,10 +25,24 @@ module.exports = {
     ],
   },
   output: {
-    jsonpFunction: prebid.globalVarName+"Chunk"
+    jsonpFunction: prebid.globalVarName + 'Chunk'
   },
   module: {
     rules: [
+      // {
+      //   test: /prebid.js$/,
+      //   include: /(src)/,
+      //   loader: StringReplacePlugin.replace({
+      //     replacements: [
+      //       {
+      //         pattern: /%%PATH_TO_CONTROLLER%%/g,
+      //         replacement: function (match, p1, offset, string) {
+      //           return controllerPaths[conf.pwt.adserver || 'DFP'];
+      //         }
+      //       }
+      //     ]
+      //   })
+      // },
       {
         test: /\.js$/,
         exclude: path.resolve('./node_modules'), // required to prevent loader from choking non-Prebid.js node_modules
