@@ -48,6 +48,8 @@ gulp.task('run-tests', ['lint', 'test-coverage']);
 
 gulp.task('build', ['build-bundle-prod']);
 
+gulp.task('build-openwrap', ['build-bundle-prod-openwrap']);
+
 gulp.task('clean', function () {
   return gulp.src(['build'], {
       read: false
@@ -57,6 +59,10 @@ gulp.task('clean', function () {
 
 function gulpBundle(dev) {
   return bundle(dev).pipe(gulp.dest('build/' + (dev ? 'dev' : 'dist')));
+}
+
+function gulpBundleWithOpenWrap(dev) {
+  return bundleWithOpenWrap(dev).pipe(gulp.dest('build/' + (dev ? 'dev' : 'dist')));
 }
 
 function nodeBundle(modules) {
@@ -77,7 +83,7 @@ var explicitModules = [
   'pre1api'
 ];
 
-function bundle(dev, moduleArr) {
+function bundleWithOpenWrap(dev, moduleArr) {
   var modules = moduleArr || helpers.getArgModules(),
       allModules = helpers.getModuleNames(modules);
 
@@ -95,7 +101,6 @@ function bundle(dev, moduleArr) {
 
   var entries = [helpers.getBuiltPrebidCoreFile(dev)]
     .concat(helpers.getBuiltModules(dev, modules));
-    // .concat(helpers.getBuiltControllerFile(dev));
 
   var controllerJS = fs.readFileSync('./build/dist/controller.js');
 
@@ -125,6 +130,48 @@ function bundle(dev, moduleArr) {
     .pipe(gulpif(dev, sourcemaps.write('.')));
 }
 
+function bundle(dev, moduleArr) {
+  var modules = moduleArr || helpers.getArgModules(),
+      allModules = helpers.getModuleNames(modules);
+
+  if(modules.length === 0) {
+    modules = allModules.filter(module => !explicitModules.includes(module));
+  } else {
+    var diff = _.difference(modules, allModules);
+    if(diff.length !== 0) {
+      throw new gutil.PluginError({
+        plugin: 'bundle',
+        message: 'invalid modules: ' + diff.join(', ')
+      });
+    }
+  }
+
+  var entries = [helpers.getBuiltPrebidCoreFile(dev)]
+    .concat(helpers.getBuiltModules(dev, modules));
+
+  var outputFileName = argv.bundleName ? argv.bundleName : 'prebid.js';
+
+  // change output filename if argument --tag given
+  if (argv.tag && argv.tag.length) {
+    outputFileName = outputFileName.replace(/\.js$/, `.${argv.tag}.js`);
+  }
+
+  gutil.log('Concatenating files:\n', entries);
+  gutil.log('Appending ' + prebid.globalVarName + '.processQueue();');
+  gutil.log('Generating bundle:', outputFileName);
+
+  return gulp.src(
+      entries
+    )
+    .pipe(gulpif(dev, sourcemaps.init({loadMaps: true})))
+    .pipe(concat(outputFileName))
+    .pipe(gulpif(!argv.manualEnable, footer('\n<%= global %>.processQueue();', {
+      global: prebid.globalVarName
+    })))
+    .pipe(gulpif(dev, sourcemaps.write('.')));
+}
+
+
 // Workaround for incompatibility between Karma & gulp callbacks.
 // See https://github.com/karma-runner/gulp-karma/issues/18 for some related discussion.
 function newKarmaCallback(done) {
@@ -138,7 +185,8 @@ function newKarmaCallback(done) {
 }
 
 gulp.task('build-bundle-dev', ['devpack'], gulpBundle.bind(null, true));
-gulp.task('build-bundle-prod', ['webpack', 'webpackController'], gulpBundle.bind(null, false));
+gulp.task('build-bundle-prod', ['webpack'], gulpBundle.bind(null, false));
+gulp.task('build-bundle-prod-openwrap', ['webpack', 'webpackController'], gulpBundleWithOpenWrap.bind(null, false));
 gulp.task('bundle', gulpBundle.bind(null, false)); // used for just concatenating pre-built files with no build step
 
 gulp.task('bundle-to-stdout', function() {
@@ -187,7 +235,7 @@ gulp.task('webpackController', ['clean'], function () {
 
   delete cloned.devtool;
 
-  return gulp.src(['src/controllers/owt.js'])
+  return gulp.src(['plugins/controllers/owt.js'])
     .pipe(webpackStream(cloned, webpack))
     .pipe(uglify())
     .pipe(optimizejs())

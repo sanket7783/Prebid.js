@@ -1,4 +1,4 @@
-var conf = require('./src/controllers/conf.js');
+var conf = require('./plugins/controllers/conf.js');
 var StringReplacePlugin = require('string-replace-webpack-plugin');
 var path = require('path');
 
@@ -22,7 +22,7 @@ module.exports = {
     rules: [
       {
         test: /owt.js$/,
-        include: /(src\/controllers)/,
+        include: /(plugins\/controllers)/,
         loader: StringReplacePlugin.replace({
           replacements: [
             {

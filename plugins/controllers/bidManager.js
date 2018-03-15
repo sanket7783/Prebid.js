@@ -246,7 +246,7 @@ exports.getBid = function(divID) { // TDD, i/o : done
   return {wb: winningBid, kvp: keyValuePairs};
 };
 
-exports.getBidById = function(bidID) { // TDD, i/o : done
+var getBidById = function(bidID) { // TDD, i/o : done
   /* istanbul ignore else */
   if (!util.isOwnProperty(window.PWT.bidIdMap, bidID)) {
     util.log(CONSTANTS.MESSAGES.M25 + bidID);
@@ -274,6 +274,7 @@ exports.getBidById = function(bidID) { // TDD, i/o : done
   util.log(CONSTANTS.MESSAGES.M25 + bidID);
   return null;
 };
+exports.getBidById = getBidById;
 
 exports.displayCreative = function(theDocument, bidID) { // TDD, i/o : done
   var bidDetails = getBidById(bidID);
@@ -332,7 +333,7 @@ exports.executeMonetizationPixel = function(slotID, theBid) { // TDD, i/o : done
   }
 
   pixelURL += 'pubid=' + CONFIG.getPublisherId();
-  pixelURL += '&purl=' + window.encodeURIComponent(util.metaInfo.pageURL);
+  pixelURL += '&purl=' + window.encodeURIComponent(window.PWT.pageURL);
   pixelURL += '&tst=' + util.getCurrentTimestamp();
   pixelURL += '&iid=' + window.encodeURIComponent(window.PWT.bidMap[slotID].getImpressionID());
   pixelURL += '&bidid=' + window.encodeURIComponent(theBid.getBidID());
