@@ -233,5 +233,6 @@ adaptermanager.aliasBidAdapter('appnexus', 'gourmetads');
 adaptermanager.aliasBidAdapter('appnexus', 'matomy');
 adaptermanager.aliasBidAdapter('appnexus', 'featureforward');
 adaptermanager.aliasBidAdapter('appnexus', 'oftmedia');
+adaptermanager.aliasBidAdapter('appnexus', 'districtm');
 
 module.exports = AppNexusAdapter;
