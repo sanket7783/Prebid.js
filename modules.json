@@ -1,5 +1,6 @@
 [
 	"appnexusBidAdapter",
+	"adgBidAdapter",
 	"sekindoUMBidAdapter",
 	"pulsepointBidAdapter",
 	"audienceNetworkBidAdapter",
