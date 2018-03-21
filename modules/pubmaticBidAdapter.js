@@ -16,8 +16,8 @@ const CUSTOM_PARAMS = {
   'lon': '', // User Location - Longitude
   'wiid': '', // OpenWrap Wrapper Impression ID
   'profId': '', // OpenWrap Legacy: Profile ID
-  'verId': '', // OpenWrap Legacy: version ID,
-  'dctr': ''
+  'verId': '' // OpenWrap Legacy: version ID,
+  //'dctr': ''
 };
 const NET_REVENUE = false;
 
@@ -234,7 +234,7 @@ export const spec = {
     payload.device.geo.lon = _parseSlotParam('lon', conf.lon);
     payload.site.page = conf.kadpageurl.trim() || payload.site.page.trim();
     payload.site.domain = _getDomainFromURL(payload.site.page);
-    if (conf.dctr !== UNDEFINED && conf.dctr.trim().length > 0) {
+    /*if (conf.dctr !== UNDEFINED && conf.dctr.trim().length > 0) {
       var arr = conf.dctr.split('|');
       conf.dctr = '';
       arr.forEach(val => {
@@ -244,7 +244,7 @@ export const spec = {
       payload.site.ext = {
         key_val: conf.dctr
       };
-    }
+    }*/
     return {
       method: 'POST',
       url: ENDPOINT,
