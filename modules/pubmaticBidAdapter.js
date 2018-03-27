@@ -251,9 +251,12 @@ export const spec = {
     try {
       if (response.body && response.body.seatbid && response.body.seatbid[0] && response.body.seatbid[0].bid) {
         response.body.seatbid[0].bid.forEach(bid => {
+          let bidcpm = (parseFloat(bid.price) || 0).toFixed(2);
+          /* eslint-disable no-template-curly-in-string */
+          let bidadm = bid.adm && bid.adm.split('${AUCTION_PRICE}').join(bidcpm);
           let newBid = {
             requestId: bid.impid,
-            cpm: (parseFloat(bid.price) || 0).toFixed(2),
+            cpm: bidcpm,
             width: bid.w,
             height: bid.h,
             creativeId: bid.crid || bid.id,
@@ -262,7 +265,7 @@ export const spec = {
             netRevenue: NET_REVENUE,
             ttl: 300,
             referrer: utils.getTopWindowUrl(),
-            ad: bid.adm
+            ad: bidadm
           };
           bidResponses.push(newBid);
         });
