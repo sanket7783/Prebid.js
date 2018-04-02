@@ -252,7 +252,7 @@ export const spec = {
       if (response.body && response.body.seatbid && response.body.seatbid[0] && response.body.seatbid[0].bid) {
         response.body.seatbid[0].bid.forEach(bid => {
           let bidcpm = (parseFloat(bid.price) || 0).toFixed(2);
-          let bidadm = bid.adm && isNaN(bid.adm) && bid.adm.replace(/\${AUCTION_PRICE}/g, bidcpm);
+          let bidadm = (bid.adm && utils.isStr(bid.adm)) ? bid.adm.replace(/\${AUCTION_PRICE}/g, bidcpm) : bid.adm;
           let newBid = {
             requestId: bid.impid,
             cpm: bidcpm,
