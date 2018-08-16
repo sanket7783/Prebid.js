@@ -67,29 +67,21 @@ function _parseAdSlot(bid) {
   bid.params.adUnitIndex = '0';
   bid.params.width = 0;
   bid.params.height = 0;
-
   bid.params.adSlot = _cleanSlot(bid.params.adSlot);
-
   var slot = bid.params.adSlot;
-  var splits = slot.split(':');
-
+  var splits = slot.split('@');
   slot = splits[0];
   if (splits.length == 2) {
-    bid.params.adUnitIndex = splits[1];
+    bid.params.adUnitIndex = splits[1].split(":")[1];
   }
-  splits = slot.split('@');
-  if (splits.length != 2) {
-    utils.logWarn('AdSlot Error: adSlot not in required format');
-    return;
-  }
-  bid.params.adUnit = splits[0];
-  splits = splits[1].split('x');
+  splits = splits[1].split(":")[0].split("x");
   if (splits.length != 2) {
     utils.logWarn('AdSlot Error: adSlot not in required format');
     return;
   }
   bid.params.width = parseInt(splits[0]);
   bid.params.height = parseInt(splits[1]);
+  bid.params.adUnit = splits[0];
 }
 
 function _initConf() {
