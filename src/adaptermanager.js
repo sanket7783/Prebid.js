@@ -222,14 +222,14 @@ exports.makeBidRequests = function(adUnits, auctionStart, auctionId, cbTimeout, 
   }
 
   // client adapters
-  let adUnitsClientCopy = getAdUnitCopyForClientAdapters(adUnits);
+  // let adUnitsClientCopy = getAdUnitCopyForClientAdapters(adUnits);
   clientBidderCodes.forEach(bidderCode => {
     const bidderRequestId = utils.getUniqueIdentifierStr();
     const bidderRequest = {
       bidderCode,
       auctionId,
       bidderRequestId,
-      bids: getBids({bidderCode, auctionId, bidderRequestId, 'adUnits': adUnitsClientCopy, labels}),
+      bids: getBids({bidderCode, auctionId, bidderRequestId, 'adUnits': getAdUnitCopyForClientAdapters(adUnits), labels}),
       auctionStart: auctionStart,
       timeout: cbTimeout,
       refererInfo
