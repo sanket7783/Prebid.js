@@ -1,6 +1,6 @@
 import * as utils from 'src/utils';
 import { registerBidder } from 'src/adapters/bidderFactory';
-import { BANNER, VIDEO } from 'src/mediaTypes';
+import { BANNER, VIDEO, NATIVE } from 'src/mediaTypes';
 const constants = require('src/constants.json');
 
 const BIDDER_CODE = 'pubmatic';
@@ -23,7 +23,8 @@ const DATA_TYPES = {
   'NUMBER': 'number',
   'STRING': 'string',
   'BOOLEAN': 'boolean',
-  'ARRAY': 'array'
+  'ARRAY': 'array',
+  'OBJECT': 'object'
 };
 const VIDEO_CUSTOM_PARAMS = {
   'mimes': DATA_TYPES.ARRAY,
@@ -40,6 +41,18 @@ const VIDEO_CUSTOM_PARAMS = {
   'placement': DATA_TYPES.NUMBER,
   'minbitrate': DATA_TYPES.NUMBER,
   'maxbitrate': DATA_TYPES.NUMBER
+}
+const NATIVE_CUSTOM_PARAMS = {
+  'ver': DATA_TYPES.STRING,
+  'layout': DATA_TYPES.NUMBER,
+  'adUnit': DATA_TYPES.NUMBER,
+  'context': DATA_TYPES.NUMBER,
+  'contextsubtype': DATA_TYPES.NUMBER,
+  'plcmttype': DATA_TYPES.NUMBER,
+  'plcmtcnt': DATA_TYPES.NUMBER,
+  'seq': DATA_TYPES.NUMBER,
+  'assets': DATA_TYPES.ARRAY,
+  'ext': DATA_TYPES.OBJECT
 }
 const NET_REVENUE = false;
 const dealChannelValues = {
@@ -212,6 +225,12 @@ function _checkParamDataType(key, value, datatype) {
         return UNDEFINED;
       }
       return value;
+    case DATA_TYPES.OBJECT:
+      if (!utils.isObject(value)) {
+        utils.logWarn(errMsg);
+        return UNDEFINED;
+      }
+      return value;
   }
 }
 
@@ -219,6 +238,7 @@ function _createImpressionObject(bid, conf) {
   var impObj = {};
   var bannerObj = {};
   var videoObj = {};
+  var nativeObj = {};
   var sizes = bid.hasOwnProperty('sizes') ? bid.sizes : [];
 
   impObj = {
@@ -253,8 +273,15 @@ function _createImpressionObject(bid, conf) {
         'video_skippable': bid.params.video.skippable ? 1 : 0
       }
     }
-
     impObj.video = videoObj;
+  } else if (bid.params.hasOwnProperty('native')) {
+    var nativeData = bid.params.native;
+    for (var nativekey in NATIVE_CUSTOM_PARAMS) {
+      if (nativeData.hasOwnProperty(nativekey)) {
+        nativeObj[key] = _checkParamDataType(nativekey, nativeData[nativekey], NATIVE_CUSTOM_PARAMS[nativekey])
+      }
+    }
+    impObj.native = nativeObj;
   } else {
     bannerObj = {
       pos: 0,
@@ -277,7 +304,7 @@ function _createImpressionObject(bid, conf) {
 
 export const spec = {
   code: BIDDER_CODE,
-  supportedMediaTypes: [BANNER, VIDEO],
+  supportedMediaTypes: [BANNER, VIDEO, NATIVE],
   /**
    * Determines whether or not the given bid request is valid. Valid bid request must have placementId and hbid
    *
@@ -299,6 +326,20 @@ export const spec = {
         if (!bid.params.video.hasOwnProperty('mimes') || !utils.isArray(bid.params.video.mimes) || bid.params.video.mimes.length === 0) {
           utils.logWarn(BIDDER_CODE + ': For video ads, mimes is mandatory and must specify atlease 1 mime value. Call to OpenBid will not be sent.');
           return false;
+        }
+      }
+      if (bid.params.hasOwnProperty('native')) {
+        if (!bid.params.native.hasOwnProperty('assets') || !utils.isArray(bid.params.native.assets) || bid.params.native.assets.length === 0) {
+          utils.logWarn(BIDDER_CODE + ': For native ads, assets is mandatory and must specify atlease 1 asset value. Call to OpenBid will not be sent.');
+          return false;
+        }
+        if (bid.params.native.hasOwnProperty('assets') && bid.params.native.assets.length > 0) {
+          bid.params.native.assets.forEach(element => {
+            if (!element.hasOwnProperty('id')) {
+              utils.logWarn(BIDDER_CODE + ': For native ads, assets id is mandatory and must specify asset id value. Call to OpenBid will not be sent.');
+              return false;
+            }
+          });
         }
       }
       return true;
@@ -326,6 +367,8 @@ export const spec = {
           utils.logWarn(BIDDER_CODE + ': Skipping the non-standard adslot: ', bid.params.adSlot, bid);
           return;
         }
+      } else if (bid.params.hasOwnProperty('native')) {
+        // TODO : Check for valid ad slot in native
       } else {
         if (!(bid.params.width && bid.params.height && bid.params.adSlot && bid.params.adUnit && bid.params.adUnitIndex)) {
           utils.logWarn(BIDDER_CODE + ': Skipping the non-standard adslot: ', bid.params.adSlot, bid);
