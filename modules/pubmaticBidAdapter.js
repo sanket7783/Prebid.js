@@ -519,6 +519,12 @@ export const spec = {
                         br.height = bid.hasOwnProperty('h') ? bid.h : req.video.h;
                         br.vastXml = bid.adm;
                       }
+                      if (bid.impid === req.id && req.hasOwnProperty('native')) {
+                        br.mediaType = 'native';
+                        br.width = bid.hasOwnProperty('w') ? bid.w : req.video.w;
+                        br.height = bid.hasOwnProperty('h') ? bid.h : req.video.h;
+                        br.vastXml = bid.adm;
+                      }
                     });
                   }
                   if (bid.ext && bid.ext.deal_channel) {
