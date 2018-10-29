@@ -335,7 +335,7 @@ export const spec = {
         }
         if (bid.params.native.hasOwnProperty('assets') && bid.params.native.assets.length > 0) {
           bid.params.native.assets.forEach(element => {
-            if (!element.hasOwnProperty('id')) {
+            if (!(element.hasOwnProperty('id') && element.id != null && util.isNumber(element.id))) {
               utils.logWarn(BIDDER_CODE + ': For native ads, assets id is mandatory and must specify asset id value. Call to OpenBid will not be sent.');
               return false;
             }
@@ -521,9 +521,16 @@ export const spec = {
                       }
                       if (bid.impid === req.id && req.hasOwnProperty('native')) {
                         br.mediaType = 'native';
-                        br.width = bid.hasOwnProperty('w') ? bid.w : req.video.w;
-                        br.height = bid.hasOwnProperty('h') ? bid.h : req.video.h;
-                        br.vastXml = bid.adm;
+                        br.native = {
+                          assets: []
+                        }
+                        bid.hasOwnProperty('native') && bid.native.hasOwnProperty('assets') && bid.native.assets.length > 0 && bid.native.assets.forEach(bidasset => {
+                          req.native.assets.forEach(asset => {
+                            if (bidasset.id == asset.id) {
+                              br.native.assets.push(bidasset);
+                            }
+                          });
+                        });
                       }
                     });
                   }
