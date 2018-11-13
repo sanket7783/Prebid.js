@@ -330,7 +330,7 @@ export const spec = {
       }
       if (bid.params.hasOwnProperty('native')) {
         if (!bid.params.native.hasOwnProperty('assets') || !utils.isArray(bid.params.native.assets) || bid.params.native.assets.length === 0) {
-          utils.logWarn(BIDDER_CODE + ': For native ads, assets is mandatory and must specify atlease 1 asset value. Call to OpenBid will not be sent.');
+          utils.logWarn(BIDDER_CODE + ': For native ads, assets is mandatory and must specify atleast 1 asset value. Call to OpenBid will not be sent.');
           return false;
         }
         if (bid.params.native.hasOwnProperty('assets') && bid.params.native.assets.length > 0) {
