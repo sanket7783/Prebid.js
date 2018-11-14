@@ -278,9 +278,12 @@ function _createImpressionObject(bid, conf) {
     var nativeData = bid.params.native;
     for (var nativekey in NATIVE_CUSTOM_PARAMS) {
       if (nativeData.hasOwnProperty(nativekey)) {
-        nativeObj[key] = _checkParamDataType(nativekey, nativeData[nativekey], NATIVE_CUSTOM_PARAMS[nativekey])
+        nativeObj[nativekey] = _checkParamDataType(nativekey, nativeData[nativekey], NATIVE_CUSTOM_PARAMS[nativekey])
       }
     }
+    nativeObj.assets && nativeObj.assets.length > 0 && nativeObj.assets.forEach(function(element, idx) {
+      element.id = idx + 1;
+    });
     impObj.native = nativeObj;
   } else {
     bannerObj = {
@@ -335,7 +338,7 @@ export const spec = {
         }
         if (bid.params.native.hasOwnProperty('assets') && bid.params.native.assets.length > 0) {
           bid.params.native.assets.forEach(element => {
-            if (!(element.hasOwnProperty('id') && element.id != null && util.isNumber(element.id))) {
+            if (!(element.hasOwnProperty('id') && element.id != null && utils.isNumber(element.id))) {
               utils.logWarn(BIDDER_CODE + ': For native ads, assets id is mandatory and must specify asset id value. Call to OpenBid will not be sent.');
               return false;
             }
