@@ -336,14 +336,6 @@ export const spec = {
           utils.logWarn(BIDDER_CODE + ': For native ads, assets is mandatory and must specify atleast 1 asset value. Call to OpenBid will not be sent.');
           return false;
         }
-        if (bid.params.native.hasOwnProperty('assets') && bid.params.native.assets.length > 0) {
-          bid.params.native.assets.forEach(element => {
-            if (!(element.hasOwnProperty('id') && element.id != null && utils.isNumber(element.id))) {
-              utils.logWarn(BIDDER_CODE + ': For native ads, assets id is mandatory and must specify asset id value. Call to OpenBid will not be sent.');
-              return false;
-            }
-          });
-        }
       }
       return true;
     }
@@ -372,6 +364,9 @@ export const spec = {
         }
       } else if (bid.params.hasOwnProperty('native')) {
         // TODO : Check for valid ad slot in native
+        if (!bid.params.native.assets || bid.params.native.assets.length < 1) {
+          return;
+        }
       } else {
         if (!(bid.params.width && bid.params.height && bid.params.adSlot && bid.params.adUnit && bid.params.adUnitIndex)) {
           utils.logWarn(BIDDER_CODE + ': Skipping the non-standard adslot: ', bid.params.adSlot, bid);
