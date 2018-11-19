@@ -8,7 +8,7 @@ import {parse} from 'src/url';
 const SUPPORTED_AD_TYPES = [BANNER, VIDEO];
 const BIDDER_CODE = 'openx';
 const BIDDER_CONFIG = 'hb_pb';
-const BIDDER_VERSION = '2.1.3';
+const BIDDER_VERSION = '2.1.5';
 
 let shouldSendBoPixel = true;
 
@@ -20,11 +20,12 @@ export const spec = {
   code: BIDDER_CODE,
   supportedMediaTypes: SUPPORTED_AD_TYPES,
   isBidRequestValid: function (bidRequest) {
-    if (utils.deepAccess(bidRequest, 'mediaTypes.banner') && bidRequest.params.delDomain) {
+    const hasDelDomainOrPlatform = bidRequest.params.delDomain || bidRequest.params.platform;
+    if (utils.deepAccess(bidRequest, 'mediaTypes.banner') && hasDelDomainOrPlatform) {
       return !!bidRequest.params.unit || utils.deepAccess(bidRequest, 'mediaTypes.banner.sizes.length') > 0;
     }
 
-    return !!(bidRequest.params.unit && bidRequest.params.delDomain);
+    return !!(bidRequest.params.unit && hasDelDomainOrPlatform);
   },
   buildRequests: function (bidRequests, bidderRequest) {
     if (bidRequests.length === 0) {
@@ -201,9 +202,14 @@ function buildCommonQueryParamsFromBids(bids, bidderRequest) {
     tz: new Date().getTimezoneOffset(),
     tws: getViewportDimensions(isInIframe),
     be: 1,
+    bc: bids[0].params.bc || `${BIDDER_CONFIG}_${BIDDER_VERSION}`,
     dddid: utils._map(bids, bid => bid.transactionId).join(','),
     nocache: new Date().getTime()
   };
+
+  if (bids[0].params.platform) {
+    defaultParams.ph = bids[0].params.platform;
+  }
 
   if (utils.deepAccess(bidderRequest, 'gdprConsent')) {
     let gdprConsentConfig = bidderRequest.gdprConsent;
@@ -221,6 +227,10 @@ function buildCommonQueryParamsFromBids(bids, bidderRequest) {
     }
   }
 
+  if (bids[0].crumbs && bids[0].crumbs.pubcid) {
+    defaultParams.pubcid = bids[0].crumbs.pubcid;
+  }
+
   return defaultParams;
 }
 
@@ -230,7 +240,6 @@ function buildOXBannerRequest(bids, bidderRequest) {
   let queryParams = buildCommonQueryParamsFromBids(bids, bidderRequest);
   let auids = utils._map(bids, bid => bid.params.unit);
   queryParams.aus = utils._map(bids, bid => utils.parseSizesInput(bid.sizes).join(',')).join('|');
-  queryParams.bc = bids[0].params.bc || `${BIDDER_CONFIG}_${BIDDER_VERSION}`;
   queryParams.divIds = utils._map(bids, bid => encodeURIComponent(bid.adUnitCode)).join(',');
 
   if (auids.some(auid => auid)) {
@@ -273,7 +282,10 @@ function buildOXBannerRequest(bids, bidderRequest) {
     queryParams.aumfs = customFloorsForAllBids.join(',');
   }
 
-  let url = `//${bids[0].params.delDomain}/w/1.0/arj`;
+  let url = queryParams.ph
+    ? `//u.openx.net/w/1.0/arj`
+    : `//${bids[0].params.delDomain}/w/1.0/arj`;
+
   return {
     method: 'GET',
     url: url,
