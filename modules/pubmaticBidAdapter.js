@@ -365,6 +365,7 @@ export const spec = {
       } else if (bid.params.hasOwnProperty('native')) {
         // TODO : Check for valid ad slot in native
         if (!bid.params.native.assets || bid.params.native.assets.length < 1) {
+          utils.logWarn(BIDDER_CODE + ': Skipping the non-standard adslot: ', bid.params.adSlot, bid);
           return;
         }
       } else {
