@@ -1,6 +1,4 @@
-<<<<<<< HEAD
-["appnexusBidAdapter","consentManagement","sekindoUMBidAdapter","pulsepointBidAdapter","audienceNetworkBidAdapter","openxBidAdapter","rubiconBidAdapter","sovrnBidAdapter","pubmaticBidAdapter","adgenerationBidAdapter","pubmaticServerBidAdapter","ixBidAdapter","criteoBidAdapter"]
-=======
+
 [
 	"appnexusBidAdapter",
 	"consentManagement",
@@ -16,4 +14,3 @@
 	"ixBidAdapter",
 	"criteoBidAdapter"
 ]
->>>>>>> 686a50ea5f1cba3b6ceb90cbe99b63de6317f3bb
