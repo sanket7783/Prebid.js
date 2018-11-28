@@ -4,7 +4,7 @@ import { BANNER, VIDEO, NATIVE } from 'src/mediaTypes';
 const constants = require('src/constants.json');
 
 const BIDDER_CODE = 'pubmatic';
-const ENDPOINT = '//hbopenbid.pubmatic.com/translator?source=prebid-client';
+const ENDPOINT = 'https://hbopenbid.pubmatic.com:8080/translator?source=prebid-client';
 const USYNCURL = '//ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=';
 const DEFAULT_CURRENCY = 'USD';
 const AUCTION_TYPE = 1;
@@ -520,16 +520,41 @@ export const spec = {
                       }
                       if (bid.impid === req.id && req.hasOwnProperty('native')) {
                         br.mediaType = 'native';
-                        br.native = {
-                          assets: []
-                        }
-                        bid.hasOwnProperty('native') && bid.native.hasOwnProperty('assets') && bid.native.assets.length > 0 && bid.native.assets.forEach(bidasset => {
-                          req.native.assets.forEach(asset => {
-                            if (bidasset.id == asset.id) {
-                              br.native.assets.push(bidasset);
+                        if (bid.hasOwnProperty('adm')) {
+                          var adm = '';
+                          try {
+                            adm = JSON.parse(bid.adm);
+                          } catch (ex) {
+                            adm = JSON.parse(bid.adm.replace(/\\/g, ''));
+                          }
+                          if (adm && adm.native && adm.native.assets && adm.native.assets.length > 0) {
+                            const nativeAd = adm.native.assets[0];
+                            br[NATIVE] = {
+                              title: nativeAd.title || '',
+                              body: nativeAd.desc || '',
+                              cta: nativeAd.ctatext || '',
+                              sponsoredBy: adm.native.sponsored || 'PubMatic',
+                              clickUrl: adm.native.link.url || 'www.pubmatic.com',
+                              clickTrackers: adm.native.link.click_trackers || '',
+                              impressionTrackers: adm.native.impression_trackers || '',
+                              javascriptTrackers: adm.native.javascript_trackers || '',
+                            };
+                            if (nativeAd.image) {
+                              br['native'].image = {
+                                url: nativeAd.image.url || '',
+                                height: nativeAd.image.height || 150,
+                                width: nativeAd.image.width || 150,
+                              };
                             }
-                          });
-                        });
+                            if (nativeAd.icon) {
+                              br['native'].icon = {
+                                url: nativeAd.icon.url || '',
+                                height: nativeAd.icon.height || '',
+                                width: nativeAd.icon.width || '',
+                              };
+                            }
+                          }
+                        }
                       }
                     });
                   }
