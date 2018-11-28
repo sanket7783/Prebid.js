@@ -17,13 +17,8 @@ const hbBidder = 'fan';
 const ttl = 600;
 const videoTtl = 3600;
 const platver = '$prebid.version$';
-<<<<<<< HEAD
-const platform = '241394079772386';
-const adapterver = '1.1.0';
-=======
 const platform = '2078522619030089';
 const adapterver = '1.0.1';
->>>>>>> 686a50ea5f1cba3b6ceb90cbe99b63de6317f3bb
 
 /**
  * Does this bid request contain valid parameters?
