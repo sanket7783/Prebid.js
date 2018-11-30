@@ -274,6 +274,7 @@ exports.getTopWindowUrl = function () {
   return href;
 };
 
+
 /**
  * @deprecated This function will be removed soon. Use http://prebid.org/dev-docs/bidder-adaptor.html#referrers
  */
