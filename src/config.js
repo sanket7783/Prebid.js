@@ -161,7 +161,6 @@ export function newConfig() {
       set disableAjaxTimeout(val) {
         this._disableAjaxTimeout = val;
       },
-
     };
 
     function hasGranularity(val) {
