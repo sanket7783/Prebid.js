@@ -155,6 +155,7 @@ function _parseAdSlot(bid) {
   bid.params.adUnitIndex = '0';
   bid.params.width = 0;
   bid.params.height = 0;
+
   bid.params.adSlot = _cleanSlot(bid.params.adSlot);
 
   var slot = bid.params.adSlot;
@@ -349,6 +350,7 @@ function _createNativeRequest(params) {
                   type: NATIVE_ASSET_IMAGE_TYPE.ICON,
                   w: params[key].w || params[key].width || (params[key].sizes ? params[key].sizes[0] : UNDEFINED),
                   h: params[key].h || params[key].height || (params[key].sizes ? params[key].sizes[1] : UNDEFINED),
+                  ext: params[key].ext
                 }
               };
             } else {
@@ -380,8 +382,9 @@ function _createNativeRequest(params) {
               required: params[key].required ? 1 : 0,
               img: {
                 type: NATIVE_ASSET_IMAGE_TYPE.LOGO,
-                w: params[key].w || params[key].width || (params[key].sizes ? params[key].sizes[0] : UNDEFINED),
-                h: params[key].h || params[key].height || (params[key].sizes ? params[key].sizes[1] : UNDEFINED)
+                w: params[key].w || params[key].width || (params[key].sizes ? params[key].sizes[0] : undefined),
+                h: params[key].h || params[key].height || (params[key].sizes ? params[key].sizes[1] : undefined),
+                ext: params[key].ext
               }
             };
             break;
@@ -875,6 +878,9 @@ export const spec = {
       } else {
         utils.logWarn(LOG_WARN_PREFIX + 'dctr value not found in 1st adunit, ignoring values from subsequent adunits');
       }
+    } else {
+      // Commenting out for prebid 1.21 release. Needs to be uncommented and changes from Prebid PR2941 to be pulled in.
+      // utils.logWarn(BIDDER_CODE + ': dctr value not found in 1st adunit, ignoring values from subsequent adunits');
     }
 
     _handleEids(payload);
@@ -896,6 +902,23 @@ export const spec = {
     const bidResponses = [];
     var respCur = DEFAULT_CURRENCY;
     try {
+      let requestData = JSON.parse(request.data);
+      if (requestData && requestData.imp && requestData.imp.length > 0) {
+        requestData.imp.forEach(impData => {
+          bidResponses.push({
+            requestId: impData.id,
+            width: 0,
+            height: 0,
+            ttl: 300,
+            ad: '',
+            creativeId: 0,
+            netRevenue: NET_REVENUE,
+            cpm: 0,
+            currency: respCur,
+            referrer: requestData.site && requestData.site.ref ? requestData.site.ref : '',
+          })
+        });
+      }
       if (response.body && response.body.seatbid && utils.isArray(response.body.seatbid)) {
         // Supporting multiple bid responses for same adSize
         respCur = response.body.cur || respCur;
@@ -934,24 +957,18 @@ export const spec = {
                         break;
                     }
                   }
-                });
-              }
-              if (bid.ext && bid.ext.deal_channel) {
-                newBid['dealChannel'] = dealChannelValues[bid.ext.deal_channel] || null;
-              }
-
-              newBid.meta = {};
-              if (bid.ext && bid.ext.dspid) {
-                newBid.meta.networkId = bid.ext.dspid;
-              }
-              if (bid.ext && bid.ext.advid) {
-                newBid.meta.buyerId = bid.ext.advid;
-              }
-              if (bid.adomain && bid.adomain.length > 0) {
-                newBid.meta.clickUrl = bid.adomain[0];
-              }
-
-              bidResponses.push(newBid);
+                  br.meta = {};
+                  if (bid.ext && bid.ext.dspid) {
+                    br.meta.networkId = bid.ext.dspid;
+                  }
+                  if (bid.ext && bid.ext.advid) {
+                    br.meta.buyerId = bid.ext.advid;
+                  }
+                  if (bid.adomain && bid.adomain.length > 0) {
+                    br.meta.clickUrl = bid.adomain[0];
+                  }
+                }
+              });
             });
         });
       }
