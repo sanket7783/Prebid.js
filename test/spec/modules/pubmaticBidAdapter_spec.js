@@ -1944,7 +1944,6 @@ describe('PubMatic adapter', function () {
       it('should check for valid response values', function () {
         let request = spec.buildRequests(bidRequests);
         let data = JSON.parse(request.data);
-        console.log(JSON.stringify(data));
         let response = spec.interpretResponse(bidResponses, request);
         expect(response).to.be.an('array').with.length.above(0);
         expect(response[0].requestId).to.equal(bidResponses.body.seatbid[0].bid[0].impid);
