@@ -27,8 +27,26 @@ describe('PubMatic adapter', function () {
   let bannerVideoAndNativeBidRequests;
   let bannerBidResponse;
   let videoBidResponse;
+  let schainConfig;
 
   beforeEach(() => {
+     schainConfig = {
+      'ver': '1.0',
+      'complete': 1,
+      'nodes': [
+        {
+          'asi': 'indirectseller.com',
+          'sid': '00001',
+          'hp': 1
+        },
+
+        {
+          'asi': 'indirectseller-2.com',
+          'sid': '00002',
+          'hp': 2
+        }
+      ]
+    };
     firstBid = {
       bidder: 'pubmatic',
       mediaTypes: {
@@ -741,6 +759,7 @@ describe('PubMatic adapter', function () {
   		  expect(data.imp[0].banner.h).to.equal(250); // height
   		  expect(data.imp[0].ext.pmZoneId).to.equal(bidRequests[0].params.pmzoneid.split(',').slice(0, 50).map(id => id.trim()).join()); // pmzoneid
         expect(data.imp[0].bidfloorcur).to.equal(bidRequests[0].params.currency);
+        expect(data.source.ext.schain).to.deep.equal(bidRequests[0].schain);
   		});
 
       it('Request params check: without adSlot', function () {
