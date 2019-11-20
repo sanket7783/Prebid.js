@@ -134,6 +134,9 @@ function isValidBidFloorParams(bidFloor, bidFloorCur) {
 export const spec = {
 
   code: BIDDER_CODE,
+
+  aliases: ['indexExchange'],
+
   supportedMediaTypes: SUPPORTED_AD_TYPES,
 
   /**

@@ -33,8 +33,14 @@ export const id5IdSubmodule = {
    * @param {(Object|undefined)} cacheIdObj
    * @returns {IdResponse|undefined}
    */
-  getId(configParams, consentData, cacheIdObj) {
-    if (!configParams || typeof configParams.partner !== 'number') {
+  getId(configParams, consentData) {
+    if (configParams) {
+      configParams.partner = parseInt(configParams.partner);
+      if (typeof configParams.partner !== 'number') {
+        utils.logError(`User ID - ID5 submodule requires partner to be defined as a number`);
+        return;
+      }
+    } else {
       utils.logError(`User ID - ID5 submodule requires partner to be defined as a number`);
       return undefined;
     }
