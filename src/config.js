@@ -4,8 +4,10 @@
 import { isValidPriceConfig } from './cpmBucketManager';
 import find from 'core-js/library/fn/array/find';
 import includes from 'core-js/library/fn/array/includes';
+import Set from 'core-js/library/fn/set';
 import { parseQS } from './url';
 
+const from = require('core-js/library/fn/array/from');
 const utils = require('./utils');
 const CONSTANTS = require('./constants');
 
@@ -47,6 +49,8 @@ export function newConfig() {
   let listeners = [];
   let defaults;
   let config;
+  let bidderConfig;
+  let currBidder = null;
 
   function resetConfig() {
     defaults = {};
@@ -84,7 +88,7 @@ export function newConfig() {
         if (validatePriceGranularity(val)) {
           if (typeof val === 'string') {
             this._priceGranularity = (hasGranularity(val)) ? val : GRANULARITY_OPTIONS.MEDIUM;
-          } else if (typeof val === 'object') {
+          } else if (utils.isPlainObject(val)) {
             this._customPriceBucket = val;
             this._priceGranularity = GRANULARITY_OPTIONS.CUSTOM;
             utils.logMessage('Using custom price granularity');
@@ -109,7 +113,7 @@ export function newConfig() {
           if (validatePriceGranularity(val[item])) {
             if (typeof val === 'string') {
               aggregate[item] = (hasGranularity(val[item])) ? val[item] : this._priceGranularity;
-            } else if (typeof val === 'object') {
+            } else if (utils.isPlainObject(val)) {
               aggregate[item] = val[item];
               utils.logMessage(`Using custom price granularity for ${item}`);
             }
@@ -179,6 +183,7 @@ export function newConfig() {
     }
 
     config = newConfig;
+    bidderConfig = {};
 
     function hasGranularity(val) {
       return find(Object.keys(GRANULARITY_OPTIONS), option => val === GRANULARITY_OPTIONS[option]);
@@ -193,7 +198,7 @@ export function newConfig() {
         if (!hasGranularity(val)) {
           utils.logWarn('Prebid Warning: setPriceGranularity was called with invalid setting, using `medium` as default.');
         }
-      } else if (typeof val === 'object') {
+      } else if (utils.isPlainObject(val)) {
         if (!isValidPriceConfig(val)) {
           utils.logError('Invalid custom price value passed to `setPriceGranularity()`');
           return false;
@@ -201,6 +206,33 @@ export function newConfig() {
       }
       return true;
     }
+  }
+
+  /**
+   * Returns base config with bidder overrides (if there is currently a bidder)
+   * @private
+   */
+  function _getConfig() {
+    if (currBidder && bidderConfig && utils.isPlainObject(bidderConfig[currBidder])) {
+      let currBidderConfig = bidderConfig[currBidder];
+      const configTopicSet = new Set(Object.keys(config).concat(Object.keys(currBidderConfig)));
+
+      return from(configTopicSet).reduce((memo, topic) => {
+        if (!currBidderConfig[topic]) {
+          memo[topic] = config[topic];
+        } else if (!config[topic]) {
+          memo[topic] = currBidderConfig[topic];
+        } else {
+          if (utils.isPlainObject(currBidderConfig[topic])) {
+            memo[topic] = Object.assign({}, config[topic], currBidderConfig[topic]);
+          } else {
+            memo[topic] = currBidderConfig[topic];
+          }
+        }
+        return memo;
+      }, {});
+    }
+    return Object.assign({}, config);
   }
 
   /*
@@ -214,10 +246,17 @@ export function newConfig() {
   function getConfig(...args) {
     if (args.length <= 1 && typeof args[0] !== 'function') {
       const option = args[0];
-      return option ? utils.deepAccess(config, option) : config;
+      return option ? utils.deepAccess(_getConfig(), option) : _getConfig();
     }
 
     return subscribe(...args);
+  }
+
+  /**
+   * Internal API for modules (such as prebid-server) that might need access to all bidder config
+   */
+  function getBidderConfig() {
+    return bidderConfig;
   }
 
   /*
@@ -225,7 +264,7 @@ export function newConfig() {
    * listeners that were added by the `subscribe` function
    */
   function setConfig(options) {
-    if (typeof options !== 'object') {
+    if (!utils.isPlainObject(options)) {
       utils.logError('setConfig options must be an object');
       return;
     }
@@ -236,7 +275,7 @@ export function newConfig() {
     topics.forEach(topic => {
       let option = options[topic];
 
-      if (typeof defaults[topic] === 'object' && typeof option === 'object') {
+      if (utils.isPlainObject(defaults[topic]) && utils.isPlainObject(option)) {
         option = Object.assign({}, defaults[topic], option);
       }
 
@@ -251,7 +290,7 @@ export function newConfig() {
    * @param {object} options
    */
   function setDefaults(options) {
-    if (typeof defaults !== 'object') {
+    if (!utils.isPlainObject(defaults)) {
       utils.logError('defaults must be an object');
       return;
     }
@@ -297,11 +336,12 @@ export function newConfig() {
       return;
     }
 
-    listeners.push({ topic, callback });
+    const nl = { topic, callback };
+    listeners.push(nl);
 
     // save and call this function to remove the listener
     return function unsubscribe() {
-      listeners.splice(listeners.indexOf(listener), 1);
+      listeners.splice(listeners.indexOf(nl), 1);
     };
   }
 
@@ -324,13 +364,68 @@ export function newConfig() {
       .forEach(listener => listener.callback(options));
   }
 
+  function setBidderConfig(config) {
+    try {
+      check(config);
+      config.bidders.forEach(bidder => {
+        if (!bidderConfig[bidder]) {
+          bidderConfig[bidder] = {};
+        }
+        Object.keys(config.config).forEach(topic => {
+          let option = config.config[topic];
+          if (utils.isPlainObject(option)) {
+            bidderConfig[bidder][topic] = Object.assign({}, bidderConfig[bidder][topic] || {}, option);
+          } else {
+            bidderConfig[bidder][topic] = option;
+          }
+        });
+      });
+    } catch (e) {
+      utils.logError(e);
+    }
+    function check(obj) {
+      if (!utils.isPlainObject(obj)) {
+        throw 'setBidderConfig bidder options must be an object';
+      }
+      if (!(Array.isArray(obj.bidders) && obj.bidders.length)) {
+        throw 'setBidderConfig bidder options must contain a bidders list with at least 1 bidder';
+      }
+      if (!utils.isPlainObject(obj.config)) {
+        throw 'setBidderConfig bidder options must contain a config object';
+      }
+    }
+  }
+
+  /**
+   * Internal functions for core to execute some synchronous code while having an active bidder set.
+   */
+  function runWithBidder(bidder, fn) {
+    currBidder = bidder;
+    try {
+      return fn();
+    } finally {
+      currBidder = null;
+    }
+  }
+  function callbackWithBidder(bidder) {
+    return function(cb) {
+      return function(...args) {
+        return runWithBidder(bidder, utils.bind.call(cb, this, ...args))
+      }
+    }
+  }
+
   resetConfig();
 
   return {
     getConfig,
     setConfig,
     setDefaults,
-    resetConfig
+    resetConfig,
+    runWithBidder,
+    callbackWithBidder,
+    setBidderConfig,
+    getBidderConfig
   };
 }
 
