@@ -3,10 +3,16 @@
     "digiTrustIdSystem",
     "id5IdSystem",
     "criteortusIdSystem",
-    "customIdSystem"
+    "customIdSystem",
+    "parrableIdSystem",
+    "liveIntentIdSystem",
+    "criteoIdSystem"
   ],
   "adpod": [
     "freeWheelAdserverVideo",
     "dfpAdServerVideo"
+  ],
+  "rtdModule": [
+    "browsiRtdProvider"
   ]
 }
