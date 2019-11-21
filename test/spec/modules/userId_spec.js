@@ -10,7 +10,7 @@ import {config} from 'src/config';
 import * as utils from 'src/utils';
 import events from 'src/events';
 import CONSTANTS from 'src/constants.json';
-import {unifiedIdSubmodule} from 'modules/userId/unifiedIdSystem';
+import {unifiedIdSubmodule} from 'modules/unifiedIdSystem';
 import {pubCommonIdSubmodule} from 'modules/userId/pubCommonIdSystem';
 import {id5IdSubmodule} from 'modules/id5IdSystem';
 import {identityLinkSubmodule} from 'modules/identityLinkIdSystem';
