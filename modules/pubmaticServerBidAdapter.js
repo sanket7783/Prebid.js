@@ -3,7 +3,9 @@ import * as ajax from '../src/ajax';
 import {userSync} from '../src/userSync';
 import { config } from '../src/config';
 import { registerBidder } from '../src/adapters/bidderFactory';
+import { BANNER, VIDEO } from '../src/mediaTypes';
 const constants = require('../src/constants.json');
+const LOG_WARN_PREFIX = 'PubMatic: ';
 
 const BIDDER_CODE = 'pubmaticServer';
 const ENDPOINT = 'https://ow.pubmatic.com/openrtb/2.5/';
@@ -15,6 +17,29 @@ const IFRAME = 'iframe';
 const IMAGE = 'image';
 const REDIRECT = 'redirect';
 const DEFAULT_VERSION_ID = '0';
+const DATA_TYPES = {
+  'NUMBER': 'number',
+  'STRING': 'string',
+  'BOOLEAN': 'boolean',
+  'ARRAY': 'array',
+  'OBJECT': 'object'
+};
+const VIDEO_CUSTOM_PARAMS = {
+  'mimes': DATA_TYPES.ARRAY,
+  'minduration': DATA_TYPES.NUMBER,
+  'maxduration': DATA_TYPES.NUMBER,
+  'startdelay': DATA_TYPES.NUMBER,
+  'playbackmethod': DATA_TYPES.ARRAY,
+  'api': DATA_TYPES.ARRAY,
+  'protocols': DATA_TYPES.ARRAY,
+  'w': DATA_TYPES.NUMBER,
+  'h': DATA_TYPES.NUMBER,
+  'battr': DATA_TYPES.ARRAY,
+  'linearity': DATA_TYPES.NUMBER,
+  'placement': DATA_TYPES.NUMBER,
+  'minbitrate': DATA_TYPES.NUMBER,
+  'maxbitrate': DATA_TYPES.NUMBER
+}
 
 const CUSTOM_PARAMS = {
   'kadpageurl': '', // Custom page url
@@ -120,12 +145,54 @@ function _createOrtbTemplate(conf) {
 }
 
 function _createImpressionObject(bid, conf) {
-  return {
+  var mediaTypes = '';
+
+  var impObj = {
     id: bid.bidId,
     tagid: bid.params.adUnitId,
     bidfloor: _parseSlotParam('kadfloor', bid.params.kadfloor),
     secure: 1,
-    banner: {
+    ext: {
+      wrapper: {
+        div: bid.params.divId
+      },
+      bidder: {
+        pubmatic: {
+          pmZoneId: _parseSlotParam('pmzoneid', bid.params.pmzoneid)
+        }
+      }
+    }
+  };
+  if (bid.hasOwnProperty('mediaTypes')) {
+    for (mediaTypes in bid.mediaTypes) {
+      switch (mediaTypes) {
+        case BANNER:
+          var bannerObj = {
+            pos: 0,
+            topframe: utils.inIframe() ? 0 : 1,
+            format: (function() {
+              let arr = [];
+              for (let i = 0, l = bid.sizes.length; i < l; i++) {
+                arr.push({
+                  w: bid.sizes[i][0],
+                  h: bid.sizes[i][1]
+                });
+              }
+              return arr.length > 0 ? arr : UNDEFINED;
+            })()
+          }
+          impObj.banner = bannerObj;
+          break;
+        case VIDEO:
+          var videoObj = _createVideoRequest(bid);
+          if (videoObj !== UNDEFINED) {
+            impObj.video = videoObj;
+          }
+          break;
+      }
+    }
+  } else {
+    bannerObj = {
       pos: 0,
       topframe: utils.inIframe() ? 0 : 1,
       format: (function() {
@@ -138,18 +205,10 @@ function _createImpressionObject(bid, conf) {
         }
         return arr.length > 0 ? arr : UNDEFINED;
       })()
-    },
-    ext: {
-      wrapper: {
-        div: bid.params.divId
-      },
-      bidder: {
-        pubmatic: {
-          pmZoneId: _parseSlotParam('pmzoneid', bid.params.pmzoneid)
-        }
-      }
     }
-  };
+    impObj.banner = bannerObj;
+  }
+  return impObj;
 }
 
 function mandatoryParamCheck(paramName, paramValue) {
@@ -241,9 +300,64 @@ function _createDummyBids (impData, bidResponses, errorCode) {
   }
 }
 
+function _checkParamDataType(key, value, datatype) {
+  var errMsg = 'Ignoring param key: ' + key + ', expects ' + datatype + ', found ' + typeof value;
+  var functionToExecute;
+  switch (datatype) {
+    case DATA_TYPES.BOOLEAN:
+      functionToExecute = utils.isBoolean;
+      break;
+    case DATA_TYPES.NUMBER:
+      functionToExecute = utils.isNumber;
+      break;
+    case DATA_TYPES.STRING:
+      functionToExecute = utils.isStr;
+      break;
+    case DATA_TYPES.ARRAY:
+      functionToExecute = utils.isArray;
+      break;
+  }
+  if (functionToExecute(value)) {
+    return value;
+  }
+  utils.logWarn(LOG_WARN_PREFIX + errMsg);
+  return UNDEFINED;
+}
+
+function _createVideoRequest(bid) {
+  var videoData = bid.params.video;
+  var videoObj;
+
+  if (videoData !== UNDEFINED) {
+    videoObj = {};
+    for (var key in VIDEO_CUSTOM_PARAMS) {
+      if (videoData.hasOwnProperty(key)) {
+        videoObj[key] = _checkParamDataType(key, videoData[key], VIDEO_CUSTOM_PARAMS[key]);
+      }
+    }
+    // read playersize and assign to h and w.
+    if (utils.isArray(bid.mediaTypes.video.playerSize[0])) {
+      videoObj.w = parseInt(bid.mediaTypes.video.playerSize[0][0], 10);
+      videoObj.h = parseInt(bid.mediaTypes.video.playerSize[0][1], 10);
+    } else if (utils.isNumber(bid.mediaTypes.video.playerSize[0])) {
+      videoObj.w = parseInt(bid.mediaTypes.video.playerSize[0], 10);
+      videoObj.h = parseInt(bid.mediaTypes.video.playerSize[1], 10);
+    }
+    if (bid.params.video.hasOwnProperty('skippable')) {
+      videoObj.ext = {
+        'video_skippable': bid.params.video.skippable ? 1 : 0
+      };
+    }
+  } else {
+    videoObj = UNDEFINED;
+    utils.logWarn(LOG_WARN_PREFIX + 'Error: Video config params missing for adunit: ' + bid.params.adUnit + ' with mediaType set as video. Ignoring video impression in the adunit.');
+  }
+  return videoObj;
+}
+
 export const spec = {
   code: BIDDER_CODE,
-
+  supportedMediaTypes: [BANNER, VIDEO],
   /**
   * Determines whether or not the given bid request is valid. Valid bid request must have placementId and hbid
   *
@@ -400,6 +514,12 @@ export const spec = {
                         serverSideResponseTime: partnerResponseTimeObj[summary.bidder] || 0,
                         mi: miObj.hasOwnProperty(summary.bidder) ? miObj[summary.bidder] : UNDEFINED,
                         regexPattern: summary.regex || undefined
+                      }
+                      if (bid.ext.crtype) {
+                        switch (bid.ext.crtype) {
+                          case 'video':
+                            newBid.vastXml = bid.adm;
+                        }
                       }
                       break;
                     default:
