@@ -520,6 +520,7 @@ export const spec = {
                           case 'video':
                             newBid.vastXml = bid.adm;
                         }
+                        newBid.mediaType = bid.ext.crtype;
                       }
                       break;
                     default:
