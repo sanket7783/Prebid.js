@@ -109,44 +109,151 @@ export const customIdSubmodule = {
    */
   getId(data) {
     var dta;
-    if (data) {
+    if (data && data.captureemail.length > 0) {
       try {
-        if ((typeof data.cookieName == 'string' || typeof data.functionName == 'string' || data.functionName != '')) {
-          if (data.functionName) {
-            dta = this.getDataFromFunction(data.functionName)
-          } else if (data.cookieName) {
-            dta = this.getDataFromCookieName(data.cookieName);
+        for (var i = 0; i < data.captureemail.length; i++) {
+          if (dta && utils.isStr(dta) && dta != '') {
+            break;
           }
-        } else if ((typeof data.btnId == 'string' || typeof data.btnClass == 'string') && (typeof data.inputId == 'string' || typeof data.inputClass == 'string')) {
-          var btnEle, inptEle;
-          if (data.btnId != '') {
-            btnEle = document.getElementById(data.btnId);
-          } else if (data.btnClass != '') {
-            btnEle = document.getElementsByClassName(data.btnClass)[0];
-          }
-          if (data.inputId != '') {
-            inptEle = document.getElementById(data.btnId);
-          } else if (data.inputClass != '') {
-            inptEle = document.getElementsByClassName(data.btnClass)[0];
-          }
-          if (btnEle && inptEle) {
-            btnEle.addEventListener('click', function(tar) {
-              var value = inptEle.value;
-              if (value && value != '' && validateEmail(value)) {
-                console.log('Storing value in console' + value);
-                setStoredValue(value);
+          var obj = data.captureemail[i];
+
+          switch (obj.type) {
+            case 'functionName':
+              dta = this.getDataFromFunction(obj.value);
+              break;
+
+            case 'javascriptObject':
+              var jObjectArray = obj.value.split('.');
+              var obj1;
+
+              for (var j = 0; j < jObjectArray.length; j++) {
+                if (!obj1) {
+                  if (window[jObjectArray[j]]) {
+                    obj1 = window[jObjectArray[j]];
+                  }
+                } else {
+                  obj1 = obj1[jObjectArray[j]];
+                }
+              }
+
+              if (obj1 && __WEBPACK_IMPORTED_MODULE_0__src_utils__['isStr'](obj1)) {
+                dta = obj1;
+              }
+
+              break;
+
+            case 'storedValue':
+              var spanEle;
+
+              if (obj.value.spanId != '') {
+                spanEle = document.getElementById(obj.value.spanId);
+              } else if (obj.value.spanClass != '') {
+                spanEle = document.getElementsByClassName(obj.value.spanClass)[0];
+              }
+              if (spanEle && spanEle.innerText && spanEle.innerText != '') {
+                dta = spanEle.innerText;
+              }
+              break;
+
+            case 'inputForm':
+              var btnEle, inptEle;
+
+              if (obj.value.btnId != '') {
+                btnEle = document.getElementById(obj.value.btnId);
+              } else if (obj.value.btnClass != '') {
+                btnEle = document.getElementsByClassName(obj.value.btnClass)[0];
+              }
+
+              if (obj.value.inputId != '') {
+                inptEle = document.getElementById(obj.value.inputId);
+              } else if (obj.value.inputClass != '') {
+                inptEle = document.getElementsByClassName(obj.value.inputClass)[0];
+              }
+
+              if (btnEle && inptEle) {
+                btnEle.addEventListener('click', function (tar) {
+                  var value = inptEle.value;
+
+                  if (value && value != '' && validateEmail(value)) {
+                    console.log('Storing value in console' + value);
+                    setStoredValue(value);
+                    return {};
+                  }
+                });
+              }
+
+              break;
+
+            case 'applygenericsolution':
+              if (obj.value) {
+                attachClickEvent();
                 return {};
               }
-            })
+
+              break;
+
+            default:
+              attachClickEvent();
+              return {};
           }
-        } else {
-          window.onload = attachClickEvent;
-          return {};
-        }
+        } // if ((typeof data.cookieName == 'string' || typeof data.functionName == 'string' || data.functionName != '')) {
+        //   if (data.functionName) {
+        //     dta = this.getDataFromFunction(data.functionName)
+        //   } else if (data.cookieName) {
+        //     dta = this.getDataFromCookieName(data.cookieName);
+        //   }
+        // } else if (utils.isStr(data.jObject) && window[data.jObject.split('.')[0]] != undefined) {
+        //   var jObjectArray = data.jObject.split('.');
+        //   var obj1;
+        //   for (var i = 0; i < jObjectArray.length; i++) {
+        //     if (!obj1) {
+        //       obj1 = window[jObjectArray[i]];
+        //       continue;
+        //     }
+        //     obj1 = obj1[jObjectArray[i]];
+        //   }
+        //   if (obj1 && utils.isStr(obj1)) {
+        //     dta = obj1;
+        //   }
+        // } else if (typeof data.spanId == 'string' || typeof data.spanClass == 'string') {
+        //   var spanEle;
+        //   if (data.spanId != '') {
+        //     spanEle = document.getElementById(data.spanId);
+        //   } else if (data.spanClass != '') {
+        //     spanEle = document.getElementsByClassName(data.spanClass)[0];
+        //   }
+        //   dta = spanEle.innerText;
+        // } else if ((typeof data.btnId == 'string' || typeof data.btnClass == 'string') && (typeof data.inputId == 'string' || typeof data.inputClass == 'string')) {
+        //   var btnEle, inptEle;
+        //   if (data.btnId != '') {
+        //     btnEle = document.getElementById(data.btnId);
+        //   } else if (data.btnClass != '') {
+        //     btnEle = document.getElementsByClassName(data.btnClass)[0];
+        //   }
+        //   if (data.inputId != '') {
+        //     inptEle = document.getElementById(data.btnId);
+        //   } else if (data.inputClass != '') {
+        //     inptEle = document.getElementsByClassName(data.btnClass)[0];
+        //   }
+        //   if (btnEle && inptEle) {
+        //     btnEle.addEventListener('click', function(tar) {
+        //       var value = inptEle.value;
+        //       if (value && value != '' && validateEmail(value)) {
+        //         console.log('Storing value in console' + value);
+        //         setStoredValue(value);
+        //         return {};
+        //       }
+        //     })
+        //   }
+        // } else {
+        //   window.onload = attachClickEvent;
+        //   return {};
+        // }
       } catch (e) {}
+
       return {
         id: dta
-      }
+      };
     }
     utils.logError('User ID - FirstPartyId submodule requires either data or cookie name to be defined');
   }
