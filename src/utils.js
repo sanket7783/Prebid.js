@@ -1,11 +1,12 @@
-import { config } from './config';
+/* eslint-disable no-console */
+import { config } from './config.js';
 import clone from 'just-clone';
-import find from 'core-js/library/fn/array/find';
-import includes from 'core-js/library/fn/array/includes';
-import { parse } from './url';
-const CONSTANTS = require('./constants');
+import find from 'core-js/library/fn/array/find.js';
+import includes from 'core-js/library/fn/array/includes.js';
 
-export { default as deepAccess } from 'dlv/index';
+const CONSTANTS = require('./constants.json');
+
+export { default as deepAccess } from 'dlv/index.js';
 export { default as deepSetValue } from 'dset';
 
 var tArr = 'Array';
@@ -27,10 +28,7 @@ export const internal = {
   createTrackPixelIframeHtml,
   getWindowSelf,
   getWindowTop,
-  getAncestorOrigins,
-  getTopFrameReferrer,
   getWindowLocation,
-  getTopWindowLocation,
   insertUserSyncIframe,
   insertElement,
   isFn,
@@ -169,6 +167,7 @@ export function getAdUnitSizes(adUnit) {
     } else {
       sizes.push(bannerSizes);
     }
+  // TODO - remove this else block when we're ready to deprecate adUnit.sizes for bidders
   } else if (Array.isArray(adUnit.sizes)) {
     if (Array.isArray(adUnit.sizes[0])) {
       sizes = adUnit.sizes;
@@ -243,54 +242,6 @@ function isValidGPTSingleSize(singleSize) {
   return isArray(singleSize) && singleSize.length === 2 && (!isNaN(singleSize[0]) && !isNaN(singleSize[1]));
 }
 
-/**
- * @deprecated This function will be removed soon. Use http://prebid.org/dev-docs/bidder-adaptor.html#referrers
- */
-export function getTopWindowLocation() {
-  if (inIframe()) {
-    let loc;
-    try {
-      loc = internal.getAncestorOrigins() || internal.getTopFrameReferrer();
-    } catch (e) {
-      logInfo('could not obtain top window location', e);
-    }
-    if (loc) return parse(loc, {'decodeSearchAsString': true});
-  }
-  return internal.getWindowLocation();
-}
-
-/**
- * @deprecated This function will be removed soon. Use http://prebid.org/dev-docs/bidder-adaptor.html#referrers
- */
-export function getTopFrameReferrer() {
-  try {
-    // force an exception in x-domain environments. #1509
-    window.top.location.toString();
-    let referrerLoc = '';
-    let currentWindow;
-    do {
-      currentWindow = currentWindow ? currentWindow.parent : window;
-      if (currentWindow.document && currentWindow.document.referrer) {
-        referrerLoc = currentWindow.document.referrer;
-      }
-    }
-    while (currentWindow !== window.top);
-    return referrerLoc;
-  } catch (e) {
-    return window.document.referrer;
-  }
-}
-
-/**
- * @deprecated This function will be removed soon. Use http://prebid.org/dev-docs/bidder-adaptor.html#referrers
- */
-export function getAncestorOrigins() {
-  if (window.document.location && window.document.location.ancestorOrigins &&
-    window.document.location.ancestorOrigins.length >= 1) {
-    return window.document.location.ancestorOrigins[window.document.location.ancestorOrigins.length - 1];
-  }
-}
-
 export function getWindowTop() {
   return window.top;
 }
@@ -301,40 +252,6 @@ export function getWindowSelf() {
 
 export function getWindowLocation() {
   return window.location;
-}
-
-/**
- * @deprecated This function will be removed soon. Use http://prebid.org/dev-docs/bidder-adaptor.html#referrers
- */
-export function getTopWindowUrl() {
-  let href;
-  try {
-    href = internal.getTopWindowLocation().href;
-  } catch (e) {
-    href = '';
-  }
-  return href;
-}
-
-export function getTopWindowHostName() {
-  let hostname;
-  try {
-    hostname = this.getTopWindowLocation().hostname;
-  } catch (e) {
-    hostname = '';
-  }
-  return hostname;
-};
-
-/**
- * @deprecated This function will be removed soon. Use http://prebid.org/dev-docs/bidder-adaptor.html#referrers
- */
-export function getTopWindowReferrer() {
-  try {
-    return window.top.document.referrer;
-  } catch (e) {
-    return document.referrer;
-  }
 }
 
 /**
@@ -910,37 +827,20 @@ export function timestamp() {
   return new Date().getTime();
 }
 
-export function checkCookieSupport() {
-  if (window.navigator.cookieEnabled || !!document.cookie.length) {
-    return true;
-  }
-}
-export function cookiesAreEnabled() {
-  if (internal.checkCookieSupport()) {
-    return true;
-  }
-  window.document.cookie = 'prebid.cookieTest';
-  return window.document.cookie.indexOf('prebid.cookieTest') != -1;
-}
-
-export function getCookie(name) {
-  let m = window.document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]*)\\s*(;|$)');
-  return m ? decodeURIComponent(m[2]) : null;
-}
-
-export function setCookie(key, value, expires, sameSite) {
-  document.cookie = `${key}=${encodeURIComponent(value)}${(expires !== '') ? `; expires=${expires}` : ''}; path=/${sameSite ? `; SameSite=${sameSite}` : ''}`;
+/**
+ * When the deviceAccess flag config option is false, no cookies should be read or set
+ * @returns {boolean}
+ */
+export function hasDeviceAccess() {
+  return config.getConfig('deviceAccess') !== false;
 }
 
 /**
- * @returns {boolean}
+ * @returns {(boolean|undefined)}
  */
-export function localStorageIsEnabled () {
-  try {
-    localStorage.setItem('prebid.cookieTest', '1');
-    return localStorage.getItem('prebid.cookieTest') === '1';
-  } catch (error) {
-    return false;
+export function checkCookieSupport() {
+  if (window.navigator.cookieEnabled || !!document.cookie.length) {
+    return true;
   }
 }
 
@@ -1097,6 +997,24 @@ export function isAdUnitCodeMatchingSlot(slot) {
 export function isSlotMatchingAdUnitCode(adUnitCode) {
   return (slot) => compareCodeAndSlot(slot, adUnitCode);
 }
+
+/**
+ * @summary Uses the adUnit's code in order to find a matching gptSlot on the page
+ */
+export function getGptSlotInfoForAdUnitCode(adUnitCode) {
+  let matchingSlot;
+  if (isGptPubadsDefined()) {
+    // find the first matching gpt slot on the page
+    matchingSlot = find(window.googletag.pubads().getSlots(), isSlotMatchingAdUnitCode(adUnitCode));
+  }
+  if (matchingSlot) {
+    return {
+      gptSlot: matchingSlot.getAdUnitPath(),
+      divId: matchingSlot.getSlotElementId()
+    }
+  }
+  return {};
+};
 
 /**
  * Constructs warning message for when unsupported bidders are dropped from an adunit
@@ -1260,32 +1178,6 @@ export function convertTypes(types, params) {
     }
   });
   return params;
-}
-
-export function setDataInLocalStorage(key, value) {
-  if (hasLocalStorage()) {
-    window.localStorage.setItem(key, value);
-  }
-}
-
-export function getDataFromLocalStorage(key) {
-  if (hasLocalStorage()) {
-    return window.localStorage.getItem(key);
-  }
-}
-
-export function removeDataFromLocalStorage(key) {
-  if (hasLocalStorage()) {
-    window.localStorage.removeItem(key);
-  }
-}
-
-export function hasLocalStorage() {
-  try {
-    return !!window.localStorage;
-  } catch (e) {
-    logError('Local storage api disabled');
-  }
 }
 
 export function isArrayOfNums(val, size) {
