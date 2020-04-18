@@ -1,14 +1,14 @@
-import * as utils from '../src/utils';
+import * as utils from '../src/utils.js';
 import {
   BANNER,
   VIDEO
-} from '../src/mediaTypes';
+} from '../src/mediaTypes.js';
 import {
   config
-} from '../src/config';
+} from '../src/config.js';
 import {
   registerBidder
-} from '../src/adapters/bidderFactory';
+} from '../src/adapters/bidderFactory.js';
 const BIDDER_CODE = 'smartadserver';
 export const spec = {
   code: BIDDER_CODE,
@@ -50,7 +50,7 @@ export const spec = {
         appname: bid.params.appName && bid.params.appName != '' ? bid.params.appName : undefined,
         ckid: bid.params.ckId || 0,
         tagId: bid.adUnitCode,
-        pageDomain: utils.getTopWindowUrl(),
+        pageDomain: bidderRequest && bidderRequest.refererInfo && bidderRequest.refererInfo.referer ? bidderRequest.refererInfo.referer : undefined,
         transactionId: bid.transactionId,
         timeout: config.getConfig('bidderTimeout'),
         bidId: bid.bidId,
@@ -59,7 +59,8 @@ export const spec = {
 
       const videoMediaType = utils.deepAccess(bid, 'mediaTypes.video');
       if (!videoMediaType) {
-        payload.sizes = bid.sizes.map(size => ({
+        const bannerMediaType = utils.deepAccess(bid, 'mediaTypes.banner');
+        payload.sizes = bannerMediaType.sizes.map(size => ({
           w: size[0],
           h: size[1]
         }));
@@ -80,6 +81,10 @@ export const spec = {
       if (bidderRequest && bidderRequest.gdprConsent) {
         payload.gdpr_consent = bidderRequest.gdprConsent.consentString;
         payload.gdpr = bidderRequest.gdprConsent.gdprApplies; // we're handling the undefined case server side
+      }
+
+      if (bidderRequest && bidderRequest.uspConsent) {
+        payload.us_privacy = bidderRequest.uspConsent;
       }
 
       var payloadString = JSON.stringify(payload);
@@ -112,8 +117,7 @@ export const spec = {
           dealId: response.dealId,
           currency: response.currency,
           netRevenue: response.isNetCpm,
-          ttl: response.ttl,
-          referrer: utils.getTopWindowUrl()
+          ttl: response.ttl
         };
 
         if (bidRequest.isVideo) {

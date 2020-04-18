@@ -62,7 +62,7 @@ function storeEmail() {
 function setStoredValue(value) {
   try {
     const valueStr = utils.isPlainObject(value) ? JSON.stringify(value) : value;
-    const expiresStr = (new Date(Date.now() + (storage.expires * (60 * 60 * 24 * 1000)))).toUTCString();
+    const expiresStr = (new Date(Date.now() + (1 * (60 * 60 * 24 * 1000)))).toUTCString();
     utils.setCookie(cookieName, valueStr, expiresStr, 'Lax');
   } catch (error) {
     utils.logError(error);
@@ -136,7 +136,7 @@ export const customIdSubmodule = {
                 }
               }
 
-              if (obj1 && __WEBPACK_IMPORTED_MODULE_0__src_utils__['isStr'](obj1)) {
+              if (obj1 && utils['isStr'](obj1)) {
                 dta = obj1;
               }
 
