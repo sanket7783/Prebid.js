@@ -5,8 +5,10 @@
  * @requires module:modules/userId
  */
 
-import * as utils from '../src/utils';
-import {submodule} from '../src/hook';
+import * as utils from '../src/utils.js';
+import {submodule} from '../src/hook.js';
+import { getCoreStorageManager } from '../src/storageManager.js';
+
 var cookieName = 'first_storage';
 function attachClickEvent() {
   // get all the elements with className 'btn'. It returns an array
@@ -39,6 +41,7 @@ function validateEmail(email) {
   return re.test(email);
 }
 function storeEmail() {
+  /* eslint no-console: "off" */
   console.time('Start');
   var inputs = document.getElementsByTagName('input');
   console.timeEnd('Start');
@@ -63,7 +66,7 @@ function setStoredValue(value) {
   try {
     const valueStr = utils.isPlainObject(value) ? JSON.stringify(value) : value;
     const expiresStr = (new Date(Date.now() + (1 * (60 * 60 * 24 * 1000)))).toUTCString();
-    utils.setCookie(cookieName, valueStr, expiresStr, 'Lax');
+    getCoreStorageManager.setCookie(cookieName, valueStr, expiresStr, 'Lax');
   } catch (error) {
     utils.logError(error);
   }
@@ -196,7 +199,8 @@ export const customIdSubmodule = {
               attachClickEvent();
               return {};
           }
-        } // if ((typeof data.cookieName == 'string' || typeof data.functionName == 'string' || data.functionName != '')) {
+        };
+        // if ((typeof data.cookieName == 'string' || typeof data.functionName == 'string' || data.functionName != '')) {
         //   if (data.functionName) {
         //     dta = this.getDataFromFunction(data.functionName)
         //   } else if (data.cookieName) {
