@@ -2,12 +2,13 @@ import { config } from '../src/config.js';
 import adapterManager from '../src/adapterManager.js';
 import * as utils from '../src/utils.js';
 import { getCoreStorageManager } from '../src/storageManager.js';
+import sha256 from 'crypto-js/sha256';
 
 function setStoredValue(value) {
   try {
     const valueStr = utils.isPlainObject(value) ? JSON.stringify(value) : value;
     const expiresStr = (new Date(Date.now() + (1 * (60 * 60 * 24 * 1000)))).toUTCString();
-    getCoreStorageManager.setCookie('firstPartyId', valueStr, expiresStr, 'Lax');
+    getCoreStorageManager.setCookie('firstPartyId', sha256(valueStr), expiresStr, 'Lax');
   } catch (error) {
     utils.logError(error);
   }
