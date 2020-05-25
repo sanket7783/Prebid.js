@@ -3,12 +3,15 @@ import adapterManager from '../src/adapterManager.js';
 import * as utils from '../src/utils.js';
 import { getCoreStorageManager } from '../src/storageManager.js';
 import sha256 from 'crypto-js/sha256';
+import includes from 'core-js/library/fn/array/includes.js';
 
+var firstPartyIdConfig, moduleNameWhiteList;
+var moduleTypeWhiteList = ['core', 'userId'];
 function setStoredValue(value) {
   try {
     const valueStr = utils.isPlainObject(value) ? JSON.stringify(value) : value;
     const expiresStr = (new Date(Date.now() + (1 * (60 * 60 * 24 * 1000)))).toUTCString();
-    getCoreStorageManager.setCookie('firstPartyId', sha256(valueStr), expiresStr, 'Lax');
+    getCoreStorageManager.setCookie('firstPartyId', valueStr, expiresStr, 'Lax');
   } catch (error) {
     utils.logError(error);
   }
@@ -163,30 +166,81 @@ function storeId(config) {
   }
 }
 
-function getId(config) {
-  return '';
+function getId() {
+  return getCoreStorageManager.getCookie('firstPartyId') || '';
+}
+
+function assignWhitelist(config) {
+  if (config && config.whiteListedModules && config.whiteListedModules.length > 0) {
+    moduleNameWhiteList = config.whiteListedModules;
+  }
+  if (config && config.whiteListedModuleType && config.whiteListedModuleType.length > 0) {
+    moduleTypeWhiteList = config.whiteListedModuleType
+  }
 }
 
 export function makeBidRequestsHook(fn, bidderRequests) {
-  bidderRequests.forEach(bidderRequest => {
-    bidderRequest.bids.forEach(bid => {
-      let result = getId(config);
-      if (result) {
-        if (!bid.userId) {
-          bid['userId'] = {};
+  if (getId() != '') {
+    bidderRequests.forEach(bidderRequest => {
+      bidderRequest.bids.forEach(bid => {
+        let result = getId();
+        if (result) {
+          if (!bid.userId) {
+            bid['userId'] = {};
+          }
+          bid['userId']['firstPartyId'] = result;
         }
-        bid['userId']['firstPartyId'] = result;
-      }
+      });
     });
-  });
+  }
   fn(bidderRequests);
 }
 
+/**
+ * Take Config as
+ * {
+    "name":"customId",
+    "storage.type": "cookie",
+    "storage.expires": "30",
+    "storage.name": "first_storage",
+    "params.captureemail":[
+      {type:"functionName",value:"getCustomData"},
+      {type:"javascriptObject",value:"myData.user.email"},
+      {type:"storedValue",value:{
+        "spanId":"mySpanId"
+      }},
+      {type:"inputForm",value:{
+        btnId:"myBtnId",
+        inputId:"myInputId"
+      }},
+      {type:"applygenericsolution",value:true},
+    ],
+    "params.whiteListedModules":["britepool"],
+    "params.whiteListedModuleType":["bidder","userId"]
+  }
+ */
 export function init() {
-  const firstPartyIdConfig = config.getConfig('firstPartyId');
+  firstPartyIdConfig = config.getConfig('firstPartyId');
   if (firstPartyIdConfig) {
     storeId(firstPartyIdConfig);
     adapterManager.makeBidRequests.after(makeBidRequestsHook);
+    assignWhitelist();
+  }
+}
+
+export function getRawEmail(moduleType, bidderName) {
+  if (includes(moduleTypeWhiteList, moduleType) && includes(moduleNameWhiteList, bidderName)) {
+    return getId();
+  }
+};
+
+export function getEmail(moduleType, bidderName, encryptionAlgo) {
+  if (includes(moduleTypeWhiteList, moduleType) && includes(moduleNameWhiteList, bidderName)) {
+    switch (encryptionAlgo) {
+      case 'sha256':
+        return sha256(getId());
+    }
+    return sha256(getId());
   }
 }
 
