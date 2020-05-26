@@ -4,11 +4,17 @@ import {userSync} from '../src/userSync.js';
 import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 const constants = require('../src/constants.json');
-
+const ENDPOINT_ENV = {
+  'prod': 'https://ow.pubmatic.com/',
+  'qaci': '//ci-sv3-mgmt.pubmatic.com/sswrapper/'
+}
+const COOKIE_SYNC_ENV = {
+  'prod': 'https://ow.pubmatic.com/',
+  'qaci': '//ci-sv3-mgmt.pubmatic.com/sswrapper/'
+}
 const BIDDER_CODE = 'pubmaticServer';
-const ENDPOINT = 'https://ow.pubmatic.com/openrtb/2.5/';
-const ENDPOINT_CI = 'https://ci-sv3-mgmt.pubmatic.com/sswrapper/openrtb/2.5/';
-const COOKIE_SYNC = 'https://ow.pubmatic.com/cookie_sync/?sec=1'; // Set sec=1 to identify secure flag changes at server side
+const ENDPOINT_PART = 'openrtb/2.5/';
+const COOKIE_SYNC_PART = 'cookie_sync/?sec=1'; // Set sec=1 to identify secure flag changes at server side
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 1; // PubMaticServer just picking highest bidding bid from the partners configured
 const UNDEFINED = undefined;
@@ -450,10 +456,7 @@ export const spec = {
       }
     }
     _handleEids(payload, validBidRequests);
-    var endpoint = utils.getParameterByName('qaci') ? ENDPOINT_CI : ENDPOINT;
-    if (utils.getParameterByName('qaurl')) {
-      endpoint = utils.getParameterByName('qaurl');
-    }
+    var endpoint = (utils.getParameterByName('env') ? ENDPOINT_ENV['qaci'] : ENDPOINT_ENV['prod']) + ENDPOINT_PART;
     return {
       method: 'POST',
       url: utils.getParameterByName('pwtvc') ? endpoint + '?debug=1' : endpoint,
@@ -600,8 +603,8 @@ export const spec = {
     if (uspConsent) {
       data['us_privacy'] = encodeURIComponent(uspConsent);
     }
-
-    ajax.ajax(COOKIE_SYNC, cookieSyncCallBack, JSON.stringify(data), {
+    var endpoint = (utils.getParameterByName('env') ? COOKIE_SYNC_ENV['qaci'] : COOKIE_SYNC_ENV['prod']) + COOKIE_SYNC_PART;
+    ajax.ajax(endpoint, cookieSyncCallBack, JSON.stringify(data), {
       withCredentials: true
     });
     return urls;
