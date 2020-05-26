@@ -7,6 +7,7 @@ const constants = require('../src/constants.json');
 
 const BIDDER_CODE = 'pubmaticServer';
 const ENDPOINT = 'https://ow.pubmatic.com/openrtb/2.5/';
+const ENDPOINT_CI = 'https://ci-sv3-mgmt.pubmatic.com/sswrapper/openrtb/2.5/';
 const COOKIE_SYNC = 'https://ow.pubmatic.com/cookie_sync/?sec=1'; // Set sec=1 to identify secure flag changes at server side
 const CURRENCY = 'USD';
 const AUCTION_TYPE = 1; // PubMaticServer just picking highest bidding bid from the partners configured
@@ -449,9 +450,13 @@ export const spec = {
       }
     }
     _handleEids(payload, validBidRequests);
+    var endpoint = utils.getParameterByName('qaci') ? ENDPOINT_CI : ENDPOINT;
+    if (utils.getParameterByName('qaurl')) {
+      endpoint = utils.getParameterByName('qaurl');
+    }
     return {
       method: 'POST',
-      url: utils.getParameterByName('pwtvc') ? ENDPOINT + '?debug=1' : ENDPOINT,
+      url: utils.getParameterByName('pwtvc') ? endpoint + '?debug=1' : endpoint,
       data: JSON.stringify(payload)
     };
   },

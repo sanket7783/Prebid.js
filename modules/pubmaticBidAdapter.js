@@ -6,6 +6,7 @@ import {config} from '../src/config.js';
 const BIDDER_CODE = 'pubmatic';
 const LOG_WARN_PREFIX = 'PubMatic: ';
 const ENDPOINT = 'https://hbopenbid.pubmatic.com/translator?source=prebid-client';
+const ENDPOINT_CI = 'https://hbopenbid.pubmatic.com/translator?source=prebid-client';
 const USER_SYNC_URL_IFRAME = 'https://ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=';
 const USER_SYNC_URL_IMAGE = 'https://image8.pubmatic.com/AdServer/ImgSync?p=';
 const DEFAULT_CURRENCY = 'USD';
@@ -990,10 +991,13 @@ export const spec = {
       payload.app.ext = payload.site.ext || UNDEFINED;
       delete payload.site;
     }
-
+    var endpoint = utils.getParameterByName('qaci') ? ENDPOINT_CI : ENDPOINT;
+    if (utils.getParameterByName('qaurl')) {
+      endpoint = utils.getParameterByName('qaurl');
+    }
     return {
       method: 'POST',
-      url: ENDPOINT,
+      url: endpoint,
       data: JSON.stringify(payload)
     };
   },
