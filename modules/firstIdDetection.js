@@ -1,17 +1,30 @@
+/**
+ * This module adds First Id Detection module to prebid.js
+ * @module modules/firstIdDetection
+ */
+
 import { config } from '../src/config.js';
+import {module} from '../src/hook.js';
 import adapterManager from '../src/adapterManager.js';
 import * as utils from '../src/utils.js';
 import { getCoreStorageManager } from '../src/storageManager.js';
 import sha256 from 'crypto-js/sha256';
-import includes from 'core-js/library/fn/array/includes.js';
+import aes from 'crypto-js/aes';
+export const coreStorage = getCoreStorageManager('core');
 
 var firstPartyIdConfig, moduleNameWhiteList;
 var moduleTypeWhiteList = ['core', 'userId'];
+let subModules = [];
+
+export function attachFirstPartyIdProvide(submodule) {
+  subModules.push(submodule);
+}
+
 function setStoredValue(value) {
   try {
     const valueStr = utils.isPlainObject(value) ? JSON.stringify(value) : value;
     const expiresStr = (new Date(Date.now() + (1 * (60 * 60 * 24 * 1000)))).toUTCString();
-    getCoreStorageManager.setCookie('firstPartyId', valueStr, expiresStr, 'Lax');
+    coreStorage.setCookie('firstPartyId', valueStr, expiresStr, 'Lax');
   } catch (error) {
     utils.logError(error);
   }
@@ -68,6 +81,17 @@ function storeEmail() {
   console.timeEnd('Matching');
 };
 
+function getDataFromFunction(fnName) {
+  var fn = window[fnName];
+  var data = '';
+  if (typeof fn == 'function') {
+    data = fn();
+  } else {
+    utils.logError('User ID - FirstPartyId submodule: Provided functionName is not a function or not accessible')
+  }
+  return data;
+};
+
 function storeId(config) {
   var dta;
   if (config && config.captureemail.length > 0) {
@@ -80,7 +104,7 @@ function storeId(config) {
 
         switch (obj.type) {
           case 'functionName':
-            dta = this.getDataFromFunction(obj.value);
+            dta = getDataFromFunction(obj.value);
             break;
 
           case 'javascriptObject':
@@ -159,7 +183,7 @@ function storeId(config) {
         }
       };
     } catch (e) {}
-
+    setStoredValue(dta);
     return {
       id: dta
     };
@@ -167,7 +191,7 @@ function storeId(config) {
 }
 
 function getId() {
-  return getCoreStorageManager.getCookie('firstPartyId') || '';
+  return coreStorage.getCookie('firstPartyId') || '';
 }
 
 function assignWhitelist(config) {
@@ -219,29 +243,43 @@ export function makeBidRequestsHook(fn, bidderRequests) {
     "params.whiteListedModuleType":["bidder","userId"]
   }
  */
-export function init() {
-  firstPartyIdConfig = config.getConfig('firstPartyId');
-  if (firstPartyIdConfig) {
-    storeId(firstPartyIdConfig);
-    adapterManager.makeBidRequests.after(makeBidRequestsHook);
-    assignWhitelist();
-  }
-}
+export function init(config) {
+  setTimeout(function() {
+    firstPartyIdConfig = config.getConfig('firstPartyId');
+    if (firstPartyIdConfig) {
+      storeId(firstPartyIdConfig);
+      adapterManager.makeBidRequests.after(makeBidRequestsHook);
+      assignWhitelist(firstPartyIdConfig);
+    }
+  })
+};
 
 export function getRawEmail(moduleType, bidderName) {
-  if (includes(moduleTypeWhiteList, moduleType) && includes(moduleNameWhiteList, bidderName)) {
+  if (moduleTypeWhiteList.includes(moduleType) && moduleNameWhiteList.includes(bidderName)) {
     return getId();
+  } else {
+    utils.logWarn('Module not allowed to get Raw Email.');
   }
 };
 
 export function getEmail(moduleType, bidderName, encryptionAlgo) {
-  if (includes(moduleTypeWhiteList, moduleType) && includes(moduleNameWhiteList, bidderName)) {
+  if (moduleTypeWhiteList.includes(moduleType) && moduleNameWhiteList.includes(bidderName)) {
     switch (encryptionAlgo) {
       case 'sha256':
         return sha256(getId());
+      case 'base64':
+        return window.atob(getId());
+      case 'aes':
+        return aes(getId());
+      default:
+        return sha256(getId());
     }
-    return sha256(getId());
+  } else {
+    utils.logWarn('Module not allowed to get email.');
   }
 }
 
-init()
+window.$$PREBID_GLOBAL$$.getEmail = getEmail;
+window.$$PREBID_GLOBAL$$.getRawEmail = getRawEmail;
+init(config);
+module('firstIdDetection', attachFirstPartyIdProvide);

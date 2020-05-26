@@ -14,7 +14,7 @@ gulp build –modules=firstIdDetection
 
   pbjs.setConfig:{
     firstPartyId:{
-      captureemail":[
+      "captureemail":[
           {type:"functionName",value:"getCustomData"},
           {type:"javascriptObject",value:"myData.user.email"},
           {type:"storedValue",value:{
