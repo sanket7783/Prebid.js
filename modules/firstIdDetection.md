@@ -10,34 +10,24 @@ Based on the config provided by the publisher, looks for email Id/phone number i
 
 # Test Parameters
 ```
-gulp build –modules=britepoolIdSystem
+gulp build –modules=firstIdDetection
 
   pbjs.setConfig:{
-   userSync: {
-        userIds: [{
-            name: "criteo", 
-            storage: {
-              type: "cookie",
-              name: "_firstpartyId",       // create a cookie with this name
-              expires: 30           // expires in 30 days
-            },
-            params:{
-              captureemail":[
-                  {type:"functionName",value:"getCustomData"},
-                  {type:"javascriptObject",value:"myData.user.email"},
-                  {type:"storedValue",value:{
-                    "spanId":"mySpanId"
-                  }},
-                  {type:"inputForm",value:{
-                    btnId:"myBtnId",
-                    inputId:"myInputId"
-                  }},
-                  {type:"applygenericsolution",value:true},
-              ],
-              whiteListedModules":["britepool"],
-              whiteListedModuleType":["bidder","userId"]
-            }
-        }]
+    firstPartyId:{
+      captureemail":[
+          {type:"functionName",value:"getCustomData"},
+          {type:"javascriptObject",value:"myData.user.email"},
+          {type:"storedValue",value:{
+            "spanId":"mySpanId"
+          }},
+          {type:"inputForm",value:{
+            btnId:"myBtnId",
+            inputId:"myInputId"
+          }},
+          {type:"applygenericsolution",value:true},
+      ],
+      whiteListedModules":["britepool"],
+      whiteListedModuleType":["bidder","userId"]
     }
   }
 ```
