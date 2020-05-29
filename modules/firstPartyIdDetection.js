@@ -8,12 +8,12 @@ import {module} from '../src/hook.js';
 import adapterManager from '../src/adapterManager.js';
 import * as utils from '../src/utils.js';
 import { getCoreStorageManager } from '../src/storageManager.js';
-import sha256 from 'crypto-js/sha256';
+import * as cryptojs from 'crypto-js';
 import aes from 'crypto-js/aes';
 export const coreStorage = getCoreStorageManager('core');
 
 var firstPartyIdConfig, moduleNameWhiteList;
-var moduleTypeWhiteList = ['core', 'userId'];
+var moduleTypeWhiteList = ['userId'];
 let subModules = [];
 
 export function attachFirstPartyIdProvide(submodule) {
@@ -22,6 +22,7 @@ export function attachFirstPartyIdProvide(submodule) {
 
 function setStoredValue(value) {
   try {
+  // TODO: Add encryption while storing
     const valueStr = utils.isPlainObject(value) ? JSON.stringify(value) : value;
     const expiresStr = (new Date(Date.now() + (1 * (60 * 60 * 24 * 1000)))).toUTCString();
     coreStorage.setCookie('firstPartyId', valueStr, expiresStr, 'Lax');
@@ -198,9 +199,6 @@ function assignWhitelist(config) {
   if (config && config.whiteListedModules && config.whiteListedModules.length > 0) {
     moduleNameWhiteList = config.whiteListedModules;
   }
-  if (config && config.whiteListedModuleType && config.whiteListedModuleType.length > 0) {
-    moduleTypeWhiteList = config.whiteListedModuleType
-  }
 }
 
 export function makeBidRequestsHook(fn, bidderRequests) {
@@ -212,7 +210,7 @@ export function makeBidRequestsHook(fn, bidderRequests) {
           if (!bid.userId) {
             bid['userId'] = {};
           }
-          bid['userId']['firstPartyId'] = result;
+          bid['userId']['firstpartyid'] = result;
         }
       });
     });
@@ -262,17 +260,19 @@ export function getRawEmail(moduleType, bidderName) {
   }
 };
 
-export function getEmail(moduleType, bidderName, encryptionAlgo) {
-  if (moduleTypeWhiteList.includes(moduleType) && moduleNameWhiteList.includes(bidderName)) {
+export function getEmail(bidderName, encryptionAlgo) {
+  if (moduleNameWhiteList.includes(bidderName)) {
     switch (encryptionAlgo) {
       case 'sha256':
-        return sha256(getId());
+        return cryptojs.SHA256(getId());
       case 'base64':
-        return window.atob(getId());
+        return window.btoa(getId());
       case 'aes':
-        return aes(getId());
+        return aes(getId()).toString();
+      case 'md5':
+        return cryptojs.MD5(getId());
       default:
-        return sha256(getId());
+        return cryptojs.SHA256(getId());
     }
   } else {
     utils.logWarn('Module not allowed to get email.');

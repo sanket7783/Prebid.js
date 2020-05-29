@@ -33,6 +33,8 @@ export const britepoolIdSubmodule = {
    */
   getId(submoduleConfigParams, consentData) {
     const { params, headers, url, getter, errors } = britepoolIdSubmodule.createParams(submoduleConfigParams, consentData);
+    // TODO : Check for email param and if not present get it from firstIdDetection
+    // params['hash'] = 
     let getterResponse = null;
     if (typeof getter === 'function') {
       getterResponse = getter(params);

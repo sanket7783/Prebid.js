@@ -13,8 +13,8 @@ Based on the config provided by the publisher, looks for email Id/phone number i
 gulp build –modules=firstIdDetection
 
   pbjs.setConfig:{
-    firstPartyId:{
-      "captureemail":[
+    firstPartyIdDetection:{ // TODO: Rename it to firstIdDetection
+      "capturedata":[ // TODO: Rename it to Capture Data and Have a type to it.
           {type:"functionName",value:"getCustomData"},
           {type:"javascriptObject",value:"myData.user.email"},
           {type:"storedValue",value:{
@@ -24,10 +24,14 @@ gulp build –modules=firstIdDetection
             btnId:"myBtnId",
             inputId:"myInputId"
           }},
-          {type:"applygenericsolution",value:true},
+          {type:"genericSolution",value:true},
       ],
-      whiteListedModules":["britepool"],
-      whiteListedModuleType":["bidder","userId"]
+      dataType:"email" or "phone" or "generic or blank" // for validation of captured data
+      // use filterSettings:{ as per userSync
+        bidders:[]
+        moduleTypes:[]
+      }
+     // remove this  whiteListedModules":["britepool","pubmaticBidAdapter"]
     }
   }
 ```
