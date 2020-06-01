@@ -95,13 +95,13 @@ function getDataFromFunction(fnName) {
 
 function storeId(config) {
   var dta;
-  if (config && config.captureemail.length > 0) {
+  if (config && config.capturedata.length > 0) {
     try {
-      for (var i = 0; i < config.captureemail.length; i++) {
+      for (var i = 0; i < config.capturedata.length; i++) {
         if (dta && utils.isStr(dta) && dta != '') {
           break;
         }
-        var obj = config.captureemail[i];
+        var obj = config.capturedata[i];
 
         switch (obj.type) {
           case 'functionName':
@@ -225,7 +225,7 @@ export function makeBidRequestsHook(fn, bidderRequests) {
     "storage.type": "cookie",
     "storage.expires": "30",
     "storage.name": "first_storage",
-    "params.captureemail":[
+    "params.capturedata":[
       {type:"functionName",value:"getCustomData"},
       {type:"javascriptObject",value:"myData.user.email"},
       {type:"storedValue",value:{
