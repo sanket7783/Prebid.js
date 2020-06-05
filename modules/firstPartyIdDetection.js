@@ -8,8 +8,9 @@ import {module} from '../src/hook.js';
 import adapterManager from '../src/adapterManager.js';
 import * as utils from '../src/utils.js';
 import { getCoreStorageManager } from '../src/storageManager.js';
-import * as cryptojs from 'crypto-js';
 import aes from 'crypto-js/aes';
+import md5 from 'crypto-js/md5';
+import sha256 from 'crypto-js/sha256';
 export const coreStorage = getCoreStorageManager('core');
 
 var firstPartyIdConfig, moduleNameWhiteList;
@@ -264,15 +265,15 @@ export function getEmail(bidderName, encryptionAlgo) {
   if (moduleNameWhiteList.includes(bidderName)) {
     switch (encryptionAlgo) {
       case 'sha256':
-        return cryptojs.SHA256(getId());
+        return sha256(getId()).toString();
       case 'base64':
         return window.btoa(getId());
       case 'aes':
         return aes(getId()).toString();
       case 'md5':
-        return cryptojs.MD5(getId());
+        return md5(getId());
       default:
-        return cryptojs.SHA256(getId());
+        return sha256(getId()).toString();
     }
   } else {
     utils.logWarn('Module not allowed to get email.');

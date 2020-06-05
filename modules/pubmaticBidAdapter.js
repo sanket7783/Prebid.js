@@ -694,6 +694,9 @@ function _handleEids(payload, validBidRequests) {
     _addExternalUserId(eids, utils.deepAccess(bidRequest, `userId.britepoolid`), 'britepool.com', 1);
     _addExternalUserId(eids, utils.deepAccess(bidRequest, `userId.netId`), 'netid.de', 1);
     _addExternalUserId(eids, utils.deepAccess(bidRequest, `userId.firstpartyid`), 'firstpartyid', 1); // TODO : Add function to getEmail encrypted
+    if (window.$$PREBID_GLOBAL$$.getEmail) {
+      _addExternalUserId(eids, window.$$PREBID_GLOBAL$$.getEmail('pubmatic'), 'firstPartyID', 1); // TODO : Add function to getEmail encrypted
+    }
   }
   if (eids.length > 0) {
     payload.user.eids = eids;

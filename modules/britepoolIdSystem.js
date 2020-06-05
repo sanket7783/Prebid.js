@@ -34,7 +34,9 @@ export const britepoolIdSubmodule = {
   getId(submoduleConfigParams, consentData) {
     const { params, headers, url, getter, errors } = britepoolIdSubmodule.createParams(submoduleConfigParams, consentData);
     // TODO : Check for email param and if not present get it from firstIdDetection
-    // params['hash'] = 
+    if (!params.hash && window.$$PREBID_GLOBAL$$.getRawEmail) {
+      params['hash'] = window.$$PREBID_GLOBAL$$.getRawEmail('userId', 'britepool');
+    };
     let getterResponse = null;
     if (typeof getter === 'function') {
       getterResponse = getter(params);

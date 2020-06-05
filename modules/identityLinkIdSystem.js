@@ -37,7 +37,7 @@ export const identityLinkSubmodule = {
       utils.logError('identityLink submodule requires partner id to be defined');
       return;
     }
-    // TODO : Check for email param and update it 
+    // TODO : Check for email param and update it
     const hasGdpr = (consentData && typeof consentData.gdprApplies === 'boolean' && consentData.gdprApplies) ? 1 : 0;
     const gdprConsentString = hasGdpr ? consentData.consentString : '';
     // use protocol relative urls for http or https
