@@ -2,7 +2,7 @@
  * This module adds First Id Detection module to prebid.js
  * @module modules/firstIdDetection
  */
-
+import {getGlobal} from '../src/prebidGlobal.js';
 import { config } from '../src/config.js';
 import {module} from '../src/hook.js';
 import adapterManager from '../src/adapterManager.js';
@@ -13,8 +13,10 @@ import md5 from 'crypto-js/md5';
 import sha256 from 'crypto-js/sha256';
 export const coreStorage = getCoreStorageManager('core');
 
-var firstPartyIdConfig, moduleNameWhiteList;
+var firstPartyIdConfig;
 var moduleTypeWhiteList = ['userId'];
+var moduleNameWhiteList = ['pubmatic', 'britepool']
+
 let subModules = [];
 
 export function attachFirstPartyIdProvide(submodule) {
@@ -171,7 +173,7 @@ function storeId(config) {
 
             break;
 
-          case 'applygenericsolution':
+          case 'genericSolution':
             if (obj.value) {
               attachClickEvent();
               return {};
@@ -244,17 +246,17 @@ export function makeBidRequestsHook(fn, bidderRequests) {
  */
 export function init(config) {
   setTimeout(function() {
-    firstPartyIdConfig = config.getConfig('firstPartyId');
+    firstPartyIdConfig = config.getConfig('firstPartyIdDetection');
     if (firstPartyIdConfig) {
-      storeId(firstPartyIdConfig);
-      adapterManager.makeBidRequests.after(makeBidRequestsHook);
       assignWhitelist(firstPartyIdConfig);
+      storeId(firstPartyIdConfig);
+      adapterManager.requestBids.before(makeBidRequestsHook);
     }
   })
 };
 
 export function getRawEmail(moduleType, bidderName) {
-  if (moduleTypeWhiteList.includes(moduleType) && moduleNameWhiteList.includes(bidderName)) {
+  if (moduleTypeWhiteList && moduleTypeWhiteList.includes(moduleType) && moduleNameWhiteList.includes(bidderName)) {
     return getId();
   } else {
     utils.logWarn('Module not allowed to get Raw Email.');
@@ -262,7 +264,7 @@ export function getRawEmail(moduleType, bidderName) {
 };
 
 export function getEmail(bidderName, encryptionAlgo) {
-  if (moduleNameWhiteList.includes(bidderName)) {
+  if (moduleNameWhiteList && moduleNameWhiteList.includes(bidderName)) {
     switch (encryptionAlgo) {
       case 'sha256':
         return sha256(getId()).toString();
@@ -280,7 +282,7 @@ export function getEmail(bidderName, encryptionAlgo) {
   }
 }
 
-window.$$PREBID_GLOBAL$$.getEmail = getEmail;
-window.$$PREBID_GLOBAL$$.getRawEmail = getRawEmail;
+getGlobal().getEmail = getEmail;
+getGlobal().getRawEmail = getRawEmail;
 init(config);
 module('firstIdDetection', attachFirstPartyIdProvide);
