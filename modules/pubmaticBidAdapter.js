@@ -932,6 +932,23 @@ export const spec = {
     let parsedRequest = JSON.parse(request.data);
     let parsedReferrer = parsedRequest.site && parsedRequest.site.ref ? parsedRequest.site.ref : '';
     try {
+      let requestData = JSON.parse(request.data);
+      if (requestData && requestData.imp && requestData.imp.length > 0) {
+        requestData.imp.forEach(impData => {
+          bidResponses.push({
+            requestId: impData.id,
+            width: 0,
+            height: 0,
+            ttl: 300,
+            ad: '',
+            creativeId: 0,
+            netRevenue: NET_REVENUE,
+            cpm: 0,
+            currency: respCur,
+            referrer: parsedReferrer,
+          })
+        });
+      }
       if (response.body && response.body.seatbid && utils.isArray(response.body.seatbid)) {
         // Supporting multiple bid responses for same adSize
         respCur = response.body.cur || respCur;
@@ -939,63 +956,62 @@ export const spec = {
           seatbidder.bid &&
             utils.isArray(seatbidder.bid) &&
             seatbidder.bid.forEach(bid => {
-              let newBid = {
-                requestId: bid.impid,
-                cpm: (parseFloat(bid.price) || 0).toFixed(2),
-                width: bid.w,
-                height: bid.h,
-                creativeId: bid.crid || bid.id,
-                dealId: bid.dealid,
-                currency: respCur,
-                netRevenue: NET_REVENUE,
-                ttl: 300,
-                referrer: parsedReferrer,
-                ad: bid.adm,
-                pm_seat: seatbidder.seat || null,
-                pm_dspid: bid.ext && bid.ext.dspid ? bid.ext.dspid : null
-              };
-              if (parsedRequest.imp && parsedRequest.imp.length > 0) {
-                parsedRequest.imp.forEach(req => {
-                  if (bid.impid === req.id) {
-                    _checkMediaType(bid.adm, newBid);
-                    switch (newBid.mediaType) {
-                      case BANNER:
-                        break;
-                      case VIDEO:
-                        newBid.width = bid.hasOwnProperty('w') ? bid.w : req.video.w;
-                        newBid.height = bid.hasOwnProperty('h') ? bid.h : req.video.h;
-                        newBid.vastXml = bid.adm;
-                        break;
-                      case NATIVE:
-                        _parseNativeResponse(bid, newBid);
-                        break;
-                    }
+              bidResponses.forEach(br => {
+                if (br.requestId == bid.impid) {
+                  br.requestId = bid.impid;
+                  br.cpm = (parseFloat(bid.price) || 0).toFixed(2);
+                  br.width = bid.w;
+                  br.height = bid.h;
+                  br.sspID = bid.id || '';
+                  br.creativeId = bid.crid || bid.id;
+                  br.dealId = bid.dealid;
+                  br.currency = respCur;
+                  br.netRevenue = NET_REVENUE;
+                  br.ttl = 300;
+                  br.referrer = parsedReferrer;
+                  br.ad = bid.adm;
+                  br.pm_seat = seatbidder.seat || null;
+                  br.pm_dspid = bid.ext && bid.ext.dspid ? bid.ext.dspid : null
+                  if (requestData.imp && requestData.imp.length > 0) {
+                    requestData.imp.forEach(req => {
+                      if (bid.impid === req.id) {
+                        _checkMediaType(bid.adm, br);
+                        switch (br.mediaType) {
+                          case BANNER:
+                            break;
+                          case VIDEO:
+                            br.width = bid.hasOwnProperty('w') ? bid.w : req.video.w;
+                            br.height = bid.hasOwnProperty('h') ? bid.h : req.video.h;
+                            br.vastXml = bid.adm;
+                            break;
+                          case NATIVE:
+                            _parseNativeResponse(bid, br);
+                            break;
+                        }
+                      }
+                    });
                   }
-                });
-              }
-              if (bid.ext && bid.ext.deal_channel) {
-                newBid['dealChannel'] = dealChannelValues[bid.ext.deal_channel] || null;
-              }
-
-              newBid.meta = {};
-              if (bid.ext && bid.ext.dspid) {
-                newBid.meta.networkId = bid.ext.dspid;
-              }
-              if (bid.ext && bid.ext.advid) {
-                newBid.meta.buyerId = bid.ext.advid;
-              }
-              if (bid.adomain && bid.adomain.length > 0) {
-                newBid.meta.clickUrl = bid.adomain[0];
-              }
-
-              // adserverTargeting
-              if (seatbidder.ext && seatbidder.ext.buyid) {
-                newBid.adserverTargeting = {
-                  'hb_buyid_pubmatic': seatbidder.ext.buyid
-                };
-              }
-
-              bidResponses.push(newBid);
+                  if (bid.ext && bid.ext.deal_channel) {
+                    br['dealChannel'] = dealChannelValues[bid.ext.deal_channel] || null;
+                  }
+                  br.meta = {};
+                  if (bid.ext && bid.ext.dspid) {
+                    br.meta.networkId = bid.ext.dspid;
+                  }
+                  if (bid.ext && bid.ext.advid) {
+                    br.meta.buyerId = bid.ext.advid;
+                  }
+                  if (bid.adomain && bid.adomain.length > 0) {
+                    br.meta.clickUrl = bid.adomain[0];
+                  }
+                  // adserverTargeting
+                  if (seatbidder.ext && seatbidder.ext.buyid) {
+                    br.adserverTargeting = {
+                      'hb_buyid_pubmatic': seatbidder.ext.buyid
+                    };
+                  }
+                }
+              });
             });
         });
       }
