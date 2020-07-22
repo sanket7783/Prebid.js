@@ -6,10 +6,10 @@ import { createEidsArray } from 'modules/userId/eids.js';
 const constants = require('src/constants.json');
 
 describe('PubMatic adapter', function () {
-  let bidRequests;
+  let firstBid, secondBid, bidRequests;
   let videoBidRequests;
   let multipleMediaRequests;
-  let bidResponses;
+  let firstResponse, secondResponse, bidResponses;
   let nativeBidRequests;
   let nativeBidRequestsWithAllParams;
   let nativeBidRequestsWithoutAsset;
@@ -45,41 +45,93 @@ describe('PubMatic adapter', function () {
         }
       ]
     };
+    firstBid = {
+      bidder: 'pubmatic',
+      mediaTypes: {
+        banner: {
+          sizes: [[728, 90], [160, 600]]
+        }
+      },
+      params: {
+        publisherId: '301',
+        adSlot: '/15671365/DMDemo@300x250:0',
+        kadfloor: '1.2',
+        pmzoneid: 'aabc, ddef',
+        kadpageurl: 'www.publisher.com',
+        yob: '1986',
+        gender: 'M',
+        lat: '12.3',
+        lon: '23.7',
+        wiid: '1234567890',
+        profId: '100',
+        verId: '200',
+        currency: 'AUD',
+        dctr: 'key1:val1,val2|key2:val1'
+      },
+      placementCode: '/19968336/header-bid-tag-1',
+      sizes: [
+        [300, 250],
+        [300, 600],
+        ['fluid']
+      ],
+      bidId: '23acc48ad47af5',
+      requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
+      bidderRequestId: '1c56ad30b9b8ca8',
+      transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
+      schain: schainConfig
+    };
 
-    bidRequests = [
-      {
-        bidder: 'pubmatic',
-        mediaTypes: {
-          banner: {
-            sizes: [[728, 90], [160, 600]]
-          }
-        },
-        params: {
-          publisherId: '301',
-          adSlot: '/15671365/DMDemo@300x250:0',
-          kadfloor: '1.2',
-    		  pmzoneid: 'aabc, ddef',
-    		  kadpageurl: 'www.publisher.com',
-    		  yob: '1986',
-    		  gender: 'M',
-    		  lat: '12.3',
-    		  lon: '23.7',
-    		  wiid: '1234567890',
-    		  profId: '100',
-    		  verId: '200',
-          currency: 'AUD',
-          dctr: 'key1:val1,val2|key2:val1'
-        },
-        placementCode: '/19968336/header-bid-tag-1',
-        sizes: [[300, 250], [300, 600]],
-        bidId: '23acc48ad47af5',
-        requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
-        bidderRequestId: '1c56ad30b9b8ca8',
-        transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-        schain: schainConfig
+    secondBid = JSON.parse(JSON.stringify(firstBid));
+    secondBid.bidId = '22bddb28db77e';
+
+    bidRequests = [firstBid, secondBid];
+
+    firstResponse = {
+      'seat': 'seat-id',
+      'ext': {
+        'buyid': 'BUYER-ID-987'
+      },
+      'bid': [{
+        'id': '74858439-49D7-4169-BA5D-44A046315B2F',
+        'impid': '23acc48ad47af5',
+        'price': 1.3,
+        'adm': 'image3.pubmatic.com Layer based creative',
+        'adomain': ['blackrock.com'],
+        'h': 250,
+        'w': 300,
+        'ext': {
+          'deal_channel': 6,
+          'advid': 976,
+          'dspid': 123
+        }
+      }]
+    };
+    secondResponse = {
+      'ext': {
+        'buyid': 'BUYER-ID-789'
+      },
+      'bid': [{
+        'id': '74858439-49D7-4169-BA5D-44A046315BEF',
+        'impid': '22bddb28db77e',
+        'price': 1.7,
+        'adm': 'image3.pubmatic.com Layer based creative',
+        'adomain': ['hivehome.com'],
+        'h': 250,
+        'w': 300,
+        'ext': {
+          'deal_channel': 5,
+          'advid': 832,
+          'dspid': 422
+        }
+      }]
+    };
+
+    bidResponses = {
+      'body': {
+        'id': '93D3BAD6-E2E2-49FB-9D89-920B1761C865',
+        'seatbid': [firstResponse, secondResponse]
       }
-    ];
-
+    };
     videoBidRequests =
     [
       {
@@ -529,50 +581,6 @@ describe('PubMatic adapter', function () {
         transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
       }
     ];
-
-    bidResponses = {
-      'body': {
-        'id': '93D3BAD6-E2E2-49FB-9D89-920B1761C865',
-        'seatbid': [{
-          'seat': 'seat-id',
-          'ext': {
-            'buyid': 'BUYER-ID-987'
-          },
-          'bid': [{
-            'id': '74858439-49D7-4169-BA5D-44A046315B2F',
-            'impid': '22bddb28db77d',
-            'price': 1.3,
-            'adm': 'image3.pubmatic.com Layer based creative',
-            'adomain': ['blackrock.com'],
-            'h': 250,
-            'w': 300,
-            'ext': {
-              'deal_channel': 6,
-              'advid': 976,
-              'dspid': 123
-            }
-          }]
-        }, {
-          'ext': {
-            'buyid': 'BUYER-ID-789'
-          },
-          'bid': [{
-            'id': '74858439-49D7-4169-BA5D-44A046315BEF',
-            'impid': '22bddb28db77e',
-            'price': 1.7,
-            'adm': 'image3.pubmatic.com Layer based creative',
-            'adomain': ['hivehome.com'],
-            'h': 250,
-            'w': 300,
-            'ext': {
-              'deal_channel': 5,
-              'advid': 832,
-              'dspid': 422
-            }
-          }]
-        }]
-      }
-    };
 
     nativeBidResponse = {
       'body': {
