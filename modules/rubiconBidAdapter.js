@@ -115,6 +115,7 @@ utils._each(sizeMap, (item, key) => sizeMap[item] = key);
 
 export const spec = {
   code: 'rubicon',
+  aliases: ['rubicon2'],
   gvlid: GVLID,
   supportedMediaTypes: [BANNER, VIDEO],
   /**
