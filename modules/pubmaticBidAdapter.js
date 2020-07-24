@@ -10,7 +10,6 @@ const USER_SYNC_URL_IFRAME = 'https://ads.pubmatic.com/AdServer/js/showad.js#PIX
 const USER_SYNC_URL_IMAGE = 'https://image8.pubmatic.com/AdServer/ImgSync?p=';
 const DEFAULT_CURRENCY = 'USD';
 const AUCTION_TYPE = 1;
-const PUBMATIC_DIGITRUST_KEY = 'nFIn8aLzbd';
 const PUBMATIC_ALIAS = 'pubmatic2';
 const UNDEFINED = undefined;
 const DEFAULT_WIDTH = 0;

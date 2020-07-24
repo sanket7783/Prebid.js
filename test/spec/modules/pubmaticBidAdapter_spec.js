@@ -6,13 +6,12 @@ import { createEidsArray } from 'modules/userId/eids.js';
 const constants = require('src/constants.json');
 
 describe('PubMatic adapter', function () {
-  let firstBid, secondBid, bidRequests;
+  let firstBid, secoundBid, bidRequests;
   let videoBidRequests;
   let multipleMediaRequests;
   let bidResponses;
   let emptyBidResponse;
   let firstResponse, secoundResponse;
-  let firstBid, secoundBid;
   let nativeBidRequests;
   let nativeBidRequestsWithAllParams;
   let nativeBidRequestsWithoutAsset;
