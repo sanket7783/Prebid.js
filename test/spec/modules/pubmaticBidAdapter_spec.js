@@ -6,7 +6,7 @@ import { createEidsArray } from 'modules/userId/eids.js';
 const constants = require('src/constants.json');
 
 describe('PubMatic adapter', function () {
-  let bidRequests;
+  let firstBid, secondBid, bidRequests;
   let videoBidRequests;
   let multipleMediaRequests;
   let bidResponses;
@@ -88,7 +88,6 @@ describe('PubMatic adapter', function () {
     secoundBid.bidId = '22bddb28db77e';
 
     bidRequests = [firstBid, secoundBid];
-
     firstResponse = {
       'seat': 'seat-id',
       'ext': {

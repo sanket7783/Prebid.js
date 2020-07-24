@@ -101,6 +101,7 @@
   },
   "dependencies": {
     "@babel/core": "^7.2.2",
+    "babel-loader": "^8.0.5",
     "@babel/preset-env": "^7.2.3",
     "babel-plugin-transform-object-assign": "^6.22.0",
     "babel-loader": "^8.0.5",
@@ -115,6 +116,8 @@
     "fun-hooks": "^0.9.9",
     "jsencrypt": "^3.0.0-rc.1",
     "just-clone": "^1.0.2",
+    "karma": "^4.0.0",
+    "live-connect-js": "1.1.10",
     "gulp": "^4.0.0",
     "gulp-clean": "^0.3.2",
     "gulp-concat": "^2.6.0",
@@ -136,6 +139,6 @@
     "webpack": "^3.0.0",
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-stream": "^3.2.0",
-    "live-connect-js": "1.1.10"
+    "opn": "^5.4.0"
   }
 }
