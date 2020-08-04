@@ -108,7 +108,7 @@
  * @property {(function|undefined)} callback - function that will return an id
  */
 
-import find from 'core-js/library/fn/array/find.js';
+import find from 'core-js-pure/features/array/find.js';
 import {config} from '../../src/config.js';
 import events from '../../src/events.js';
 import * as utils from '../../src/utils.js';
@@ -143,6 +143,9 @@ let configRegistry = [];
 
 /** @type {Submodule[]} */
 let submoduleRegistry = [];
+
+/** @type {(number|undefined)} */
+let timeoutID;
 
 /** @type {(number|undefined)} */
 export let syncDelay;
@@ -248,7 +251,7 @@ function processSubmoduleCallbacks(submodules, cb) {
         // cache decoded value (this is copied to every adUnit bid)
         submodule.idObj = submodule.submodule.decode(idObj);
       } else {
-        utils.logError(`${MODULE_NAME}: ${submodule.submodule.name} - request id responded with an empty value`);
+        utils.logInfo(`${MODULE_NAME}: ${submodule.submodule.name} - request id responded with an empty value`);
       }
       done();
     });
@@ -256,6 +259,7 @@ function processSubmoduleCallbacks(submodules, cb) {
     // clear callback, this prop is used to test if all submodule callbacks are complete below
     submodule.callback = undefined;
   });
+  clearTimeout(timeoutID);
 }
 
 /**
@@ -322,9 +326,9 @@ function initializeSubmodulesAndExecuteCallbacks(continueAuction) {
             }
           }
           utils.logInfo(`${MODULE_NAME} - auction delayed by ${auctionDelay} at most to fetch ids`);
-          processSubmoduleCallbacks(submodulesWithCallbacks, continueCallback);
 
-          setTimeout(continueCallback, auctionDelay);
+          timeoutID = setTimeout(continueCallback, auctionDelay);
+          processSubmoduleCallbacks(submodulesWithCallbacks, continueCallback);
         } else {
           // wait for auction complete before processing submodule callbacks
           events.on(CONSTANTS.EVENTS.REQUEST_BIDS, function auctionEndHandler() {
@@ -379,10 +383,20 @@ function getUserIds() {
 }
 
 /**
+ * This function will be exposed in global-name-space so that userIds stored by Prebid UserId module can be used by external codes as well.
+ * Simple use case will be passing these UserIds to A9 wrapper solution
+ */
+function getUserIdsAsEids() {
+  // initialize submodules only when undefined
+  initializeSubmodulesAndExecuteCallbacks();
+  return createEidsArray(getCombinedSubmoduleIds(initializedSubmodules));
+}
+
+/**
  * This hook returns updated list of submodules which are allowed to do get user id based on TCF 2 enforcement rules configured
  */
 export const validateGdprEnforcement = hook('sync', function (submodules, consentData) {
-  return submodules;
+  return {userIdModules: submodules, hasValidated: consentData && consentData.hasValidated};
 }, 'validateGdprEnforcement');
 
 /**
@@ -392,8 +406,8 @@ export const validateGdprEnforcement = hook('sync', function (submodules, consen
  */
 function initSubmodules(submodules, consentData) {
   // gdpr consent with purpose one is required, otherwise exit immediately
-  let userIdModules = validateGdprEnforcement(submodules, consentData);
-  if (!hasGDPRConsent(consentData)) {
+  let {userIdModules, hasValidated} = validateGdprEnforcement(submodules, consentData);
+  if (!hasValidated && !hasGDPRConsent(consentData)) {
     utils.logWarn(`${MODULE_NAME} - gdpr permission not valid for local storage or cookies, exit module`);
     return [];
   }
@@ -410,10 +424,6 @@ function initSubmodules(submodules, consentData) {
       if (typeof submodule.config.storage.refreshInSeconds === 'number') {
         const storedDate = new Date(getStoredValue(submodule.config.storage, 'last'));
         refreshNeeded = storedDate && (Date.now() - storedDate.getTime() > submodule.config.storage.refreshInSeconds * 1000);
-      }
-
-      if (CONSTANTS.SUBMODULES_THAT_ALWAYS_REFRESH_ID[submodule.config.name] === true) {
-        refreshNeeded = true;
       }
 
       if (!storedId || refreshNeeded) {
@@ -439,7 +449,7 @@ function initSubmodules(submodules, consentData) {
 
       if (storedId) {
         // cache decoded value (this is copied to every adUnit bid)
-        submodule.idObj = submodule.submodule.decode(storedId, submodule.config);
+        submodule.idObj = submodule.submodule.decode(storedId, submodule.config.params);
       }
     } else if (submodule.config.value) {
       // cache decoded value (this is copied to every adUnit bid)
@@ -448,7 +458,7 @@ function initSubmodules(submodules, consentData) {
       const response = submodule.submodule.getId(submodule.config.params, consentData, undefined);
       if (utils.isPlainObject(response)) {
         if (typeof response.callback === 'function') { submodule.callback = response.callback; }
-        if (response.id) { submodule.idObj = submodule.submodule.decode(response.id, submodule.config); }
+        if (response.id) { submodule.idObj = submodule.submodule.decode(response.id, submodule.config.params); }
       }
     }
     carry.push(submodule);
@@ -572,6 +582,7 @@ export function init(config) {
 
   // exposing getUserIds function in global-name-space so that userIds stored in Prebid can be used by external codes.
   (getGlobal()).getUserIds = getUserIds;
+  (getGlobal()).getUserIdsAsEids = getUserIdsAsEids;
 }
 
 // init config update listener to start the application

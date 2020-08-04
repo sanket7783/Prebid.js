@@ -565,7 +565,7 @@ export const spec = {
     _handleEids(payload, validBidRequests);
     return {
       method: 'POST',
-      url: utils.getParameterByName('pwtvc') ? ENDPOINT + '?debug=1' : ENDPOINT,
+      url: utils.getParameterByName('pwtvc') ? ENDPOINT + '?debug=2' : ENDPOINT,
       data: JSON.stringify(payload)
     };
   },
@@ -637,6 +637,9 @@ export const spec = {
                             newBid.vastXml = bid.adm;
                         }
                         newBid.mediaType = bid.ext.crtype;
+                      }
+                      if (bid.ext.prebid && bid.ext.prebid.targeting) {
+                        newBid.adserverTargeting = bid.ext.prebid.targeting
                       }
                       break;
                     default:

@@ -58,6 +58,7 @@ var adVideoAdUnits = [
       params: {
         publisherId: '156209',                  // required
         adSlot: 'pubmatic_video1',              // optional
+        oustreamAU: 'pubmatic-test',            // required if mediaTypes-> video-> context is 'outstream'. This value can be get by BlueBillyWig Team.
         video: {
           mimes: ['video/mp4','video/x-flv'],   // required
           skippable: true,                      // optional
@@ -202,5 +203,7 @@ pbjs.setConfig({
 ```
 Note: Combine the above the configuration with any other UserSync configuration.  Multiple setConfig() calls overwrite each other and only last call for a given attribute will take effect. 
 
-Note: PubMatic will return a test-bid if "pubmaticTest=true" is present in page URL
+# Notes: 
+- PubMatic will return a test-bid if "pubmaticTest=true" is present in page URL
+- PubMatic will set bid.adserverTargeting.hb_buyid_pubmatic targeting key while submitting a bid into Prebid
 
