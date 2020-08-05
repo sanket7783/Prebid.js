@@ -565,7 +565,7 @@ export const spec = {
     _handleEids(payload, validBidRequests);
     return {
       method: 'POST',
-      url: utils.getParameterByName('pwtvc') ? ENDPOINT + '?debug=2' : ENDPOINT,
+      url: utils.getParameterByName('pwtvc') ? ENDPOINT + '?debug=1' : ENDPOINT,
       data: JSON.stringify(payload)
     };
   },
