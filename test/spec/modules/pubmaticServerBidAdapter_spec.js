@@ -4,7 +4,7 @@ import * as utils from 'src/utils';
 const constants = require('src/constants.json');
 
 describe('PubMaticServer adapter', () => {
-  let bidRequests;
+  let bidRequests, videoBidRequests;
   let bidResponses;
   let errorCodeBidResponses;
 
@@ -78,6 +78,37 @@ describe('PubMaticServer adapter', () => {
         transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
       }
     ];
+
+    videoBidRequests = [{
+      code: 'video1',
+      mediaTypes: {
+        video: {
+          playerSize: [640, 480],
+          context: 'instream'
+        }
+      },
+      bidder: 'pubmaticServer',
+      bidId: '22bddb28db77d',
+      params: {
+        publisherId: '5890',
+        adSlot: 'Div1', // ad_id or tagid
+        video: {
+          mimes: ['video/mp4', 'video/x-flv'],
+          skippable: true,
+          minduration: 5,
+          maxduration: 30,
+          startdelay: 5,
+          playbackmethod: [1, 3],
+          api: [1, 2],
+          protocols: [2, 3],
+          battr: [13, 14],
+          linearity: 1,
+          placement: 2,
+          minbitrate: 10,
+          maxbitrate: 10
+        }
+      }
+    }];
 
     bidResponses = {
       'body': {
@@ -321,6 +352,22 @@ describe('PubMaticServer adapter', () => {
 
         expect(data.imp[0].banner.format[0].w).to.equal(300); // width from 1st element of sizes array
         expect(data.imp[0].banner.format[0].h).to.equal(250); // height from 1st element of sizes array
+      });
+
+      it('request should have video params', () => {
+  		  let request = spec.buildRequests(videoBidRequests);
+  		  let data = JSON.parse(request.data);
+  		  // expect(data.at).to.equal(1); // auction type
+  		  expect(data.cur[0]).to.equal('USD'); // currency
+  		  expect(data.ext.wrapper.wp).to.equal('pbjs'); // Prebid TransactionId
+  		  expect(data.ext.wrapper.wiid).to.equal(videoBidRequests[0].params.wiid); // OpenWrap: Wrapper Impression ID
+        // expect(data.ext.wrapper.profileid).to.equal(parseInt(videoBidRequests[0].params.profId)); // OpenWrap: Wrapper Profile ID
+  		  // expect(data.ext.wrapper.versionid).to.equal(parseInt(videoBidRequests[0].params.verId)); // OpenWrap: Wrapper Profile Version ID
+  		  expect(data.imp[0].id).to.equal(videoBidRequests[0].bidId); // Prebid bid id is passed as id
+  		  expect(data.imp[0].tagid).to.equal(videoBidRequests[0].params.adUnitId); // tagid
+        expect(data.imp[0].video.mimes).to.deep.equal(videoBidRequests[0].params.video.mimes);
+        expect(data.imp[0].video.minduration).to.equal(videoBidRequests[0].params.video.minduration);
+        expect(data.imp[0].video.maxduration).to.equal(videoBidRequests[0].params.video.maxduration);
   		});
 
       it('Request params check with GDPR consent', () => {
