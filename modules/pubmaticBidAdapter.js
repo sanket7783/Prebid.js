@@ -2,6 +2,7 @@ import * as utils from '../src/utils.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, VIDEO, NATIVE } from '../src/mediaTypes.js';
 import {config} from '../src/config.js';
+import { Renderer } from '../src/Renderer.js';
 
 const BIDDER_CODE = 'pubmatic';
 const LOG_WARN_PREFIX = 'PubMatic: ';
@@ -10,10 +11,13 @@ const USER_SYNC_URL_IFRAME = 'https://ads.pubmatic.com/AdServer/js/showad.js#PIX
 const USER_SYNC_URL_IMAGE = 'https://image8.pubmatic.com/AdServer/ImgSync?p=';
 const DEFAULT_CURRENCY = 'USD';
 const AUCTION_TYPE = 1;
+const PUBMATIC_ALIAS = 'pubmatic2';
 const UNDEFINED = undefined;
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
 const PREBID_NATIVE_HELP_LINK = 'http://prebid.org/dev-docs/show-native-ads.html';
+const PUBLICATION = 'pubmatic'; // Your publication on Blue Billywig, potentially with environment (e.g. publication.bbvms.com or publication.test.bbvms.com)
+const RENDERER_URL = 'https://pubmatic.bbvms.com/r/'.concat('$RENDERER', '.js');
 const CUSTOM_PARAMS = {
   'kadpageurl': '', // Custom page url
   'gender': '', // User gender
@@ -105,6 +109,61 @@ const dealChannelValues = {
   6: 'PMPG'
 };
 
+// BB stands for Blue BillyWig
+const BB_RENDERER = {
+  bootstrapPlayer: function(bid) {
+    const config = {
+      code: bid.adUnitCode,
+    };
+
+    if (bid.vastXml) config.vastXml = bid.vastXml;
+    else if (bid.vastUrl) config.vastUrl = bid.vastUrl;
+
+    if (!bid.vastXml && !bid.vastUrl) {
+      utils.logWarn(`${LOG_WARN_PREFIX}: No vastXml or vastUrl on bid, bailing...`);
+      return;
+    }
+
+    const rendererId = BB_RENDERER.getRendererId(PUBLICATION, bid.rendererCode);
+
+    const ele = document.getElementById(bid.adUnitCode); // NB convention
+
+    let renderer;
+
+    for (let rendererIndex = 0; rendererIndex < window.bluebillywig.renderers.length; rendererIndex++) {
+      if (window.bluebillywig.renderers[rendererIndex]._id === rendererId) {
+        renderer = window.bluebillywig.renderers[rendererIndex];
+        break;
+      }
+    }
+
+    if (renderer) renderer.bootstrap(config, ele);
+    else utils.logWarn(`${LOG_WARN_PREFIX}: Couldn't find a renderer with ${rendererId}`);
+  },
+  newRenderer: function(rendererCode, adUnitCode) {
+    var rendererUrl = RENDERER_URL.replace('$RENDERER', rendererCode);
+    const renderer = Renderer.install({
+      url: rendererUrl,
+      loaded: false,
+      adUnitCode
+    });
+
+    try {
+      renderer.setRender(BB_RENDERER.outstreamRender);
+    } catch (err) {
+      utils.logWarn(`${LOG_WARN_PREFIX}: Error tying to setRender on renderer`, err);
+    }
+
+    return renderer;
+  },
+  outstreamRender: function(bid) {
+    bid.renderer.push(function() { BB_RENDERER.bootstrapPlayer(bid) });
+  },
+  getRendererId: function(pub, renderer) {
+    return `${pub}-${renderer}`; // NB convention!
+  }
+};
+
 let publisherId = 0;
 let isInvalidNativeRequest = false;
 let NATIVE_ASSET_ID_TO_KEY_MAP = {};
@@ -169,14 +228,16 @@ function _parseAdSlot(bid) {
   bid.params.adUnit = splits[0];
   if (splits.length > 1) {
     // i.e size is specified in adslot, so consider that and ignore sizes array
-    splits = splits[1].split('x');
+    splits = splits.length == 2 ? splits[1].split('x') : splits.length == 3 ? splits[2].split('x') : [];
     if (splits.length != 2) {
       utils.logWarn(LOG_WARN_PREFIX + 'AdSlot Error: adSlot not in required format');
       return;
     }
     bid.params.width = parseInt(splits[0], 10);
     bid.params.height = parseInt(splits[1], 10);
-  } else if (bid.hasOwnProperty('mediaTypes') &&
+  }
+  // Case : if Size is present in ad slot as well as in mediaTypes then ???
+  if (bid.hasOwnProperty('mediaTypes') &&
          bid.mediaTypes.hasOwnProperty(BANNER) &&
           bid.mediaTypes.banner.hasOwnProperty('sizes')) {
     var i = 0;
@@ -190,9 +251,13 @@ function _parseAdSlot(bid) {
     if (bid.mediaTypes.banner.sizes.length >= 1) {
       // set the first size in sizes array in bid.params.width and bid.params.height. These will be sent as primary size.
       // The rest of the sizes will be sent in format array.
-      bid.params.width = bid.mediaTypes.banner.sizes[0][0];
-      bid.params.height = bid.mediaTypes.banner.sizes[0][1];
-      bid.mediaTypes.banner.sizes = bid.mediaTypes.banner.sizes.splice(1, bid.mediaTypes.banner.sizes.length - 1);
+      if (!bid.params.width && !bid.params.height) {
+        bid.params.width = bid.mediaTypes.banner.sizes[0][0];
+        bid.params.height = bid.mediaTypes.banner.sizes[0][1];
+        bid.mediaTypes.banner.sizes = bid.mediaTypes.banner.sizes.splice(1, bid.mediaTypes.banner.sizes.length - 1);
+      } else if (bid.params.width == bid.mediaTypes.banner.sizes[0][0] && bid.params.height == bid.mediaTypes.banner.sizes[0][1]) {
+        bid.mediaTypes.banner.sizes = bid.mediaTypes.banner.sizes.splice(1, bid.mediaTypes.banner.sizes.length - 1);
+      }
     }
   }
 }
@@ -345,6 +410,7 @@ function _createNativeRequest(params) {
                   type: NATIVE_ASSET_IMAGE_TYPE.ICON,
                   w: params[key].w || params[key].width || (params[key].sizes ? params[key].sizes[0] : UNDEFINED),
                   h: params[key].h || params[key].height || (params[key].sizes ? params[key].sizes[1] : UNDEFINED),
+                  ext: params[key].ext
                 }
               };
             } else {
@@ -377,7 +443,8 @@ function _createNativeRequest(params) {
               img: {
                 type: NATIVE_ASSET_IMAGE_TYPE.LOGO,
                 w: params[key].w || params[key].width || (params[key].sizes ? params[key].sizes[0] : UNDEFINED),
-                h: params[key].h || params[key].height || (params[key].sizes ? params[key].sizes[1] : UNDEFINED)
+                h: params[key].h || params[key].height || (params[key].sizes ? params[key].sizes[1] : UNDEFINED),
+                ext: params[key].ext
               }
             };
             break;
@@ -477,12 +544,21 @@ function _createVideoRequest(bid) {
       }
     }
     // read playersize and assign to h and w.
-    if (utils.isArray(bid.mediaTypes.video.playerSize[0])) {
-      videoObj.w = parseInt(bid.mediaTypes.video.playerSize[0][0], 10);
-      videoObj.h = parseInt(bid.mediaTypes.video.playerSize[0][1], 10);
-    } else if (utils.isNumber(bid.mediaTypes.video.playerSize[0])) {
-      videoObj.w = parseInt(bid.mediaTypes.video.playerSize[0], 10);
-      videoObj.h = parseInt(bid.mediaTypes.video.playerSize[1], 10);
+    if (bid.mediaTypes.video.playerSize) {
+      if (utils.isArray(bid.mediaTypes.video.playerSize[0])) {
+        videoObj.w = parseInt(bid.mediaTypes.video.playerSize[0][0], 10);
+        videoObj.h = parseInt(bid.mediaTypes.video.playerSize[0][1], 10);
+      } else if (utils.isNumber(bid.mediaTypes.video.playerSize[0])) {
+        videoObj.w = parseInt(bid.mediaTypes.video.playerSize[0], 10);
+        videoObj.h = parseInt(bid.mediaTypes.video.playerSize[1], 10);
+      }
+    } else if (bid.mediaTypes.video.w && bid.mediaTypes.video.h) {
+      videoObj.w = parseInt(bid.mediaTypes.video.w, 10);
+      videoObj.h = parseInt(bid.mediaTypes.video.h, 10);
+    } else {
+      videoObj = UNDEFINED;
+      utils.logWarn(LOG_WARN_PREFIX + 'Error: Video size params(playersize or w&h) missing for adunit: ' + bid.params.adUnit + ' with mediaType set as video. Ignoring video impression in the adunit.');
+      return videoObj;
     }
     if (bid.params.video.hasOwnProperty('skippable')) {
       videoObj.ext = {
@@ -527,7 +603,7 @@ function _createImpressionObject(bid, conf) {
 
   impObj = {
     id: bid.bidId,
-    tagid: bid.params.adUnit || undefined,
+    tagid: bid.params.hashedKey || bid.params.adUnit || undefined,
     bidfloor: _parseSlotParam('kadfloor', bid.params.kadfloor),
     secure: 1,
     ext: {
@@ -575,10 +651,12 @@ function _createImpressionObject(bid, conf) {
     if (utils.isArray(sizes) && sizes.length > 1) {
       sizes = sizes.splice(1, sizes.length - 1);
       sizes.forEach(size => {
-        format.push({
-          w: size[0],
-          h: size[1]
-        });
+        if (utils.isArray(size) && size.length == 2) {
+          format.push({
+            w: size[0],
+            h: size[1]
+          });
+        };
       });
       bannerObj.format = format;
     }
@@ -760,10 +838,28 @@ function _handleDealCustomTargetings(payload, dctrArr, validBidRequests) {
   }
 }
 
+function _assignRenderer(br, request) {
+  let bidParams, context, adUnitCode;
+  if (request.bidderRequest && request.bidderRequest.bids) {
+    for (let bidderRequestBidsIndex = 0; bidderRequestBidsIndex < request.bidderRequest.bids.length; bidderRequestBidsIndex++) {
+      if (request.bidderRequest.bids[bidderRequestBidsIndex].bidId === br.requestId) {
+        bidParams = request.bidderRequest.bids[bidderRequestBidsIndex].params;
+        context = request.bidderRequest.bids[bidderRequestBidsIndex].mediaTypes[VIDEO].context;
+        adUnitCode = request.bidderRequest.bids[bidderRequestBidsIndex].adUnitCode;
+      }
+    }
+    if (context && context === 'outstream' && bidParams && bidParams.outstreamAU && adUnitCode) {
+      br.rendererCode = bidParams.outstreamAU;
+      br.renderer = BB_RENDERER.newRenderer(br.rendererCode, adUnitCode);
+    }
+  }
+};
+
 export const spec = {
   code: BIDDER_CODE,
   gvlid: 76,
   supportedMediaTypes: [BANNER, VIDEO, NATIVE],
+  aliases: [PUBMATIC_ALIAS],
   /**
   * Determines whether or not the given bid request is valid. Valid bid request must have placementId and hbid
   *
@@ -780,6 +876,19 @@ export const spec = {
       if (bid.params.hasOwnProperty('video')) {
         if (!bid.params.video.hasOwnProperty('mimes') || !utils.isArray(bid.params.video.mimes) || bid.params.video.mimes.length === 0) {
           utils.logWarn(LOG_WARN_PREFIX + 'Error: For video ads, mimes is mandatory and must specify atlease 1 mime value. Call to OpenBid will not be sent for ad unit:' + JSON.stringify(bid));
+          return false;
+        }
+        if (bid.hasOwnProperty('mediaTypes') && bid.mediaTypes.hasOwnProperty(VIDEO)) {
+          if (!bid.mediaTypes[VIDEO].hasOwnProperty('context')) {
+            utils.logError(`${LOG_WARN_PREFIX}: no context specified in bid. Rejecting bid: `, bid);
+            return false;
+          }
+          if (bid.mediaTypes[VIDEO].context === 'outstream' && !utils.isStr(bid.params.outstreamAU)) {
+            utils.logError(`${LOG_WARN_PREFIX}: for "outstream" bids outstreamAU is required. Rejecting bid: `, bid);
+            return false;
+          }
+        } else {
+          utils.logError(`${LOG_WARN_PREFIX}: mediaTypes or mediaTypes.video is not specified. Rejecting bid: `, bid);
           return false;
         }
       }
@@ -916,7 +1025,8 @@ export const spec = {
     return {
       method: 'POST',
       url: ENDPOINT,
-      data: JSON.stringify(payload)
+      data: JSON.stringify(payload),
+      bidderRequest: bidderRequest
     };
   },
 
@@ -932,6 +1042,23 @@ export const spec = {
     let parsedRequest = JSON.parse(request.data);
     let parsedReferrer = parsedRequest.site && parsedRequest.site.ref ? parsedRequest.site.ref : '';
     try {
+      let requestData = JSON.parse(request.data);
+      if (requestData && requestData.imp && requestData.imp.length > 0) {
+        requestData.imp.forEach(impData => {
+          bidResponses.push({
+            requestId: impData.id,
+            width: 0,
+            height: 0,
+            ttl: 300,
+            ad: '',
+            creativeId: 0,
+            netRevenue: NET_REVENUE,
+            cpm: 0,
+            currency: respCur,
+            referrer: parsedReferrer,
+          })
+        });
+      }
       if (response.body && response.body.seatbid && utils.isArray(response.body.seatbid)) {
         // Supporting multiple bid responses for same adSize
         respCur = response.body.cur || respCur;
