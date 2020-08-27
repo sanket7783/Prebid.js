@@ -2,7 +2,6 @@
   "userId": [
     "unifiedIdSystem",
     "pubCommonIdSystem",
-    "digiTrustIdSystem",
     "id5IdSystem",
     "criteortusIdSystem",
     "parrableIdSystem",
@@ -12,13 +11,15 @@
     "criteoIdSystem",
     "netIdSystem",
     "identityLinkIdSystem",
-    "sharedIdSystem"
+    "sharedIdSystem",
+    "intentIqIdSystem"
   ],
   "adpod": [
     "freeWheelAdserverVideo",
     "dfpAdServerVideo"
   ],
   "rtdModule": [
-    "browsiRtdProvider"
+    "browsiRtdProvider",
+    "jwplayerRtdProvider"
   ]
 }
