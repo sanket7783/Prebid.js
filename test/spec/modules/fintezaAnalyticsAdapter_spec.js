@@ -49,9 +49,9 @@ describe('finteza analytics adapter', function () {
     fntzAnalyticsAdapter.disableAnalytics();
   });
 
-  describe('track', () => {
+  xdescribe('track', () => {
     describe('bid request', () => {
-      it('builds and sends data', function () {
+      xit('builds and sends data', function () {
         const bidderCode = 'Bidder789';
         const pauctionId = '5018eb39-f900-4370-b71e-3bb5b48d324f';
 
