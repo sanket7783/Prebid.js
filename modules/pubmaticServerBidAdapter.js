@@ -405,7 +405,7 @@ export const spec = {
       wp: 'pbjs',
       wv: constants.REPO_AND_VERSION,
       // transactionId: conf.transactionId,
-      wiid: conf.wiid || UNDEFINED
+      wiid: conf.wiid || bidderRequest.auctionId
     };
     payload.source = {
       tid: conf.transactionId

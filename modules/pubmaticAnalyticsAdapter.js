@@ -228,13 +228,6 @@ function executeBidsLoggerCall(e, highestCpmBids) {
     return 0;
   })();
 
-  // GDPR support
-  if (auctionCache.gdprConsent) {
-    outputObj['cns'] = auctionCache.gdprConsent.consentString || '';
-    outputObj['gdpr'] = auctionCache.gdprConsent.gdprApplies === true ? 1 : 0;
-    pixelURL += '&gdEn=1';
-  }
-
   outputObj.s = Object.keys(auctionCache.adUnitCodes).reduce(function(slotsArray, adUnitId) {
     let adUnit = auctionCache.adUnitCodes[adUnitId];
     let slotObject = {
