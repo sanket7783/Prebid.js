@@ -276,13 +276,17 @@ describe('PubMaticServer adapter', () => {
 
   	describe('Request formation', () => {
   		it('Endpoint checking', () => {
-  		  let request = spec.buildRequests(bidRequests);
+  		  let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         expect(request.url).to.equal('https://ow.pubmatic.com/openrtb/2.5/');
         expect(request.method).to.equal('POST');
   		});
 
   		it('Request params check', () => {
-  		  let request = spec.buildRequests(bidRequests);
+  		  let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
   		  let data = JSON.parse(request.data);
   		  expect(data.at).to.equal(1); // auction type
   		  expect(data.cur[0]).to.equal('USD'); // currency
@@ -321,7 +325,7 @@ describe('PubMaticServer adapter', () => {
 
         expect(data.imp[0].banner.format[0].w).to.equal(300); // width from 1st element of sizes array
         expect(data.imp[0].banner.format[0].h).to.equal(250); // height from 1st element of sizes array
-  		});
+      });
 
       it('Request params check with GDPR consent', () => {
         let bidRequest = {
@@ -427,7 +431,9 @@ describe('PubMaticServer adapter', () => {
 
     describe('Response checking', () => {
       it('should check for valid response values', () => {
-        let request = spec.buildRequests(bidRequests);
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let response = spec.interpretResponse(bidResponses, request);
         expect(response).to.be.an('array').with.length.above(0);
         expect(response[0].requestId).to.equal(bidResponses.body.seatbid[0].bid[0].impid);
@@ -454,14 +460,18 @@ describe('PubMaticServer adapter', () => {
 
     describe('Response checking', () => {
       it('should set serverSideResponseTime to 0 when error code retured by endpoint is 5', () => {
-        let request = spec.buildRequests(bidRequests);
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let response = spec.interpretResponse(errorCodeBidResponses, request);
         expect(response).to.be.an('array').with.length.above(0);
         expect(response[0].serverSideResponseTime).to.equal(0);
       });
 
       it('should set serverSideResponseTime to -1 when error code retured by endpoint any of the following 1/2/6', () => {
-        let request = spec.buildRequests(bidRequests);
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         errorCodeBidResponses.body.seatbid[0].bid[0].ext.summary[0].errorCode = 1;
 
         let response = spec.interpretResponse(errorCodeBidResponses, request);
