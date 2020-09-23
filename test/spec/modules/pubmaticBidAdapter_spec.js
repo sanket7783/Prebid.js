@@ -900,7 +900,6 @@ describe('PubMatic adapter', function () {
       });
 
   		it('Request params check', function () {
-
         let request = spec.buildRequests(bidRequests, {
           auctionId: 'new-auction-id'
         });
