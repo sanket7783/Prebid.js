@@ -61,6 +61,10 @@ export const id5IdSubmodule = {
     if (!hasRequiredParams(configParams)) {
       return undefined;
     }
+    if (!configParams || typeof parseInt(configParams.partner) !== 'number') {
+      utils.logError(`User ID - ID5 submodule requires partner to be defined as a number`);
+    }
+    configParams.partner = parseInt(configParams.partner)
     const hasGdpr = (consentData && typeof consentData.gdprApplies === 'boolean' && consentData.gdprApplies) ? 1 : 0;
     const gdprConsentString = hasGdpr ? consentData.consentString : '';
     const url = `https://id5-sync.com/g/v2/${configParams.partner}.json?gdpr_consent=${gdprConsentString}&gdpr=${hasGdpr}`;

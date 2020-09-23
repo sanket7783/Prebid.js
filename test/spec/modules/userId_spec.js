@@ -637,7 +637,7 @@ describe('User ID', function() {
       // check user sync is delayed after auction is ended
       mockIdCallback.calledOnce.should.equal(false);
       events.on.calledOnce.should.equal(true);
-      events.on.calledWith(CONSTANTS.EVENTS.AUCTION_END, sinon.match.func);
+      events.on.calledWith(CONSTANTS.EVENTS.REQUEST_BIDS, sinon.match.func);
 
       // once auction is ended, sync user ids after delay
       events.on.callArg(1);
@@ -671,7 +671,7 @@ describe('User ID', function() {
       // sync delay after auction is ended
       mockIdCallback.calledOnce.should.equal(false);
       events.on.calledOnce.should.equal(true);
-      events.on.calledWith(CONSTANTS.EVENTS.AUCTION_END, sinon.match.func);
+      events.on.calledWith(CONSTANTS.EVENTS.REQUEST_BIDS, sinon.match.func);
 
       // once auction is ended, if no sync delay, fetch ids
       events.on.callArg(1);
@@ -1540,7 +1540,7 @@ describe('User ID', function() {
       }, {adUnits});
 
       expect(utils.triggerPixel.called).to.be.false;
-      events.emit(CONSTANTS.EVENTS.AUCTION_END, {});
+      events.emit(CONSTANTS.EVENTS.REQUEST_BIDS, {});
       expect(utils.triggerPixel.getCall(0).args[0]).to.include('/any/pubcid/url');
     });
 
@@ -1558,7 +1558,7 @@ describe('User ID', function() {
       }, {adUnits});
 
       expect(server.requests).to.be.empty;
-      events.emit(CONSTANTS.EVENTS.AUCTION_END, {});
+      events.emit(CONSTANTS.EVENTS.REQUEST_BIDS, {});
       expect(server.requests[0].url).to.equal('/any/unifiedid/url');
     });
 
@@ -1576,7 +1576,7 @@ describe('User ID', function() {
       }, {adUnits});
 
       expect(server.requests).to.be.empty;
-      events.emit(CONSTANTS.EVENTS.AUCTION_END, {});
+      events.emit(CONSTANTS.EVENTS.REQUEST_BIDS, {});
       expect(server.requests[0].url).to.equal('https://match.adsrvr.org/track/rid?ttd_pid=rubicon&fmt=json');
     });
   });
