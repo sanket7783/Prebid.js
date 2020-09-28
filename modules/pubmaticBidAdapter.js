@@ -17,7 +17,7 @@ const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
 const PREBID_NATIVE_HELP_LINK = 'http://prebid.org/dev-docs/show-native-ads.html';
 const PUBLICATION = 'pubmatic'; // Your publication on Blue Billywig, potentially with environment (e.g. publication.bbvms.com or publication.test.bbvms.com)
-const RENDERER_URL = 'https://pubmatic.bbvms.com/r/'.concat('$RENDERER', '.js');
+const RENDERER_URL = 'https://pubmatic.bbvms.com/r/'.concat('$RENDERER', '.js'); // URL of the renderer application
 const CUSTOM_PARAMS = {
   'kadpageurl': '', // Custom page url
   'gender': '', // User gender
@@ -838,19 +838,19 @@ function _handleDealCustomTargetings(payload, dctrArr, validBidRequests) {
   }
 }
 
-function _assignRenderer(br, request) {
+function _assignRenderer(newBid, request) {
   let bidParams, context, adUnitCode;
   if (request.bidderRequest && request.bidderRequest.bids) {
     for (let bidderRequestBidsIndex = 0; bidderRequestBidsIndex < request.bidderRequest.bids.length; bidderRequestBidsIndex++) {
-      if (request.bidderRequest.bids[bidderRequestBidsIndex].bidId === br.requestId) {
+      if (request.bidderRequest.bids[bidderRequestBidsIndex].bidId === newBid.requestId) {
         bidParams = request.bidderRequest.bids[bidderRequestBidsIndex].params;
         context = request.bidderRequest.bids[bidderRequestBidsIndex].mediaTypes[VIDEO].context;
         adUnitCode = request.bidderRequest.bids[bidderRequestBidsIndex].adUnitCode;
       }
     }
     if (context && context === 'outstream' && bidParams && bidParams.outstreamAU && adUnitCode) {
-      br.rendererCode = bidParams.outstreamAU;
-      br.renderer = BB_RENDERER.newRenderer(br.rendererCode, adUnitCode);
+      newBid.rendererCode = bidParams.outstreamAU;
+      newBid.renderer = BB_RENDERER.newRenderer(newBid.rendererCode, adUnitCode);
     }
   }
 };
@@ -960,7 +960,7 @@ export const spec = {
     payload.ext.wrapper = {};
     payload.ext.wrapper.profile = parseInt(conf.profId) || UNDEFINED;
     payload.ext.wrapper.version = parseInt(conf.verId) || UNDEFINED;
-    payload.ext.wrapper.wiid = conf.wiid || UNDEFINED;
+    payload.ext.wrapper.wiid = conf.wiid || bidderRequest.auctionId;
     // eslint-disable-next-line no-undef
     payload.ext.wrapper.wv = $$REPO_AND_VERSION$$;
     payload.ext.wrapper.transactionId = conf.transactionId;
@@ -973,6 +973,11 @@ export const spec = {
     payload.device.geo = payload.user.geo;
     payload.site.page = conf.kadpageurl.trim() || payload.site.page.trim();
     payload.site.domain = _getDomainFromURL(payload.site.page);
+
+    // add the content object from config in request
+    if (typeof config.getConfig('content') === 'object') {
+      payload.site.content = config.getConfig('content');
+    }
 
     // merge the device from config.getConfig('device')
     if (typeof config.getConfig('device') === 'object') {
@@ -1019,6 +1024,11 @@ export const spec = {
       // not copying domain from site as it is a derived value from page
       payload.app.publisher = payload.site.publisher;
       payload.app.ext = payload.site.ext || UNDEFINED;
+      // We will also need to pass content object in app.content if app object is also set into the config;
+      // BUT do not use content object from config if content object is present in app as app.content
+      if (typeof payload.app.content !== 'object') {
+        payload.app.content = payload.site.content || UNDEFINED;
+      }
       delete payload.site;
     }
 
@@ -1081,7 +1091,8 @@ export const spec = {
                   br.referrer = parsedReferrer;
                   br.ad = bid.adm;
                   br.pm_seat = seatbidder.seat || null;
-                  br.pm_dspid = bid.ext && bid.ext.dspid ? bid.ext.dspid : null
+                  br.pm_dspid = bid.ext && bid.ext.dspid ? bid.ext.dspid : null;
+                  br.partnerImpId = bid.id || '' // partner impression Id
                   if (requestData.imp && requestData.imp.length > 0) {
                     requestData.imp.forEach(req => {
                       if (bid.impid === req.id) {
@@ -1113,6 +1124,7 @@ export const spec = {
                     br.meta.buyerId = bid.ext.advid;
                   }
                   if (bid.adomain && bid.adomain.length > 0) {
+                    br.meta.advertiserDomains = bid.adomain;
                     br.meta.clickUrl = bid.adomain[0];
                   }
                   // adserverTargeting

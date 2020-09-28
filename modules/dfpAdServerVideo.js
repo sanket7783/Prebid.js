@@ -8,6 +8,8 @@ import { deepAccess, isEmpty, logError, parseSizesInput, formatQS, parseUrl, bui
 import { config } from '../src/config.js';
 import { getHook, submodule } from '../src/hook.js';
 import { auctionManager } from '../src/auctionManager.js';
+import events from '../src/events.js';
+import CONSTANTS from '../src/constants.json';
 
 /**
  * @typedef {Object} DfpVideoParams
@@ -42,7 +44,7 @@ import { auctionManager } from '../src/auctionManager.js';
 const defaultParamConstants = {
   env: 'vp',
   gdfp_req: 1,
-  output: 'xml_vast3',
+  output: 'vast',
   unviewed_position_start: 1,
 };
 
@@ -82,7 +84,7 @@ export function buildDfpVideoUrl(options) {
 
   const derivedParams = {
     correlator: Date.now(),
-    sz: parseSizesInput(adUnit.sizes).join('|'),
+    sz: parseSizesInput(deepAccess(adUnit, 'mediaTypes.video.playerSize')).join('|'),
     url: encodeURIComponent(location.href),
   };
   const encodedCustomParams = getCustParams(bid, options);
@@ -245,24 +247,29 @@ function getCustParams(bid, options) {
     allTargetingData = (allTargeting) ? allTargeting[adUnit.code] : {};
   }
 
-  const optCustParams = deepAccess(options, 'params.cust_params');
-  let customParams = Object.assign({},
+  const prebidTargetingSet = Object.assign({},
     // Why are we adding standard keys here ? Refer https://github.com/prebid/Prebid.js/issues/3664
     { hb_uuid: bid && bid.videoCacheKey },
     // hb_uuid will be deprecated and replaced by hb_cache_id
     { hb_cache_id: bid && bid.videoCacheKey },
     allTargetingData,
     adserverTargeting,
-    optCustParams,
   );
+
+  events.emit(CONSTANTS.EVENTS.SET_TARGETING, {[adUnit.code]: prebidTargetingSet});
+
+  // merge the prebid + publisher targeting sets
+  const publisherTargetingSet = deepAccess(options, 'params.cust_params');
   // TODO : Remove below function and change the constant value in file to update the key names for video
   // Changing few key name might have impact on banner as well as we ignore few key names , hence using below function
   // to get the cust_params that should be attached to dfp.
   // It will also handle the send allBids cases
+  var customParams = {}
   if (window.PWT && window.PWT.getCustomParamsForDFPVideo) {
-    customParams = window.PWT.getCustomParamsForDFPVideo(optCustParams, bid);
+    customParams = window.PWT.getCustomParamsForDFPVideo(publisherTargetingSet, bid);
   }
-  return encodeURIComponent(formatQS(customParams));
+  const targetingSet = Object.assign({}, prebidTargetingSet, publisherTargetingSet, customParams);
+  return encodeURIComponent(formatQS(targetingSet));
 }
 
 registerVideoSupport('dfp', {
