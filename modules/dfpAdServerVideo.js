@@ -268,7 +268,8 @@ function getCustParams(bid, options) {
   if (window.PWT && window.PWT.getCustomParamsForDFPVideo) {
     customParams = window.PWT.getCustomParamsForDFPVideo(publisherTargetingSet, bid);
   }
-  const targetingSet = Object.assign({}, prebidTargetingSet, publisherTargetingSet, customParams);
+  // Changing PrebidTargetingSet to adServerTargeitn as for OpenWrap we don't want to set Prebid Keys and instead Set the adServerKeys sent from OpenWrap.
+  const targetingSet = Object.assign({}, adserverTargeting, publisherTargetingSet, customParams);
   return encodeURIComponent(formatQS(targetingSet));
 }
 
