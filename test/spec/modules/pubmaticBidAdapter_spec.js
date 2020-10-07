@@ -848,7 +848,7 @@ describe('PubMatic adapter', function () {
   		it('buildRequests function should not modify original bidRequests object', function () {
         let originalBidRequests = utils.deepClone(bidRequests);
         let request = spec.buildRequests(bidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         expect(bidRequests).to.deep.equal(originalBidRequests);
       });
@@ -856,14 +856,14 @@ describe('PubMatic adapter', function () {
       it('buildRequests function should not modify original nativebidRequests object', function () {
         let originalBidRequests = utils.deepClone(nativeBidRequests);
         let request = spec.buildRequests(nativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         expect(nativeBidRequests).to.deep.equal(originalBidRequests);
       });
 
       it('Endpoint checking', function () {
   		  let request = spec.buildRequests(bidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         expect(request.url).to.equal('https://hbopenbid.pubmatic.com/translator?source=prebid-client');
         expect(request.method).to.equal('POST');
@@ -880,7 +880,9 @@ describe('PubMatic adapter', function () {
       });
 
       it('test flag not sent when pubmaticTest=true is absent in page url', function() {
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         expect(data.test).to.equal(undefined);
       });
@@ -890,13 +892,17 @@ describe('PubMatic adapter', function () {
       xit('test flag set to 1 when pubmaticTest=true is present in page url', function() {
         window.location.href += '#pubmaticTest=true';
         // now all the test cases below will have window.location.href with #pubmaticTest=true
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         expect(data.test).to.equal(1);
       });
 
   		it('Request params check', function () {
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
   		  expect(data.at).to.equal(1); // auction type
   		  expect(data.cur[0]).to.equal('USD'); // currency
@@ -939,7 +945,9 @@ describe('PubMatic adapter', function () {
           };
           return config[key];
         });
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         expect(data.site.content).to.deep.equal(content);
         sandbox.restore();
@@ -955,7 +963,9 @@ describe('PubMatic adapter', function () {
           };
           return config[key];
         });
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         expect(data.device.js).to.equal(1);
         expect(data.device.dnt).to.equal((navigator.doNotTrack == 'yes' || navigator.doNotTrack == '1' || navigator.msDoNotTrack == '1') ? 1 : 0);
@@ -977,7 +987,9 @@ describe('PubMatic adapter', function () {
           };
           return config[key];
         });
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         expect(data.device.js).to.equal(1);
         expect(data.device.dnt).to.equal((navigator.doNotTrack == 'yes' || navigator.doNotTrack == '1' || navigator.msDoNotTrack == '1') ? 1 : 0);
@@ -999,7 +1011,9 @@ describe('PubMatic adapter', function () {
           };
           return config[key];
         });
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         expect(data.app.bundle).to.equal('org.prebid.mobile.demoapp');
         expect(data.app.domain).to.equal('prebid.org');
@@ -1024,7 +1038,9 @@ describe('PubMatic adapter', function () {
           };
           return config[key];
         });
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         expect(data.app.bundle).to.equal('org.prebid.mobile.demoapp');
         expect(data.app.domain).to.equal('prebid.org');
@@ -1054,7 +1070,9 @@ describe('PubMatic adapter', function () {
           };
           return config[key];
         });
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         expect(data.app.bundle).to.equal('org.prebid.mobile.demoapp');
         expect(data.app.domain).to.equal('prebid.org');
@@ -1067,8 +1085,9 @@ describe('PubMatic adapter', function () {
 
       it('Request params check: without adSlot', function () {
         delete bidRequests[0].params.adSlot;
-
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         expect(data.at).to.equal(1); // auction type
         expect(data.cur[0]).to.equal('USD'); // currency
@@ -1125,7 +1144,9 @@ describe('PubMatic adapter', function () {
           }
         ];
         /* case 1 - size passed in adslot */
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
 
         expect(data.imp[0].banner.w).to.equal(300); // width
@@ -1139,7 +1160,7 @@ describe('PubMatic adapter', function () {
           }
         };
         request = spec.buildRequests(bidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         data = JSON.parse(request.data);
 
@@ -1155,7 +1176,7 @@ describe('PubMatic adapter', function () {
           }
         };
         request = spec.buildRequests(bidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         data = JSON.parse(request.data);
 
@@ -1235,7 +1256,7 @@ describe('PubMatic adapter', function () {
 
         */
         let request = spec.buildRequests(multipleBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
 
@@ -1249,7 +1270,7 @@ describe('PubMatic adapter', function () {
         */
         delete multipleBidRequests[1].params.currency;
         request = spec.buildRequests(multipleBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         data = JSON.parse(request.data);
         expect(data.imp[0].bidfloorcur).to.equal(bidRequests[0].params.currency);
@@ -1262,7 +1283,7 @@ describe('PubMatic adapter', function () {
         */
         delete multipleBidRequests[0].params.currency;
         request = spec.buildRequests(multipleBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         data = JSON.parse(request.data);
         expect(data.imp[0].bidfloorcur).to.equal('USD');
@@ -1275,7 +1296,7 @@ describe('PubMatic adapter', function () {
         */
         multipleBidRequests[1].params.currency = 'AUD';
         request = spec.buildRequests(multipleBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         data = JSON.parse(request.data);
         expect(data.imp[0].bidfloorcur).to.equal('USD');
@@ -1424,7 +1445,7 @@ describe('PubMatic adapter', function () {
           floorModuleTestData.banner.floor = 0; // lowest of them all
           newRequest[0].params.kadfloor = undefined;
           let request = spec.buildRequests(newRequest, {
-            'auctionId': 'new-auction-id'
+            auctionId: 'new-auction-id'
           });
           let data = JSON.parse(request.data);
           data = data.imp[0];
@@ -1435,7 +1456,7 @@ describe('PubMatic adapter', function () {
           floorModuleTestData.banner.floor = 'INR';
           newRequest[0].params.kadfloor = undefined;
           let request = spec.buildRequests(newRequest, {
-            'auctionId': 'new-auction-id'
+            auctionId: 'new-auction-id'
           });
           let data = JSON.parse(request.data);
           data = data.imp[0];
@@ -1446,7 +1467,7 @@ describe('PubMatic adapter', function () {
           floorModuleTestData.banner.currency = 'INR';
           newRequest[0].params.kadfloor = undefined;
           let request = spec.buildRequests(newRequest, {
-            'auctionId': 'new-auction-id'
+            auctionId: 'new-auction-id'
           });
           let data = JSON.parse(request.data);
           data = data.imp[0];
@@ -1456,7 +1477,7 @@ describe('PubMatic adapter', function () {
         it('kadfloor is not passed, use minimum from floorModule', function() {
           newRequest[0].params.kadfloor = undefined;
           let request = spec.buildRequests(newRequest, {
-            'auctionId': 'new-auction-id'
+            auctionId: 'new-auction-id'
           });
           let data = JSON.parse(request.data);
           data = data.imp[0];
@@ -1466,7 +1487,7 @@ describe('PubMatic adapter', function () {
         it('kadfloor is passed as 3, use kadfloor as it is highest', function() {
           newRequest[0].params.kadfloor = '3.0';// yes, we want it as a string
           let request = spec.buildRequests(newRequest, {
-            'auctionId': 'new-auction-id'
+            auctionId: 'new-auction-id'
           });
           let data = JSON.parse(request.data);
           data = data.imp[0];
@@ -1476,7 +1497,7 @@ describe('PubMatic adapter', function () {
         it('kadfloor is passed as 1, use min of fllorModule as it is highest', function() {
           newRequest[0].params.kadfloor = '1.0';// yes, we want it as a string
           let request = spec.buildRequests(newRequest, {
-            'auctionId': 'new-auction-id'
+            auctionId: 'new-auction-id'
           });
           let data = JSON.parse(request.data);
           data = data.imp[0];
@@ -1932,7 +1953,7 @@ describe('PubMatic adapter', function () {
 
       it('Request params check for video ad', function () {
         let request = spec.buildRequests(videoBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         expect(data.imp[0].video).to.exist;
@@ -1972,7 +1993,7 @@ describe('PubMatic adapter', function () {
 
       it('Request params check for 1 banner and 1 video ad', function () {
         let request = spec.buildRequests(multipleMediaRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
 
@@ -2049,7 +2070,7 @@ describe('PubMatic adapter', function () {
 
       it('Request params should have valid native bid request for all valid params', function () {
         let request = spec.buildRequests(nativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         expect(data.imp[0].native).to.exist;
@@ -2060,14 +2081,16 @@ describe('PubMatic adapter', function () {
       });
 
       it('Request params should not have valid native bid request for non native request', function () {
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         expect(data.imp[0].native).to.not.exist;
       });
 
       it('Request params should have valid native bid request with valid required param values for all valid params', function () {
         let request = spec.buildRequests(nativeBidRequestsWithRequiredParam, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         expect(data.imp[0].native).to.exist;
@@ -2079,14 +2102,14 @@ describe('PubMatic adapter', function () {
 
       it('should not have valid native request if assets are not defined with minimum required params and only native is the slot', function () {
         let request = spec.buildRequests(nativeBidRequestsWithoutAsset, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         expect(request).to.deep.equal(undefined);
       });
 
       it('Request params should have valid native bid request for all native params', function () {
         let request = spec.buildRequests(nativeBidRequestsWithAllParams, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         expect(data.imp[0].native).to.exist;
@@ -2098,7 +2121,7 @@ describe('PubMatic adapter', function () {
 
 	    it('Request params - should handle banner and video format in single adunit', function() {
         let request = spec.buildRequests(bannerAndVideoBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2111,7 +2134,7 @@ describe('PubMatic adapter', function () {
         // Case: when size is not present in adslo
         bannerAndVideoBidRequests[0].params.adSlot = '/15671365/DMDemo';
         request = spec.buildRequests(bannerAndVideoBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2135,7 +2158,7 @@ describe('PubMatic adapter', function () {
         bannerAndVideoBidRequests[0].mediaTypes.banner.sizes = [['fluid'], [160, 600]];
 
         let request = spec.buildRequests(bannerAndVideoBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2156,7 +2179,7 @@ describe('PubMatic adapter', function () {
         bannerAndVideoBidRequests[0].params.adSlot = '/15671365/DMDemo';
 
         request = spec.buildRequests(bannerAndVideoBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2176,7 +2199,7 @@ describe('PubMatic adapter', function () {
 
         bannerAndVideoBidRequests[0].mediaTypes.banner.sizes = [[728, 90], ['fluid'], [300, 250]];
         request = spec.buildRequests(bannerAndVideoBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2196,7 +2219,7 @@ describe('PubMatic adapter', function () {
 
         bannerAndVideoBidRequests[0].mediaTypes.banner.sizes = [['fluid']];
         request = spec.buildRequests(bannerAndVideoBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2210,7 +2233,7 @@ describe('PubMatic adapter', function () {
         bannerAndVideoBidRequests[0].params.sizes = [300, 250];
 
         let request = spec.buildRequests(bannerAndVideoBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2219,7 +2242,7 @@ describe('PubMatic adapter', function () {
 
       it('Request params - should handle banner and native format in single adunit', function() {
         let request = spec.buildRequests(bannerAndNativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2236,7 +2259,7 @@ describe('PubMatic adapter', function () {
 
       it('Request params - should handle video and native format in single adunit', function() {
         let request = spec.buildRequests(videoAndNativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2251,7 +2274,7 @@ describe('PubMatic adapter', function () {
 
       it('Request params - should handle banner, video and native format in single adunit', function() {
         let request = spec.buildRequests(bannerVideoAndNativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2275,7 +2298,7 @@ describe('PubMatic adapter', function () {
         bannerAndNativeBidRequests[0].sizes = [729, 90];
 
         let request = spec.buildRequests(bannerAndNativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2300,7 +2323,7 @@ describe('PubMatic adapter', function () {
           clickUrl: { required: true }
         }
         let request = spec.buildRequests(bannerAndNativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2323,7 +2346,7 @@ describe('PubMatic adapter', function () {
           clickUrl: { required: true }
         }
         let request = spec.buildRequests(videoAndNativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         data = data.imp[0];
@@ -2388,7 +2411,7 @@ describe('PubMatic adapter', function () {
       ];
 
       let request = spec.buildRequests(multipleBidRequests, {
-        'auctionId': 'new-auction-id'
+        auctionId: 'new-auction-id'
       });
       let data = JSON.parse(request.data);
 
@@ -2404,7 +2427,7 @@ describe('PubMatic adapter', function () {
         */
       delete multipleBidRequests[0].params.dctr;
       request = spec.buildRequests(multipleBidRequests, {
-        'auctionId': 'new-auction-id'
+        auctionId: 'new-auction-id'
       });
       data = JSON.parse(request.data);
 
@@ -2415,7 +2438,7 @@ describe('PubMatic adapter', function () {
         */
       multipleBidRequests[0].params.dctr = 123;
       request = spec.buildRequests(multipleBidRequests, {
-        'auctionId': 'new-auction-id'
+        auctionId: 'new-auction-id'
       });
       data = JSON.parse(request.data);
 
@@ -2755,7 +2778,9 @@ describe('PubMatic adapter', function () {
 
     describe('Response checking', function () {
       it('should check for valid response values', function () {
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let data = JSON.parse(request.data);
         let response = spec.interpretResponse(bidResponses, request);
         expect(response).to.be.an('array').with.length.above(0);
@@ -2855,7 +2880,6 @@ describe('PubMatic adapter', function () {
         expect(response[0].ttl).to.equal(300);
         expect(response[0].referrer).to.include(request.site && request.site.ref ? request.site.ref : '');
         expect(response[0].ad).to.equal(bidResponses.body.seatbid[0].bid[0].adm);
-
         expect(response[1].requestId).to.equal(request.imp[1].id);
         expect(response[1].width).to.equal(0);
         expect(response[1].height).to.equal(0);
@@ -2895,7 +2919,7 @@ describe('PubMatic adapter', function () {
 
       it('should have a valid native bid response', function() {
         let request = spec.buildRequests(nativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let data = JSON.parse(request.data);
         data.imp[0].id = '2a5571261281d4';
@@ -2914,7 +2938,9 @@ describe('PubMatic adapter', function () {
       });
 
       it('should check for valid banner mediaType in case of multiformat request', function() {
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let response = spec.interpretResponse(bannerBidResponse, request);
 
         expect(response[0].mediaType).to.equal('banner');
@@ -2922,7 +2948,7 @@ describe('PubMatic adapter', function () {
 
       it('should check for valid video mediaType in case of multiformat request', function() {
         let request = spec.buildRequests(videoBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let response = spec.interpretResponse(videoBidResponse, request);
         expect(response[0].mediaType).to.equal('video');
@@ -2930,7 +2956,7 @@ describe('PubMatic adapter', function () {
 
       it('should check for valid native mediaType in case of multiformat request', function() {
         let request = spec.buildRequests(nativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let response = spec.interpretResponse(nativeBidResponse, request);
 
@@ -2945,7 +2971,7 @@ describe('PubMatic adapter', function () {
 
       it('should not assign renderer if bidderRequest is not present', function() {
         let request = spec.buildRequests(outstreamBidRequest, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let response = spec.interpretResponse(outstreamVideoBidResponse, request);
         expect(response[0].renderer).to.not.exist;
@@ -2953,7 +2979,7 @@ describe('PubMatic adapter', function () {
 
       it('should not assign renderer if bid is video and request is for instream', function() {
         let request = spec.buildRequests(videoBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let response = spec.interpretResponse(videoBidResponse, request);
         expect(response[0].renderer).to.not.exist;
@@ -2961,14 +2987,16 @@ describe('PubMatic adapter', function () {
 
       it('should not assign renderer if bid is native', function() {
         let request = spec.buildRequests(nativeBidRequests, {
-          'auctionId': 'new-auction-id'
+          auctionId: 'new-auction-id'
         });
         let response = spec.interpretResponse(nativeBidResponse, request);
         expect(response[0].renderer).to.not.exist;
       });
 
       it('should not assign renderer if bid is of banner', function() {
-        let request = spec.buildRequests(bidRequests, { 'auctionId': 'new-auction-id' });
+        let request = spec.buildRequests(bidRequests, {
+          auctionId: 'new-auction-id'
+        });
         let response = spec.interpretResponse(bidResponses, request);
         expect(response[0].renderer).to.not.exist;
       });
