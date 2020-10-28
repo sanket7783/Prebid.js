@@ -626,7 +626,6 @@ export const spec = {
                         ttl: 300,
                         referrer: parsedReferrer,
                         ad: firstSummary ? bid.adm : '',
-                        sspID: bid.id || '',
                         cpm: (parseFloat(summary.bid) || 0).toFixed(2),
                         serverSideResponseTime: partnerResponseTimeObj[summary.bidder] || 0,
                         mi: miObj.hasOwnProperty(summary.bidder) ? miObj[summary.bidder] : UNDEFINED,
