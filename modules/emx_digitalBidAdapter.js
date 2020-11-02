@@ -2,8 +2,8 @@ import * as utils from '../src/utils.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, VIDEO } from '../src/mediaTypes.js';
 import { Renderer } from '../src/Renderer.js';
-import includes from 'core-js/library/fn/array/includes.js';
-import find from 'core-js/library/fn/array/find.js';
+import includes from 'core-js-pure/features/array/includes.js';
+import find from 'core-js-pure/features/array/find.js';
 
 const BIDDER_CODE = 'emx_digital';
 const ENDPOINT = 'hb.emxdgt.com';
@@ -162,6 +162,7 @@ export const emxAdapter = {
 
 export const spec = {
   code: BIDDER_CODE,
+  gvlid: 183,
   supportedMediaTypes: [BANNER, VIDEO],
   isBidRequestValid: function (bid) {
     if (!bid || !bid.params) {
@@ -279,12 +280,21 @@ export const spec = {
     }
     return emxBidResponses;
   },
-  getUserSyncs: function (syncOptions) {
+  getUserSyncs: function (syncOptions, responses, gdprConsent, uspConsent) {
     const syncs = [];
     if (syncOptions.iframeEnabled) {
+      let url = 'https://biddr.brealtime.com/check.html';
+      if (gdprConsent && typeof gdprConsent.consentString === 'string') {
+        // add 'gdpr' only if 'gdprApplies' is defined
+        if (typeof gdprConsent.gdprApplies === 'boolean') {
+          url += `?gdpr=${Number(gdprConsent.gdprApplies)}&gdpr_consent=${gdprConsent.consentString}`;
+        } else {
+          url += `?gdpr_consent=${gdprConsent.consentString}`;
+        }
+      }
       syncs.push({
         type: 'iframe',
-        url: 'https://biddr.brealtime.com/check.html'
+        url: url
       });
     }
     return syncs;
