@@ -641,6 +641,9 @@ export const spec = {
                       if (bid.ext.prebid && bid.ext.prebid.targeting) {
                         newBid.adserverTargeting = bid.ext.prebid.targeting
                       }
+                      if (newBid && newBid.originalBidder == 'pubmatic') {
+                        newBid.sspID = bid.id || '';
+                      }
                       break;
                     default:
                       requestData.imp.forEach(function(impObj) {
