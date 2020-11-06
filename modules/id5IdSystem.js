@@ -58,12 +58,13 @@ export const id5IdSubmodule = {
    * @returns {IdResponse|undefined}
    */
   getId(configParams, consentData, cacheIdObj) {
-     //This check is redundant. Is being handled at line #65. - UOE-5788
-    /*if (!hasRequiredParams(configParams)) {
+    // This check is redundant. Is being handled at line #65. - UOE-5788
+    /* if (!hasRequiredParams(configParams)) {
       return undefined;
-    }*/
+    } */
     if (!configParams || typeof parseInt(configParams.partner) !== 'number') {
       utils.logError(`User ID - ID5 submodule requires partner to be defined as a number`);
+      return undefined;
     }
     configParams.partner = parseInt(configParams.partner)
     const hasGdpr = (consentData && typeof consentData.gdprApplies === 'boolean' && consentData.gdprApplies) ? 1 : 0;
