@@ -58,14 +58,14 @@ export const id5IdSubmodule = {
    * @returns {IdResponse|undefined}
    */
   getId(configParams, consentData, cacheIdObj) {
-    // This check is redundant. Is being handled at line #65. - UOE-5788
-    /* if (!hasRequiredParams(configParams)) {
-      return undefined;
-    } */
-    if (!configParams || typeof parseInt(configParams.partner) !== 'number') {
-      utils.logError(`User ID - ID5 submodule requires partner to be defined as a number`);
+    if (!hasRequiredParams(configParams)) {
       return undefined;
     }
+    //This check is redundant. moving it to the 'hasRequiredParams function instead' - UOE-5788
+    /*if (!configParams || typeof parseInt(configParams.partner) !== 'number') {
+      utils.logError(`User ID - ID5 submodule requires partner to be defined as a number`);
+      return undefined;
+    }*/
     configParams.partner = parseInt(configParams.partner)
     const hasGdpr = (consentData && typeof consentData.gdprApplies === 'boolean' && consentData.gdprApplies) ? 1 : 0;
     const gdprConsentString = hasGdpr ? consentData.consentString : '';
@@ -127,8 +127,8 @@ export const id5IdSubmodule = {
 };
 
 function hasRequiredParams(configParams) {
-  if (!configParams || typeof configParams.partner !== 'number') {
-    utils.logError(`User ID - ID5 submodule requires partner to be defined as a number`);
+  if (!configParams || typeof parseInt(configParams.partner) !== 'number' || isNaN(parseInt(configParams.partner)))  {
+    utils.logError(`User ID - ID5 submodule requires partner to be defined as a number - Current value received: ` + configParams.partner);
     return false;
   }
   return true;
