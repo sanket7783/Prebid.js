@@ -551,6 +551,7 @@ export const spec = {
 
   code: BIDDER_CODE,
   gvlid: 10,
+  aliases: ['indexExchange'],
   supportedMediaTypes: SUPPORTED_AD_TYPES,
 
   /**

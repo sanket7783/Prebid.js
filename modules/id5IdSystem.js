@@ -77,7 +77,6 @@ export const id5IdSubmodule = {
     if (!hasRequiredConfig(config)) {
       return undefined;
     }
-
     const hasGdpr = (consentData && typeof consentData.gdprApplies === 'boolean' && consentData.gdprApplies) ? 1 : 0;
     const gdprConsentString = hasGdpr ? consentData.consentString : '';
     const usp = uspDataHandler.getConsentData() || '';

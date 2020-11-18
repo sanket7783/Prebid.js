@@ -325,7 +325,6 @@ describe('ID5 ID System', function() {
       storeInLocalStorage(ID5_STORAGE_NAME, JSON.stringify(ID5_STORED_OBJ), 1);
       storeInLocalStorage(`${ID5_STORAGE_NAME}_last`, expDaysStr(-1), 1);
       storeNbInCache(ID5_TEST_PARTNER_ID, 1);
-
       let id5Config = getFetchLocalStorageConfig();
       id5Config.userSync.userIds[0].storage.refreshInSeconds = 2;
 
