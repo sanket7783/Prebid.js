@@ -321,7 +321,7 @@ describe('ID5 ID System', function() {
 
       expect(getNbFromCache(ID5_TEST_PARTNER_ID)).to.be.eq(2);
     });
-    
+
     it('should call ID5 servers with signature and incremented nb post auction if refresh needed', function () {
       storeInLocalStorage(ID5_STORAGE_NAME, JSON.stringify(ID5_STORED_OBJ), 1);
       storeInLocalStorage(`${ID5_STORAGE_NAME}_last`, expDaysStr(-1), 1);
@@ -340,7 +340,7 @@ describe('ID5 ID System', function() {
       expect(getNbFromCache(ID5_TEST_PARTNER_ID)).to.be.eq(2);
 
       expect(server.requests).to.be.empty;
-      events.emit(CONSTANTS.EVENTS.AUCTION_END, {});
+      events.emit(CONSTANTS.EVENTS.REQUEST_BIDS, {});
 
       let request = server.requests[0];
       let requestBody = JSON.parse(request.requestBody);
@@ -351,8 +351,8 @@ describe('ID5 ID System', function() {
       const responseHeader = { 'Content-Type': 'application/json' };
       request.respond(200, responseHeader, JSON.stringify(ID5_JSON_RESPONSE));
 
-//       expect(coreStorage.getCookie(ID5_COOKIE_NAME)).to.be.eq(JSON.stringify(ID5_JSON_RESPONSE));
-//       expect(coreStorage.getCookie(ID5_NB_COOKIE_NAME)).to.be.eq('0');
+      //       expect(coreStorage.getCookie(ID5_COOKIE_NAME)).to.be.eq(JSON.stringify(ID5_JSON_RESPONSE));
+      //       expect(coreStorage.getCookie(ID5_NB_COOKIE_NAME)).to.be.eq('0');
       expect(decodeURIComponent(getFromLocalStorage(ID5_STORAGE_NAME))).to.be.eq(JSON.stringify(ID5_JSON_RESPONSE));
       expect(getNbFromCache(ID5_TEST_PARTNER_ID)).to.be.eq(0);
     });

@@ -865,7 +865,7 @@ describe('PubMatic adapter', function () {
   		  let request = spec.buildRequests(bidRequests, {
           auctionId: 'new-auction-id'
         });
-        expect(request.url).to.equal('https://hbopenbid.pubmatic.com/translator?source=prebid-client');
+        expect(request.url).to.equal('https://hbopenbid.pubmatic.com/translator?source=ow-client');
         expect(request.method).to.equal('POST');
       });
 

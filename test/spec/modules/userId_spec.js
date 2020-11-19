@@ -2085,7 +2085,7 @@ describe('User ID', function () {
       }, {adUnits});
 
       expect(utils.triggerPixel.called).to.be.false;
-      events.emit(CONSTANTS.EVENTS.AUCTION_END, {});
+      events.emit(CONSTANTS.EVENTS.REQUEST_BIDS, {});
       expect(utils.triggerPixel.getCall(0).args[0]).to.include('/any/pubcid/url');
 
       expect(server.requests[0].url).to.equal('https://id.sharedid.org/id');
@@ -2111,7 +2111,7 @@ describe('User ID', function () {
       }, {adUnits});
 
       expect(utils.triggerPixel.called).to.be.false;
-      events.emit(CONSTANTS.EVENTS.AUCTION_END, {});
+      events.emit(CONSTANTS.EVENTS.REQUEST_BIDS, {});
       expect(utils.triggerPixel.getCall(0).args[0]).to.include('/any/pubcid/url');
 
       expect(server.requests).to.have.lengthOf(0);
@@ -2138,7 +2138,7 @@ describe('User ID', function () {
       }, {adUnits});
 
       expect(utils.triggerPixel.called).to.be.false;
-      events.emit(CONSTANTS.EVENTS.AUCTION_END, {});
+      events.emit(CONSTANTS.EVENTS.REQUEST_BIDS, {});
       expect(utils.triggerPixel.getCall(0).args[0]).to.include('/any/pubcid/url');
 
       expect(server.requests[0].url).to.equal('https://id.sharedid.org/id');
