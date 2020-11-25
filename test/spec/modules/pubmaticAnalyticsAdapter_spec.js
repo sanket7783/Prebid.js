@@ -11,6 +11,12 @@ let events = require('src/events');
 let ajax = require('src/ajax');
 let utils = require('src/utils');
 
+const DEFAULT_USER_AGENT = window.navigator.userAgent;
+const MOBILE_USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.5 Mobile/15E148 Safari/604.1';
+const setUADefault = () => { window.navigator.__defineGetter__('userAgent', function () { return DEFAULT_USER_AGENT }) };
+const setUAMobile = () => { window.navigator.__defineGetter__('userAgent', function () { return MOBILE_USER_AGENT }) };
+const setUANull = () => { window.navigator.__defineGetter__('userAgent', function () { return null }) };
+
 const {
   EVENTS: {
     AUCTION_INIT,
@@ -247,6 +253,7 @@ describe('pubmatic analytics adapter', function () {
   let clock;
 
   beforeEach(function () {
+    setUADefault();
     sandbox = sinon.sandbox.create();
 
     xhr = sandbox.useFakeXMLHttpRequest();
@@ -643,6 +650,7 @@ describe('pubmatic analytics adapter', function () {
     });
 
     it('Logger: currency conversion check', function() {
+      setUANull();
       setConfig({
         adServerCurrency: 'JPY',
         rates: {
@@ -698,6 +706,7 @@ describe('pubmatic analytics adapter', function () {
     });
 
     it('Logger: regexPattern in bid.params', function() {
+      setUAMobile();
       const BID_REQUESTED_COPY = utils.deepClone(MOCK.BID_REQUESTED);
       BID_REQUESTED_COPY.bids[1].params.regexPattern = '*';
       events.emit(AUCTION_INIT, MOCK.AUCTION_INIT);
