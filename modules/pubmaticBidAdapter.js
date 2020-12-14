@@ -3,6 +3,7 @@ import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, VIDEO, NATIVE } from '../src/mediaTypes.js';
 import {config} from '../src/config.js';
 import { Renderer } from '../src/Renderer.js';
+import { getStorageManager } from '../src/storageManager.js';
 
 const BIDDER_CODE = 'pubmatic';
 const LOG_WARN_PREFIX = 'PubMatic: ';
@@ -855,6 +856,20 @@ function _assignRenderer(newBid, request) {
   }
 };
 
+function _assigncontext(payload) {
+  const cat = localStorage.getItem('userCategories');
+  if (cat && cat.length > 0) {
+    utils.deepSetValue(payload, 'user.ext.cat', cat);
+  }
+}
+
+function _assignSiteContenxt(payload) {
+  const cat = localStorage.getItem('siteCategories');
+  if (cat && cat.length > 0) {
+    utils.deepSetValue(payload, 'site.cat', cat);
+  }
+}
+
 export const spec = {
   code: BIDDER_CODE,
   gvlid: 76,
@@ -1016,7 +1031,8 @@ export const spec = {
     _handleDealCustomTargetings(payload, dctrArr, validBidRequests);
     _handleEids(payload, validBidRequests);
     _blockedIabCategoriesValidation(payload, blockedIabCategories);
-
+    _assigncontext(payload);
+    _assignSiteContenxt(payload);
     // Note: Do not move this block up
     // if site object is set in Prebid config then we need to copy required fields from site into app and unset the site object
     if (typeof config.getConfig('app') === 'object') {
