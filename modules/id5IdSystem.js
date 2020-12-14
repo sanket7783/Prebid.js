@@ -82,7 +82,7 @@ export const id5IdSubmodule = {
       utils.logError(`User ID - ID5 submodule requires partner to be defined as a number`);
       return undefined;
     }*/
-    configParams.partner = parseInt(configParams.partner)
+    config.params.partner = parseInt(config.params.partner)
     const hasGdpr = (consentData && typeof consentData.gdprApplies === 'boolean' && consentData.gdprApplies) ? 1 : 0;
     const gdprConsentString = hasGdpr ? consentData.consentString : '';
     const usp = uspDataHandler.getConsentData() || '';
@@ -150,8 +150,8 @@ export const id5IdSubmodule = {
 };
 
 function hasRequiredConfig(config) {
-  if (!configParams || typeof parseInt(configParams.partner) !== 'number' || isNaN(parseInt(configParams.partner)))  {
-    utils.logError(`User ID - ID5 submodule requires partner to be defined as a number - Current value received: ` + configParams.partner);
+  if (!config || !config.params || typeof parseInt(config.params.partner) !== 'number' || isNaN(parseInt(config.params.partner)))  {
+    utils.logError(`User ID - ID5 submodule requires partner to be defined as a number - Current value received: ` + config.params.partner);
     return false;
   }
 
