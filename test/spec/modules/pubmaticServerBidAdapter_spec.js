@@ -359,12 +359,14 @@ describe('PubMaticServer adapter', () => {
       });
 
       it('request should have video params', () => {
-  		  let request = spec.buildRequests(videoBidRequests);
+  		  let request = spec.buildRequests(videoBidRequests, {
+          auctionId: 'new-auction-id'
+        });
   		  let data = JSON.parse(request.data);
   		  // expect(data.at).to.equal(1); // auction type
   		  expect(data.cur[0]).to.equal('USD'); // currency
   		  expect(data.ext.wrapper.wp).to.equal('pbjs'); // Prebid TransactionId
-  		  expect(data.ext.wrapper.wiid).to.equal(videoBidRequests[0].params.wiid); // OpenWrap: Wrapper Impression ID
+  		  expect(data.ext.wrapper.wiid).to.equal('new-auction-id'); // OpenWrap: Wrapper Impression ID
         // expect(data.ext.wrapper.profileid).to.equal(parseInt(videoBidRequests[0].params.profId)); // OpenWrap: Wrapper Profile ID
   		  // expect(data.ext.wrapper.versionid).to.equal(parseInt(videoBidRequests[0].params.verId)); // OpenWrap: Wrapper Profile Version ID
   		  expect(data.imp[0].id).to.equal(videoBidRequests[0].bidId); // Prebid bid id is passed as id
