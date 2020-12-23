@@ -354,8 +354,11 @@ function bidderDoneHandler(args) {
 }
 
 function bidWonHandler(args) {
-  let auctionCache = cache.auctions[args.auctionId];
-  auctionCache.adUnitCodes[args.adUnitCode].bidWon = args.requestId;
+  let adUnitCache = cache.auctions[args.auctionId].adUnitCodes[args.adUnitCode];
+  adUnitCache.bidWon = args.adId;
+  adUnitCache.bids[args.requestId].bidId= args.adId;
+  adUnitCache.bids[args.adId] = adUnitCache.bids[args.requestId];
+  delete adUnitCache.bids[args.requestId];
   executeBidWonLoggerCall(args.auctionId, args.adUnitCode);
 }
 
