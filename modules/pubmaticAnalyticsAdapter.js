@@ -286,7 +286,8 @@ function executeBidsLoggerCall(e, highestCpmBids) {
 
 function executeBidWonLoggerCall(auctionId, adUnitId) {
   const winningBidId = cache.auctions[auctionId].adUnitCodes[adUnitId].bidWon;
-  const winningBid = cache.auctions[auctionId].adUnitCodes[adUnitId].bids[winningBidId];
+  const requestId = cache.auctions[auctionId].adUnitCodes[adUnitId].requestId;
+  const winningBid = cache.auctions[auctionId].adUnitCodes[adUnitId].bids[requestId];
   let pixelURL = END_POINT_WIN_BID_LOGGER;
   pixelURL += 'pubid=' + publisherId;
   pixelURL += '&purl=' + enc(config.getConfig('pageUrl') || cache.auctions[auctionId].referer || '');
@@ -372,8 +373,10 @@ function bidderDoneHandler(args) {
 }
 
 function bidWonHandler(args) {
-  let auctionCache = cache.auctions[args.auctionId];
-  auctionCache.adUnitCodes[args.adUnitCode].bidWon = args.requestId;
+  let adUnitCache = cache.auctions[args.auctionId].adUnitCodes[args.adUnitCode];
+  adUnitCache.bidWon = args.adId;
+  adUnitCache.requestId = args.requestId;
+  adUnitCache.bids[args.requestId].bidId = args.adId;
   executeBidWonLoggerCall(args.auctionId, args.adUnitCode);
 }
 
