@@ -167,6 +167,23 @@ function getDomainFromUrl(url) {
   return a.hostname;
 }
 
+function getDevicePlatform() {
+  var deviceType = 3;
+  try {
+    var ua = navigator.userAgent;
+    if (ua && utils.isStr(ua) && ua.trim() != '') {
+      ua = ua.toLowerCase().trim();
+      var isMobileRegExp = new RegExp('(mobi|tablet|ios).*');
+      if (ua.match(isMobileRegExp)) {
+        deviceType = 2;
+      } else {
+        deviceType = 1;
+      }
+    }
+  } catch (ex) {}
+  return deviceType;
+}
+
 function getValueForKgpv(bid, adUnitId) {
   if (bid.params.regexPattern) {
     return bid.params.regexPattern;
@@ -233,6 +250,7 @@ function executeBidsLoggerCall(e, highestCpmBids) {
   outputObj['tst'] = Math.round((new window.Date()).getTime() / 1000);
   outputObj['pid'] = '' + profileId;
   outputObj['pdvid'] = '' + profileVersionId;
+  outputObj['dvc'] = {'plt': getDevicePlatform()};
   outputObj['tgid'] = (function() {
     var testGroupId = parseInt(config.getConfig('testGroupId') || 0);
     if (testGroupId <= 15 && testGroupId >= 0) {
@@ -268,7 +286,8 @@ function executeBidsLoggerCall(e, highestCpmBids) {
 
 function executeBidWonLoggerCall(auctionId, adUnitId) {
   const winningBidId = cache.auctions[auctionId].adUnitCodes[adUnitId].bidWon;
-  const winningBid = cache.auctions[auctionId].adUnitCodes[adUnitId].bids[winningBidId];
+  const requestId = cache.auctions[auctionId].adUnitCodes[adUnitId].requestId;
+  const winningBid = cache.auctions[auctionId].adUnitCodes[adUnitId].bids[requestId];
   let pixelURL = END_POINT_WIN_BID_LOGGER;
   pixelURL += 'pubid=' + publisherId;
   pixelURL += '&purl=' + enc(config.getConfig('pageUrl') || cache.auctions[auctionId].referer || '');
@@ -356,9 +375,8 @@ function bidderDoneHandler(args) {
 function bidWonHandler(args) {
   let adUnitCache = cache.auctions[args.auctionId].adUnitCodes[args.adUnitCode];
   adUnitCache.bidWon = args.adId;
-  adUnitCache.bids[args.requestId].bidId= args.adId;
-  adUnitCache.bids[args.adId] = adUnitCache.bids[args.requestId];
-  delete adUnitCache.bids[args.requestId];
+  adUnitCache.requestId = args.requestId;
+  adUnitCache.bids[args.requestId].bidId = args.adId;
   executeBidWonLoggerCall(args.auctionId, args.adUnitCode);
 }
 
