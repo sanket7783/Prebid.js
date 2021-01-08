@@ -215,7 +215,7 @@ function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
       'l2': 0,
       'ss': (s2sBidders.indexOf(bid.bidder) > -1) ? 1 : 0,
       't': (bid.status == ERROR && bid.error.code == TIMEOUT_ERROR) ? 1 : 0,
-      'wb': (highestBid && highestBid.requestId === bid.bidId ? 1 : 0),
+      'wb': (highestBid && highestBid.adId === bid.bidId ? 1 : 0),
       'mi': bid.bidResponse ? (bid.bidResponse.mi || undefined) : undefined,
       'af': bid.bidResponse ? (bid.bidResponse.mediaType || undefined) : undefined,
       'ocpm': bid.bidResponse ? (bid.bidResponse.originalCpm || 0) : 0,
@@ -286,14 +286,13 @@ function executeBidsLoggerCall(e, highestCpmBids) {
 
 function executeBidWonLoggerCall(auctionId, adUnitId) {
   const winningBidId = cache.auctions[auctionId].adUnitCodes[adUnitId].bidWon;
-  const requestId = cache.auctions[auctionId].adUnitCodes[adUnitId].requestId;
-  const winningBid = cache.auctions[auctionId].adUnitCodes[adUnitId].bids[requestId];
+  const winningBid = cache.auctions[auctionId].adUnitCodes[adUnitId].bids[winningBidId];
   let pixelURL = END_POINT_WIN_BID_LOGGER;
   pixelURL += 'pubid=' + publisherId;
   pixelURL += '&purl=' + enc(config.getConfig('pageUrl') || cache.auctions[auctionId].referer || '');
   pixelURL += '&tst=' + Math.round((new window.Date()).getTime() / 1000);
   pixelURL += '&iid=' + enc(auctionId);
-  pixelURL += '&bidid=' + enc(winningBidId);
+  pixelURL += '&bidid=' + enc(winningBid.bidId);
   pixelURL += '&pid=' + enc(profileId);
   pixelURL += '&pdvid=' + enc(profileVersionId);
   pixelURL += '&slot=' + enc(adUnitId);
@@ -313,7 +312,6 @@ function executeBidWonLoggerCall(auctionId, adUnitId) {
     }
   );
 }
-
 /// /////////// ADAPTER EVENT HANDLER FUNCTIONS //////////////
 
 function auctionInitHandler(args) {
@@ -350,6 +348,7 @@ function bidResponseHandler(args) {
     utils.logError(LOG_PRE_FIX + 'Could not find associated bid request for bid response with requestId: ', args.requestId);
     return;
   }
+  bid.bidId = args.adId;
   bid.source = formatSource(bid.source || args.source);
   setBidStatus(bid, args);
   bid.clientLatencyTimeMs = Date.now() - cache.auctions[args.auctionId].timestamp;
@@ -373,10 +372,8 @@ function bidderDoneHandler(args) {
 }
 
 function bidWonHandler(args) {
-  let adUnitCache = cache.auctions[args.auctionId].adUnitCodes[args.adUnitCode];
-  adUnitCache.bidWon = args.adId;
-  adUnitCache.requestId = args.requestId;
-  adUnitCache.bids[args.requestId].bidId = args.adId;
+  let auctionCache = cache.auctions[args.auctionId];
+  auctionCache.adUnitCodes[args.adUnitCode].bidWon = args.requestId;
   executeBidWonLoggerCall(args.auctionId, args.adUnitCode);
 }
 
