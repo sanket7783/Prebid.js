@@ -221,7 +221,7 @@ function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
       'bidid': bid.bidId,
       'db': bid.bidResponse ? 0 : 1,
       'kgpv': getValueForKgpv(bid, adUnitId),
-      'kgpsv': bid.params.kgpv ? bid.params.kgpv : adUnitId,
+      'kgpsv': bid.params.kgpv ? getUpdatedKGPVForVideo(bid.params.kgpv,bid.bidResponse.mediaType) : adUnitId,
       'psz': bid.bidResponse ? (bid.bidResponse.dimensions.width + 'x' + bid.bidResponse.dimensions.height) : '0x0',
       'eg': bid.bidResponse ? bid.bidResponse.bidGrossCpmUSD : 0,
       'en': bid.bidResponse ? bid.bidResponse.bidPriceUSD : 0,
