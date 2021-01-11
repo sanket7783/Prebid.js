@@ -1,10 +1,16 @@
 import adapter from '../src/AnalyticsAdapter.js';
 import adapterManager from '../src/adapterManager.js';
 import CONSTANTS from '../src/constants.json';
-import { ajax } from '../src/ajax.js';
-import { config } from '../src/config.js';
+import {
+  ajax
+} from '../src/ajax.js';
+import {
+  config
+} from '../src/config.js';
 import * as utils from '../src/utils.js';
-import { getGlobal } from '../src/prebidGlobal.js';
+import {
+  getGlobal
+} from '../src/prebidGlobal.js';
 
 /// /////////// CONSTANTS //////////////
 const ADAPTER_CODE = 'pubmatic';
@@ -47,7 +53,11 @@ function sizeToDimensions(size) {
 }
 
 function validMediaType(type) {
-  return ({'banner': 1, 'native': 1, 'video': 1}).hasOwnProperty(type);
+  return ({
+    'banner': 1,
+    'native': 1,
+    'video': 1
+  }).hasOwnProperty(type);
 }
 
 function formatSource(src) {
@@ -190,14 +200,14 @@ function getValueForKgpv(bid, adUnitId) {
   } else if (bid.bidResponse && bid.bidResponse.regexPattern) {
     return bid.bidResponse.regexPattern;
   } else if (bid.params.kgpv) {
-    return getUpdatedKGPVForVideo(bid.params.kgpv, bid.bidResponse.mediaType);
+    return getUpdatedKGPVForVideo(bid.params.kgpv, bid.bidResponse);
   } else {
     return adUnitId;
   }
 }
 
-function getUpdatedKGPVForVideo(kgpv, adFormat) {
-  if (adFormat === 'video') {
+function getUpdatedKGPVForVideo(kgpv, bidResponse) {
+  if (bidResponse && bidResponse.mediaType && bidResponse.mediaType == 'video') {
     var videoKgpv = ['', '0x0'];
     var splitKgpv = kgpv.split('@');
     if (splitKgpv.length == 2) {
@@ -214,14 +224,14 @@ function getUpdatedKGPVForVideo(kgpv, adFormat) {
 
 function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
   highestBid = (highestBid && highestBid.length > 0) ? highestBid[0] : null;
-  return Object.keys(adUnit.bids).reduce(function(partnerBids, bidId) {
+  return Object.keys(adUnit.bids).reduce(function (partnerBids, bidId) {
     let bid = adUnit.bids[bidId];
     partnerBids.push({
       'pn': bid.bidder,
       'bidid': bid.bidId,
       'db': bid.bidResponse ? 0 : 1,
       'kgpv': getValueForKgpv(bid, adUnitId),
-      'kgpsv': bid.params.kgpv ? getUpdatedKGPVForVideo(bid.params.kgpv,bid.bidResponse.mediaType) : adUnitId,
+      'kgpsv': bid.params.kgpv ? getUpdatedKGPVForVideo(bid.params.kgpv, bid.bidResponse) : adUnitId,
       'psz': bid.bidResponse ? (bid.bidResponse.dimensions.width + 'x' + bid.bidResponse.dimensions.height) : '0x0',
       'eg': bid.bidResponse ? bid.bidResponse.bidGrossCpmUSD : 0,
       'en': bid.bidResponse ? bid.bidResponse.bidPriceUSD : 0,
@@ -246,7 +256,9 @@ function executeBidsLoggerCall(e, highestCpmBids) {
   let auctionId = e.auctionId;
   let referrer = config.getConfig('pageUrl') || cache.auctions[auctionId].referer || '';
   let auctionCache = cache.auctions[auctionId];
-  let outputObj = { s: [] };
+  let outputObj = {
+    s: []
+  };
   let pixelURL = END_POINT_BID_LOGGER;
 
   if (!auctionCache) {
@@ -266,8 +278,10 @@ function executeBidsLoggerCall(e, highestCpmBids) {
   outputObj['tst'] = Math.round((new window.Date()).getTime() / 1000);
   outputObj['pid'] = '' + profileId;
   outputObj['pdvid'] = '' + profileVersionId;
-  outputObj['dvc'] = {'plt': getDevicePlatform()};
-  outputObj['tgid'] = (function() {
+  outputObj['dvc'] = {
+    'plt': getDevicePlatform()
+  };
+  outputObj['tgid'] = (function () {
     var testGroupId = parseInt(config.getConfig('testGroupId') || 0);
     if (testGroupId <= 15 && testGroupId >= 0) {
       return testGroupId;
@@ -275,7 +289,7 @@ function executeBidsLoggerCall(e, highestCpmBids) {
     return 0;
   })();
 
-  outputObj.s = Object.keys(auctionCache.adUnitCodes).reduce(function(slotsArray, adUnitId) {
+  outputObj.s = Object.keys(auctionCache.adUnitCodes).reduce(function (slotsArray, adUnitId) {
     let adUnit = auctionCache.adUnitCodes[adUnitId];
     let slotObject = {
       'sn': adUnitId,
@@ -291,8 +305,7 @@ function executeBidsLoggerCall(e, highestCpmBids) {
   ajax(
     pixelURL,
     null,
-    'json=' + enc(JSON.stringify(outputObj)),
-    {
+    'json=' + enc(JSON.stringify(outputObj)), {
       contentType: 'application/x-www-form-urlencoded',
       withCredentials: true,
       method: 'POST'
@@ -321,8 +334,7 @@ function executeBidWonLoggerCall(auctionId, adUnitId) {
   ajax(
     pixelURL,
     null,
-    null,
-    {
+    null, {
       contentType: 'application/x-www-form-urlencoded',
       withCredentials: true,
       method: 'GET'
@@ -333,7 +345,7 @@ function executeBidWonLoggerCall(auctionId, adUnitId) {
 /// /////////// ADAPTER EVENT HANDLER FUNCTIONS //////////////
 
 function auctionInitHandler(args) {
-  s2sBidders = (function() {
+  s2sBidders = (function () {
     let s2sConf = config.getConfig('s2sConfig');
     return (s2sConf && utils.isArray(s2sConf.bidders)) ? s2sConf.bidders : [];
   }());
@@ -348,7 +360,7 @@ function auctionInitHandler(args) {
 }
 
 function bidRequestedHandler(args) {
-  args.bids.forEach(function(bid) {
+  args.bids.forEach(function (bid) {
     if (!cache.auctions[args.auctionId].adUnitCodes.hasOwnProperty(bid.adUnitCode)) {
       cache.auctions[args.auctionId].adUnitCodes[bid.adUnitCode] = {
         bids: {},
@@ -409,7 +421,7 @@ function bidTimeoutHandler(args) {
   // db = 0 and t = 1 means bidder did  respond with a bid but post timeout
   args.forEach(badBid => {
     let auctionCache = cache.auctions[badBid.auctionId];
-    let bid = auctionCache.adUnitCodes[badBid.adUnitCode].bids[ badBid.bidId || badBid.requestId ];
+    let bid = auctionCache.adUnitCodes[badBid.adUnitCode].bids[badBid.bidId || badBid.requestId];
     if (bid) {
       bid.status = ERROR;
       bid.error = {
@@ -423,7 +435,9 @@ function bidTimeoutHandler(args) {
 
 /// /////////// ADAPTER DEFINITION //////////////
 
-let baseAdapter = adapter({analyticsType: 'endpoint'});
+let baseAdapter = adapter({
+  analyticsType: 'endpoint'
+});
 let pubmaticAdapter = Object.assign({}, baseAdapter, {
 
   enableAnalytics(conf = {}) {
@@ -460,7 +474,10 @@ let pubmaticAdapter = Object.assign({}, baseAdapter, {
     baseAdapter.disableAnalytics.apply(this, arguments);
   },
 
-  track({eventType, args}) {
+  track({
+    eventType,
+    args
+  }) {
     switch (eventType) {
       case CONSTANTS.EVENTS.AUCTION_INIT:
         auctionInitHandler(args);
