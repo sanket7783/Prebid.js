@@ -99,7 +99,7 @@ export const spec = {
         }
       };
 
-      if (bidFloor) {
+      if (bidFloor || bidFloor == 0) {
         impObj.bidfloor = bidFloor;
       }
 

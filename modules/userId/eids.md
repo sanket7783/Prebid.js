@@ -26,6 +26,9 @@ userIdAsEids = [
         uids: [{
             id: 'some-random-id-value',
             atype: 1
+        },
+        ext: {
+            linkType: 2
         }]
     },
 

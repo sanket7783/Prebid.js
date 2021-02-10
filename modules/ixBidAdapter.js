@@ -545,7 +545,6 @@ function buildIXDiag(validBidRequests) {
 
   return ixdiag;
 }
-
 /**
  *
  * @param {Object} impressions containing ixImps and possibly missingImps
@@ -632,6 +631,7 @@ export const spec = {
 
   code: BIDDER_CODE,
   gvlid: 10,
+  aliases: ['indexExchange'],
   supportedMediaTypes: SUPPORTED_AD_TYPES,
 
   /**

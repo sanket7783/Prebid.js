@@ -36,8 +36,8 @@ describe('the price floors module', function () {
       '*': 2.5
     }
   };
-  const basicFloorDataHigh = {
-    floorMin: 7.0,
+  const basicFloorDataLow = {
+    floorMin: 2.3,
     modelVersion: 'basic model',
     modelWeight: 10,
     currency: 'USD',
@@ -51,10 +51,9 @@ describe('the price floors module', function () {
       '*': 2.5
     }
   };
-  const basicFloorDataLow = {
-    floorMin: 2.3,
+  const basicFloorDataHigh = {
+    floorMin: 7.0,
     modelVersion: 'basic model',
-    modelWeight: 10,
     currency: 'USD',
     schema: {
       delimiter: '|',
