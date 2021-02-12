@@ -523,6 +523,12 @@ export const spec = {
       // transactionId: conf.transactionId,
       wiid: conf.wiid || bidderRequest.auctionId
     };
+
+    // AB Test is enabled
+    if (window.PWT && window.PWT.testGroupId && window.PWT.testGroupId === 1) {
+      payload.ext.wrapper['abtest'] = 1;
+    }
+
     payload.source = {
       tid: conf.transactionId
     };
