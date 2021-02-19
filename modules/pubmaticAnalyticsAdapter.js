@@ -399,22 +399,14 @@ function bidderDoneHandler(args) {
   });
 }
 
-window.addEventListener("message", (msg) => {
-  try{
-    let msgData = window.JSON.parse(msg.data);
-    if(!msgData.nativeTracker){
-      return;
-    }
-  
-    const _bid = owpbjs.getBidResponses();
-    Object.values(_bid).forEach(function(val){
-       val.bids.filter(function(bid){ return bid.adId == msgData.bidId }).map(function(bid){ 
-        bidWonHandler(bid);
-       });
-    });
-  }catch(e){}
- 
-}, false);
+window.owpbjs.fireNativeTrackerForBid = function(bidId){
+  const _bid = owpbjs.getBidResponses();
+  Object.values(_bid).forEach(function(val){
+     val.bids.filter(function(bid){ return bid.adId == bidId }).map(function(bid){ 
+      bidWonHandler(bid);
+     });
+  });
+}
 
 function bidWonHandler(args) {
   let auctionCache = cache.auctions[args.auctionId];
