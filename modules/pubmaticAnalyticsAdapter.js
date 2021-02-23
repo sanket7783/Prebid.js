@@ -399,15 +399,6 @@ function bidderDoneHandler(args) {
   });
 }
 
-window.owpbjs.fireNativeTrackerForBid = function(bidId){
-  const _bid = owpbjs.getBidResponses();
-  Object.values(_bid).forEach(function(val){
-     val.bids.filter(function(bid){ return bid.adId == bidId }).map(function(bid){ 
-      bidWonHandler(bid);
-     });
-  });
-}
-
 function bidWonHandler(args) {
   let auctionCache = cache.auctions[args.auctionId];
   auctionCache.adUnitCodes[args.adUnitCode].bidWon = args.requestId;
