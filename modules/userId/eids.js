@@ -8,10 +8,7 @@ const USER_IDS_CONFIG = {
   // intentIqId
   'intentIqId': {
     source: 'intentiq.com',
-    atype: 1,
-    getValue: function(data) {
-      return data.RESULT;
-    }
+    atype: 1
   },
 
   // pubCommonId
@@ -38,7 +35,7 @@ const USER_IDS_CONFIG = {
     },
     source: 'id5-sync.com',
     atype: 1,
-    getEidExt: function(data) {
+    getUidExt: function(data) {
       if (data.ext) {
         return data.ext;
       }
@@ -140,10 +137,7 @@ const USER_IDS_CONFIG = {
   // zeotapIdPlus
   'IDP': {
     source: 'zeotap.com',
-    atype: 1,
-    getValue: function getValue(data) {
-      return data.id;
-    }
+    atype: 1
   },
 
   // haloId
@@ -164,8 +158,8 @@ const USER_IDS_CONFIG = {
     atype: 1
   },
 
-  // Verizon Media
-  'vmuid': {
+  // Verizon Media ConnectID
+  'connectid': {
     source: 'verizonmedia.com',
     atype: 1
   },
@@ -173,6 +167,10 @@ const USER_IDS_CONFIG = {
   // Neustar Fabrick
   'fabrickId': {
     source: 'neustar.biz',
+    atype: 1
+  },
+  'tapadId': {
+    source: 'tapad.com',
     atype: 1
   }
 };
