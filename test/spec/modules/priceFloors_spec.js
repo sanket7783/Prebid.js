@@ -23,20 +23,8 @@ describe('the price floors module', function () {
   let clock;
   const basicFloorData = {
     modelVersion: 'basic model',
-    currency: 'USD',
-    schema: {
-      delimiter: '|',
-      fields: ['mediaType']
-    },
-    values: {
-      'banner': 1.0,
-      'video': 5.0,
-      '*': 2.5
-    }
-  };
-  const basicFloorDataHigh = {
-    floorMin: 7.0,
-    modelVersion: 'basic model',
+    modelWeight: 10,
+    modelTimestamp: 1606772895,
     currency: 'USD',
     schema: {
       delimiter: '|',
@@ -50,6 +38,21 @@ describe('the price floors module', function () {
   };
   const basicFloorDataLow = {
     floorMin: 2.3,
+    modelVersion: 'basic model',
+    modelWeight: 10,
+    currency: 'USD',
+    schema: {
+      delimiter: '|',
+      fields: ['mediaType']
+    },
+    values: {
+      'banner': 1.0,
+      'video': 5.0,
+      '*': 2.5
+    }
+  };
+  const basicFloorDataHigh = {
+    floorMin: 7.0,
     modelVersion: 'basic model',
     currency: 'USD',
     schema: {
@@ -184,6 +187,8 @@ describe('the price floors module', function () {
       let resultingData = getFloorsDataForAuction(inputFloorData, 'test_div_1');
       expect(resultingData).to.deep.equal({
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         currency: 'USD',
         schema: {
           delimiter: '|',
@@ -201,6 +206,8 @@ describe('the price floors module', function () {
       resultingData = getFloorsDataForAuction(inputFloorData, 'this_is_a_div');
       expect(resultingData).to.deep.equal({
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         currency: 'USD',
         schema: {
           delimiter: '^',
@@ -429,6 +436,8 @@ describe('the price floors module', function () {
         skipped: true,
         floorMin: undefined,
         modelVersion: undefined,
+        modelWeight: undefined,
+        modelTimestamp: undefined,
         location: 'noData',
         skipRate: 0,
         fetchStatus: undefined,
@@ -463,6 +472,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'adUnit Model Version',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'adUnit',
         skipRate: 0,
         fetchStatus: undefined,
@@ -496,6 +507,8 @@ describe('the price floors module', function () {
       validateBidRequests(true, {
         skipped: false,
         modelVersion: 'adUnit Model Version',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'adUnit',
         skipRate: 0,
         floorMin: 7,
@@ -510,6 +523,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: undefined,
@@ -531,6 +546,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: undefined,
@@ -545,6 +562,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: undefined,
@@ -559,6 +578,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: undefined,
@@ -582,6 +603,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 50,
         fetchStatus: undefined,
@@ -596,6 +619,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 10,
         fetchStatus: undefined,
@@ -610,6 +635,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: undefined,
@@ -674,6 +701,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'model-1',
+        modelWeight: 10,
+        modelTimestamp: undefined,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: undefined,
@@ -687,6 +716,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'model-2',
+        modelWeight: 40,
+        modelTimestamp: undefined,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: undefined,
@@ -700,6 +731,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'model-3',
+        modelWeight: 50,
+        modelTimestamp: undefined,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: undefined,
@@ -729,6 +762,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: undefined,
@@ -808,6 +843,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: 'timeout',
@@ -846,6 +883,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'fetch model name',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'fetch',
         skipRate: 0,
         fetchStatus: 'success',
@@ -883,6 +922,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'fetch model name',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'fetch',
         skipRate: 0,
         fetchStatus: 'success',
@@ -923,6 +964,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'fetch model name',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'fetch',
         skipRate: 95,
         fetchStatus: 'success',
@@ -945,6 +988,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: 'error',
@@ -969,6 +1014,8 @@ describe('the price floors module', function () {
         skipped: false,
         floorMin: undefined,
         modelVersion: 'basic model',
+        modelWeight: 10,
+        modelTimestamp: 1606772895,
         location: 'setConfig',
         skipRate: 0,
         fetchStatus: 'success',
@@ -1268,6 +1315,41 @@ describe('the price floors module', function () {
           floor: 1.3334 // 1.3334 * 0.75 = 1.000005 which is the floor (we cut off getFloor at 4 decimal points)
         });
       });
+
+      it('should use standard cpmAdjustment if no bidder cpmAdjustment', function () {
+        getGlobal().bidderSettings = {
+          rubicon: {
+            bidCpmAdjustment: function (bidCpm, bidResponse) {
+              return bidResponse.cpm * 0.5;
+            },
+          },
+          standard: {
+            bidCpmAdjustment: function (bidCpm, bidResponse) {
+              return bidResponse.cpm * 0.75;
+            },
+          }
+        };
+        _floorDataForAuction[bidRequest.auctionId] = utils.deepClone(basicFloorConfig);
+        _floorDataForAuction[bidRequest.auctionId].data.values = { '*': 1.0 };
+        let appnexusBid = {
+          ...bidRequest,
+          bidder: 'appnexus'
+        };
+
+        // the conversion should be what the bidder would need to return in order to match the actual floor
+        // rubicon
+        expect(bidRequest.getFloor()).to.deep.equal({
+          currency: 'USD',
+          floor: 2.0 // a 2.0 bid after rubicons cpm adjustment would be 1.0 and thus is the floor after adjust
+        });
+
+        // appnexus
+        expect(appnexusBid.getFloor()).to.deep.equal({
+          currency: 'USD',
+          floor: 1.3334 // 1.3334 * 0.75 = 1.000005 which is the floor (we cut off getFloor at 4 decimal points)
+        });
+      });
+
       it('should work when cpmAdjust function uses bid object', function () {
         getGlobal().bidderSettings = {
           rubicon: {

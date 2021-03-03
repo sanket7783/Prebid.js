@@ -402,7 +402,7 @@ function _handleEids(payload, validBidRequests) {
     _addExternalUserId(eids, utils.deepAccess(bidRequest, `userId.firstpartyid`), 'firstpartyid', 1);
   }
   if (eids.length > 0) {
-    if(!payload.user.ext) {
+    if (!payload.user.ext) {
       payload.user.ext = {};
     }
     payload.user.ext.eids = eids;
@@ -523,6 +523,12 @@ export const spec = {
       // transactionId: conf.transactionId,
       wiid: conf.wiid || bidderRequest.auctionId
     };
+
+    // AB Test is enabled
+    if (window.PWT && window.PWT.testGroupId && window.PWT.testGroupId === 1) {
+      payload.ext.wrapper['abtest'] = 1;
+    }
+
     payload.source = {
       tid: conf.transactionId
     };
