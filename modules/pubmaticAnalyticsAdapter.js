@@ -210,14 +210,16 @@ function getUpdatedKGPVForVideo(kgpv, bidResponse) {
   if (bidResponse && bidResponse.mediaType && bidResponse.mediaType == 'video') {
     var videoKgpv = ['', '0x0'];
     var splitKgpv = kgpv.split('@');
-    if (splitKgpv.length == 2) {
-      if (splitKgpv[1].indexOf(':') > -1) {
-        var kgpvIndex = splitKgpv[1].split(':');
-        videoKgpv[1] = videoKgpv[1] + ':' + kgpvIndex[1];
+    if (splitKgpv.length > 1) {
+      if (splitKgpv.length == 2) {
+        if (splitKgpv[1].indexOf(':') > -1) {
+          var kgpvIndex = splitKgpv[1].split(':');
+          videoKgpv[1] = videoKgpv[1] + ':' + kgpvIndex[1];
+        }
+        videoKgpv[0] = splitKgpv[0];
       }
-      videoKgpv[0] = splitKgpv[0];
+      kgpv = videoKgpv.join('@');
     }
-    kgpv = videoKgpv.join('@');
   }
   return kgpv;
 }
