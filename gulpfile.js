@@ -39,11 +39,17 @@ const { spawn } = require('child_process');
 var profile = argv.profile;
 var prebidSrc = (profile === "undefined" || profile === "OW") ?
                   "src/prebid.js" :
-                  (profile === "IH" ? "src/prebid.idHub.js" : "src/prebid.js");
+                  (profile === "IH" ? "src/prebid.idhub.js" : "src/prebid.js");
+console.log("Loading profile = " + argv.profile + " prebidSrc = " + prebidSrc);
 // these modules must be explicitly listed in --modules to be included in the build, won't be part of "all" modules
 var explicitModules = [
   'pre1api'
 ];
+
+var excludeModules = [
+  'adpod.js',
+  'sizeMappingV2.js'
+]
 
 // all the following functions are task functions
 function bundleToStdout() {
@@ -141,18 +147,37 @@ function makeDevpackPkg() {
   var webpackStream = require('webpack-stream');
   var webpackConfig = require('./webpack.conf');
   var helpers = require('./gulpHelpers');
+  var updatedModuleList = [];
 
   var cloned = _.cloneDeep(webpackConfig);
   cloned.devtool = 'source-map';
   var externalModules = helpers.getArgModules();
-
   const analyticsSources = helpers.getAnalyticsSources();
   const moduleSources = helpers.getModulePaths(externalModules);
-  return gulp.src([].concat(moduleSources, analyticsSources, prebidSrc))
+  updatedModuleList = updateModulesForIH(moduleSources);
+
+  return gulp.src([].concat(updatedModuleList, analyticsSources, prebidSrc))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
     .pipe(gulp.dest('build/dev'))
     .pipe(connect.reload());
+}
+
+function updateModulesForIH(moduleSources) {
+  var temp = -1;
+  var updatedModuleList = [];
+
+  if (profile === "IH") {
+    var filePathArr = [];
+    updatedModuleList = moduleSources.filter(function(x) {
+      filePathArr = x.split("/");
+      var index = excludeModules.indexOf(filePathArr[filePathArr.length-1]);
+      return  index < 0;
+    });
+    return updatedModuleList;
+  } else {
+    return moduleSources;
+  }
 }
 
 function makeWebpackPkg() {
@@ -164,19 +189,21 @@ function makeWebpackPkg() {
   var helpers = require('./gulpHelpers');
   var header = require('gulp-header');
   var gulpif = require('gulp-if');
-
+  var updatedModuleList = [];
   var cloned = _.cloneDeep(webpackConfig);
   delete cloned.devtool;
+  
 
   var externalModules = helpers.getArgModules();
 
   const analyticsSources = helpers.getAnalyticsSources();
   const moduleSources = helpers.getModulePaths(externalModules);
+  updatedModuleList = updateModulesForIH(moduleSources);
 
-  return gulp.src([].concat(moduleSources, analyticsSources, prebidSrc))
+  return gulp.src([].concat(updatedModuleList, analyticsSources, prebidSrc))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
-    .pipe(uglify())
+    //.pipe(uglify())
     .pipe(gulpif(file => file.basename === 'prebid-core.js', header(banner, { prebid: prebid })))
     .pipe(gulp.dest('build/dist'));
 }
@@ -216,6 +243,7 @@ function bundle(dev, moduleArr) {
     modules = allModules.filter(module => explicitModules.indexOf(module) === -1);
   } else {
     var diff = _.difference(modules, allModules);
+
     if (diff.length !== 0) {
       throw new gutil.PluginError({
         plugin: 'bundle',
