@@ -37,9 +37,9 @@ const FAKE_SERVER_HOST = argv.host ? argv.host : 'localhost';
 const FAKE_SERVER_PORT = 4444;
 const { spawn } = require('child_process');
 var profile = argv.profile;
-var prebidSrc = (profile === "undefined" || profile === "OW") ?
+var prebidSrc = (profile === "undefined" || profile == "OW") ?
                   "src/prebid.js" :
-                  (profile === "IH" ? "src/prebid.idhub.js" : "src/prebid.js");
+                  (profile == "IH" ? "src/prebid.idhub.js" : "src/prebid.js");
 console.log("Loading profile = " + argv.profile + " prebidSrc = " + prebidSrc);
 // these modules must be explicitly listed in --modules to be included in the build, won't be part of "all" modules
 var explicitModules = [
@@ -181,7 +181,7 @@ function updateModulesForIH(moduleSources) {
   var temp = -1;
   var updatedModuleList = [];
 
-  if (profile === "IH") {
+  if (profile == "IH") {
     var filePathArr = [];
     updatedModuleList = moduleSources.filter(function(x) {
       filePathArr = x.split("/");
