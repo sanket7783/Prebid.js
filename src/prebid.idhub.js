@@ -1,27 +1,24 @@
-/** @module pbjs - prebid for idhub */
+/** @module pbjs prebidjs for idhub*/
+
 import { getGlobal } from './prebidGlobal.js';
-import { adUnitsFilter, flatten, isArrayOfNums, isGptPubadsDefined, uniques } from './utils.js';
-import { userSync } from './userSync.js';
+import { isArrayOfNums } from './utils.js';
 import { config } from './config.js';
+import { auctionManager } from './auctionManager.js';
+import { targeting } from './targeting.js';
 import { hook } from './hook.js';
 import { sessionLoader } from './debugging.js';
 import includes from 'core-js-pure/features/array/includes.js';
 import { adunitCounter } from './adUnits.js';
+import { storageCallbacks } from './storageManager.js';
 
 const $$PREBID_GLOBAL$$ = getGlobal();
 const CONSTANTS = require('./constants.json');
 const utils = require('./utils.js');
+const adapterManager = require('./adapterManager.js').default;
 const events = require('./events.js');
-const { triggerUserSyncs } = userSync;
 
 /* private variables */
-const { ADD_AD_UNITS, BID_WON, REQUEST_BIDS, SET_TARGETING, AD_RENDER_FAILED } = CONSTANTS.EVENTS;
-const { PREVENT_WRITING_ON_MAIN_DOCUMENT, NO_AD, EXCEPTION, CANNOT_FIND_AD, MISSING_DOC_OR_ADID } = CONSTANTS.AD_RENDER_FAILED_REASON;
-
-const eventValidators = {
-  bidWon: checkDefinedPlacement
-};
-
+const {REQUEST_BIDS } = CONSTANTS.EVENTS;
 // initialize existing debugging sessions if present
 sessionLoader();
 
@@ -36,8 +33,118 @@ utils.logInfo('Prebid.js v$prebid.version$ loaded');
 // create adUnit array
 $$PREBID_GLOBAL$$.adUnits = $$PREBID_GLOBAL$$.adUnits || [];
 
-// Allow publishers who enable user sync override to trigger their sync
-$$PREBID_GLOBAL$$.triggerUserSyncs = triggerUserSyncs;
+function validateSizes(sizes, targLength) {
+  let cleanSizes = [];
+  if (utils.isArray(sizes) && ((targLength) ? sizes.length === targLength : sizes.length > 0)) {
+    // check if an array of arrays or array of numbers
+    if (sizes.every(sz => isArrayOfNums(sz, 2))) {
+      cleanSizes = sizes;
+    } else if (isArrayOfNums(sizes, 2)) {
+      cleanSizes.push(sizes);
+    }
+  }
+  return cleanSizes;
+}
+
+function validateBannerMediaType(adUnit) {
+  const validatedAdUnit = utils.deepClone(adUnit);
+  const banner = validatedAdUnit.mediaTypes.banner;
+  const bannerSizes = validateSizes(banner.sizes);
+  if (bannerSizes.length > 0) {
+    banner.sizes = bannerSizes;
+    // Deprecation Warning: This property will be deprecated in next release in favor of adUnit.mediaTypes.banner.sizes
+    validatedAdUnit.sizes = bannerSizes;
+  } else {
+    utils.logError('Detected a mediaTypes.banner object without a proper sizes field.  Please ensure the sizes are listed like: [[300, 250], ...].  Removing invalid mediaTypes.banner object from request.');
+    delete validatedAdUnit.mediaTypes.banner
+  }
+  return validatedAdUnit;
+}
+
+function validateVideoMediaType(adUnit) {
+  const validatedAdUnit = utils.deepClone(adUnit);
+  const video = validatedAdUnit.mediaTypes.video;
+  if (video.playerSize) {
+    let tarPlayerSizeLen = (typeof video.playerSize[0] === 'number') ? 2 : 1;
+
+    const videoSizes = validateSizes(video.playerSize, tarPlayerSizeLen);
+    if (videoSizes.length > 0) {
+      if (tarPlayerSizeLen === 2) {
+        utils.logInfo('Transforming video.playerSize from [640,480] to [[640,480]] so it\'s in the proper format.');
+      }
+      video.playerSize = videoSizes;
+      // Deprecation Warning: This property will be deprecated in next release in favor of adUnit.mediaTypes.video.playerSize
+      validatedAdUnit.sizes = videoSizes;
+    } else {
+      utils.logError('Detected incorrect configuration of mediaTypes.video.playerSize.  Please specify only one set of dimensions in a format like: [[640, 480]]. Removing invalid mediaTypes.video.playerSize property from request.');
+      delete validatedAdUnit.mediaTypes.video.playerSize;
+    }
+  }
+  return validatedAdUnit;
+}
+
+function validateNativeMediaType(adUnit) {
+  const validatedAdUnit = utils.deepClone(adUnit);
+  const native = validatedAdUnit.mediaTypes.native;
+  if (native.image && native.image.sizes && !Array.isArray(native.image.sizes)) {
+    utils.logError('Please use an array of sizes for native.image.sizes field.  Removing invalid mediaTypes.native.image.sizes property from request.');
+    delete validatedAdUnit.mediaTypes.native.image.sizes;
+  }
+  if (native.image && native.image.aspect_ratios && !Array.isArray(native.image.aspect_ratios)) {
+    utils.logError('Please use an array of sizes for native.image.aspect_ratios field.  Removing invalid mediaTypes.native.image.aspect_ratios property from request.');
+    delete validatedAdUnit.mediaTypes.native.image.aspect_ratios;
+  }
+  if (native.icon && native.icon.sizes && !Array.isArray(native.icon.sizes)) {
+    utils.logError('Please use an array of sizes for native.icon.sizes field.  Removing invalid mediaTypes.native.icon.sizes property from request.');
+    delete validatedAdUnit.mediaTypes.native.icon.sizes;
+  }
+  return validatedAdUnit;
+}
+
+export const adUnitSetupChecks = {
+  validateBannerMediaType,
+  validateVideoMediaType,
+  validateNativeMediaType,
+  validateSizes
+};
+
+export const checkAdUnitSetup = hook('sync', function (adUnits) {
+  const validatedAdUnits = [];
+
+  adUnits.forEach(adUnit => {
+    const mediaTypes = adUnit.mediaTypes;
+    const bids = adUnit.bids;
+    let validatedBanner, validatedVideo, validatedNative;
+
+    if (!bids || !utils.isArray(bids)) {
+      utils.logError(`Detected adUnit.code '${adUnit.code}' did not have 'adUnit.bids' defined or 'adUnit.bids' is not an array. Removing adUnit from auction.`);
+      return;
+    }
+
+    if (!mediaTypes || Object.keys(mediaTypes).length === 0) {
+      utils.logError(`Detected adUnit.code '${adUnit.code}' did not have a 'mediaTypes' object defined.  This is a required field for the auction, so this adUnit has been removed.`);
+      return;
+    }
+
+    if (mediaTypes.banner) {
+      validatedBanner = validateBannerMediaType(adUnit);
+    }
+
+    if (mediaTypes.video) {
+      validatedVideo = validatedBanner ? validateVideoMediaType(validatedBanner) : validateVideoMediaType(adUnit);
+    }
+
+    if (mediaTypes.native) {
+      validatedNative = validatedVideo ? validateNativeMediaType(validatedVideo) : validatedBanner ? validateNativeMediaType(validatedBanner) : validateNativeMediaType(adUnit);
+    }
+
+    const validatedAdUnit = Object.assign({}, validatedBanner, validatedVideo, validatedNative);
+
+    validatedAdUnits.push(validatedAdUnit);
+  });
+
+  return validatedAdUnits;
+}, 'checkAdUnitSetup');
 
 /// ///////////////////////////////
 //                              //
@@ -51,7 +158,7 @@ $$PREBID_GLOBAL$$.triggerUserSyncs = triggerUserSyncs;
  * @param {number} requestOptions.timeout
  * @param {Array} requestOptions.adUnits
  * @param {Array} requestOptions.adUnitCodes
- * @param {Array} requestOptions.labels
+ * @param {Array} requestOptions.label
  * @param {String} requestOptions.auctionId
  * @alias module:pbjs.requestBids
  */
@@ -61,6 +168,18 @@ $$PREBID_GLOBAL$$.requestBids = hook('async', function ({ bidsBackHandler, timeo
   adUnits = adUnits || $$PREBID_GLOBAL$$.adUnits;
 
   utils.logInfo('Invoking $$PREBID_GLOBAL$$.requestBids', arguments);
+
+  let _s2sConfigs = [];
+  const s2sBidders = [];
+  config.getConfig('s2sConfig', config => {
+    if (config && config.s2sConfig) {
+      _s2sConfigs = Array.isArray(config.s2sConfig) ? config.s2sConfig : [config.s2sConfig];
+    }
+  });
+
+  _s2sConfigs.forEach(s2sConfig => {
+    s2sBidders.push(...s2sConfig.bidders);
+  });
 
   adUnits = checkAdUnitSetup(adUnits);
 
@@ -86,11 +205,7 @@ $$PREBID_GLOBAL$$.requestBids = hook('async', function ({ bidsBackHandler, timeo
     const allBidders = adUnit.bids.map(bid => bid.bidder);
     const bidderRegistry = adapterManager.bidderRegistry;
 
-    const s2sConfig = config.getConfig('s2sConfig');
-    const s2sBidders = s2sConfig && s2sConfig.bidders;
-    const bidders = (s2sBidders) ? allBidders.filter(bidder => {
-      return !includes(s2sBidders, bidder);
-    }) : allBidders;
+    const bidders = (s2sBidders) ? allBidders.filter(bidder => !includes(s2sBidders, bidder)) : allBidders;
 
     adUnit.transactionId = utils.generateUUID();
 
@@ -149,92 +264,9 @@ export function executeCallbacks(fn, reqBidsConfigObj) {
     }
   }
 }
+
 // This hook will execute all storage callbacks which were registered before gdpr enforcement hook was added. Some bidders, user id modules use storage functions when module is parsed but gdpr enforcement hook is not added at that stage as setConfig callbacks are yet to be called. Hence for such calls we execute all the stored callbacks just before requestBids. At this hook point we will know for sure that gdprEnforcement module is added or not
 $$PREBID_GLOBAL$$.requestBids.before(executeCallbacks, 49);
-
-/**
- * @param {string} event the name of the event
- * @param {Function} handler a callback to set on event
- * @param {string} id an identifier in the context of the event
- * @alias module:pbjs.onEvent
- *
- * This API call allows you to register a callback to handle a Prebid.js event.
- * An optional `id` parameter provides more finely-grained event callback registration.
- * This makes it possible to register callback events for a specific item in the
- * event context. For example, `bidWon` events will accept an `id` for ad unit code.
- * `bidWon` callbacks registered with an ad unit code id will be called when a bid
- * for that ad unit code wins the auction. Without an `id` this method registers the
- * callback for every `bidWon` event.
- *
- * Currently `bidWon` is the only event that accepts an `id` parameter.
- */
-$$PREBID_GLOBAL$$.onEvent = function (event, handler, id) {
-  utils.logInfo('Invoking $$PREBID_GLOBAL$$.onEvent', arguments);
-  if (!utils.isFn(handler)) {
-    utils.logError('The event handler provided is not a function and was not set on event "' + event + '".');
-    return;
-  }
-
-  if (id && !eventValidators[event].call(null, id)) {
-    utils.logError('The id provided is not valid for event "' + event + '" and no handler was set.');
-    return;
-  }
-
-  events.on(event, handler, id);
-};
-
-/**
- * @param {string} event the name of the event
- * @param {Function} handler a callback to remove from the event
- * @param {string} id an identifier in the context of the event (see `$$PREBID_GLOBAL$$.onEvent`)
- * @alias module:pbjs.offEvent
- */
-$$PREBID_GLOBAL$$.offEvent = function (event, handler, id) {
-  utils.logInfo('Invoking $$PREBID_GLOBAL$$.offEvent', arguments);
-  if (id && !eventValidators[event].call(null, id)) {
-    return;
-  }
-
-  events.off(event, handler, id);
-};
-
-/**
- * Return a copy of all events emitted
- *
- * @alias module:pbjs.getEvents
- */
-$$PREBID_GLOBAL$$.getEvents = function () {
-  utils.logInfo('Invoking $$PREBID_GLOBAL$$.getEvents');
-  return events.getEvents();
-};
-
-/*
- * Wrapper to register bidderAdapter externally (adapterManager.registerBidAdapter())
- * @param  {Function} bidderAdaptor [description]
- * @param  {string} bidderCode [description]
- * @alias module:pbjs.registerBidAdapter
- */
-$$PREBID_GLOBAL$$.registerBidAdapter = function (bidderAdaptor, bidderCode) {
-  utils.logInfo('Invoking $$PREBID_GLOBAL$$.registerBidAdapter', arguments);
-  try {
-    adapterManager.registerBidAdapter(bidderAdaptor(), bidderCode);
-  } catch (e) {
-    utils.logError('Error registering bidder adapter : ' + e.message);
-  }
-};
-/**
- * Wrapper to register analyticsAdapter externally (adapterManager.registerAnalyticsAdapter())
- * @param  {Object} options [description]
- * @alias module:pbjs.registerAnalyticsAdapter
- */
-$$PREBID_GLOBAL$$.registerAnalyticsAdapter = function (options) {
-  utils.logInfo('Invoking $$PREBID_GLOBAL$$.registerAnalyticsAdapter', arguments);
-  try {
-    adapterManager.registerAnalyticsAdapter(options);
-  } catch (e) {
-    utils.logError('Error registering analytics adapter : ' + e.message);
-  }
-};
 
 /**
  * Enable sending analytics data to the analytics provider of your
@@ -252,52 +284,19 @@ $$PREBID_GLOBAL$$.registerAnalyticsAdapter = function (options) {
  */
 
 // Stores 'enableAnalytics' callbacks for later execution.
+const enableAnalyticsCallbacks = [];
+
+const enableAnalyticsCb = hook('async', function (config) {
+  if (config && !utils.isEmpty(config)) {
+    utils.logInfo('Invoking $$PREBID_GLOBAL$$.enableAnalytics for: ', config);
+    adapterManager.enableAnalytics(config);
+  } else {
+    utils.logError('$$PREBID_GLOBAL$$.enableAnalytics should be called with option {}');
+  }
+}, 'enableAnalyticsCb');
 
 /**
  * @alias module:pbjs.aliasBidder
- */
-$$PREBID_GLOBAL$$.aliasBidder = function (bidderCode, alias, options) {
-  utils.logInfo('Invoking $$PREBID_GLOBAL$$.aliasBidder', arguments);
-  if (bidderCode && alias) {
-    adapterManager.aliasBidAdapter(bidderCode, alias, options);
-  } else {
-    utils.logError('bidderCode and alias must be passed as arguments', '$$PREBID_GLOBAL$$.aliasBidder');
-  }
-};
-
-/**
- * The bid response object returned by an external bidder adapter during the auction.
- * @typedef {Object} AdapterBidResponse
- * @property {string} pbAg Auto granularity price bucket; CPM <= 5 ? increment = 0.05 : CPM > 5 && CPM <= 10 ? increment = 0.10 : CPM > 10 && CPM <= 20 ? increment = 0.50 : CPM > 20 ? priceCap = 20.00.  Example: `"0.80"`.
- * @property {string} pbCg Custom price bucket.  For example setup, see {@link setPriceGranularity}.  Example: `"0.84"`.
- * @property {string} pbDg Dense granularity price bucket; CPM <= 3 ? increment = 0.01 : CPM > 3 && CPM <= 8 ? increment = 0.05 : CPM > 8 && CPM <= 20 ? increment = 0.50 : CPM > 20? priceCap = 20.00.  Example: `"0.84"`.
- * @property {string} pbLg Low granularity price bucket; $0.50 increment, capped at $5, floored to two decimal places.  Example: `"0.50"`.
- * @property {string} pbMg Medium granularity price bucket; $0.10 increment, capped at $20, floored to two decimal places.  Example: `"0.80"`.
- * @property {string} pbHg High granularity price bucket; $0.01 increment, capped at $20, floored to two decimal places.  Example: `"0.84"`.
- *
- * @property {string} bidder The string name of the bidder.  This *may* be the same as the `bidderCode`.  For For a list of all bidders and their codes, see [Bidders' Params](http://prebid.org/dev-docs/bidders.html).
- * @property {string} bidderCode The unique string that identifies this bidder.  For a list of all bidders and their codes, see [Bidders' Params](http://prebid.org/dev-docs/bidders.html).
- *
- * @property {string} requestId The [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) representing the bid request.
- * @property {number} requestTimestamp The time at which the bid request was sent out, expressed in milliseconds.
- * @property {number} responseTimestamp The time at which the bid response was received, expressed in milliseconds.
- * @property {number} timeToRespond How long it took for the bidder to respond with this bid, expressed in milliseconds.
- *
- * @property {string} size The size of the ad creative, expressed in `"AxB"` format, where A and B are numbers of pixels.  Example: `"320x50"`.
- * @property {string} width The width of the ad creative in pixels.  Example: `"320"`.
- * @property {string} height The height of the ad creative in pixels.  Example: `"50"`.
- *
- * @property {string} ad The actual ad creative content, often HTML with CSS, JavaScript, and/or links to additional content.  Example: `"<div id='beacon_-YQbipJtdxmMCgEPHExLhmqzEm' style='position: absolute; left: 0px; top: 0px; visibility: hidden;'><img src='http://aplus-...'/></div><iframe src=\"http://aax-us-east.amazon-adsystem.com/e/is/8dcfcd..." width=\"728\" height=\"90\" frameborder=\"0\" ...></iframe>",`.
- * @property {number} ad_id The ad ID of the creative, as understood by the bidder's system.  Used by the line item's [creative in the ad server](http://prebid.org/adops/send-all-bids-adops.html#step-3-add-a-creative).
- * @property {string} adUnitCode The code used to uniquely identify the ad unit on the publisher's page.
- *
- * @property {string} statusMessage The status of the bid.  Allowed values: `"Bid available"` or `"Bid returned empty or error response"`.
- * @property {number} cpm The exact bid price from the bidder, expressed to the thousandths place.  Example: `"0.849"`.
- *
- * @property {Object} adserverTargeting An object whose values represent the ad server's targeting on the bid.
- * @property {string} adserverTargeting.hb_adid The ad ID of the creative, as understood by the ad server.
- * @property {string} adserverTargeting.hb_pb The price paid to show the creative, as logged in the ad server.
- * @property {string} adserverTargeting.hb_bidder The winning bidder whose ad creative will be served by the ad server.
  */
 
 
@@ -403,6 +402,7 @@ function processQueue(queue) {
     }
   });
 }
+
 /**
  * @alias module:pbjs.processQueue
  */
