@@ -1,20 +1,13 @@
 /** @module pbjs prebidjs for idhub*/
 
 import { getGlobal } from './prebidGlobal.js';
-import { isArrayOfNums } from './utils.js';
 import { config } from './config.js';
-import { auctionManager } from './auctionManager.js';
-import { targeting } from './targeting.js';
 import { hook } from './hook.js';
 import { sessionLoader } from './debugging.js';
-import includes from 'core-js-pure/features/array/includes.js';
-import { adunitCounter } from './adUnits.js';
-import { storageCallbacks } from './storageManager.js';
 
 const $$PREBID_GLOBAL$$ = getGlobal();
 const CONSTANTS = require('./constants.json');
 const utils = require('./utils.js');
-const adapterManager = require('./adapterManager.js').default;
 const events = require('./events.js');
 
 /* private variables */
@@ -32,119 +25,6 @@ utils.logInfo('Prebid.js v$prebid.version$ loaded');
 
 // create adUnit array
 $$PREBID_GLOBAL$$.adUnits = $$PREBID_GLOBAL$$.adUnits || [];
-
-function validateSizes(sizes, targLength) {
-  let cleanSizes = [];
-  if (utils.isArray(sizes) && ((targLength) ? sizes.length === targLength : sizes.length > 0)) {
-    // check if an array of arrays or array of numbers
-    if (sizes.every(sz => isArrayOfNums(sz, 2))) {
-      cleanSizes = sizes;
-    } else if (isArrayOfNums(sizes, 2)) {
-      cleanSizes.push(sizes);
-    }
-  }
-  return cleanSizes;
-}
-
-function validateBannerMediaType(adUnit) {
-  const validatedAdUnit = utils.deepClone(adUnit);
-  const banner = validatedAdUnit.mediaTypes.banner;
-  const bannerSizes = validateSizes(banner.sizes);
-  if (bannerSizes.length > 0) {
-    banner.sizes = bannerSizes;
-    // Deprecation Warning: This property will be deprecated in next release in favor of adUnit.mediaTypes.banner.sizes
-    validatedAdUnit.sizes = bannerSizes;
-  } else {
-    utils.logError('Detected a mediaTypes.banner object without a proper sizes field.  Please ensure the sizes are listed like: [[300, 250], ...].  Removing invalid mediaTypes.banner object from request.');
-    delete validatedAdUnit.mediaTypes.banner
-  }
-  return validatedAdUnit;
-}
-
-function validateVideoMediaType(adUnit) {
-  const validatedAdUnit = utils.deepClone(adUnit);
-  const video = validatedAdUnit.mediaTypes.video;
-  if (video.playerSize) {
-    let tarPlayerSizeLen = (typeof video.playerSize[0] === 'number') ? 2 : 1;
-
-    const videoSizes = validateSizes(video.playerSize, tarPlayerSizeLen);
-    if (videoSizes.length > 0) {
-      if (tarPlayerSizeLen === 2) {
-        utils.logInfo('Transforming video.playerSize from [640,480] to [[640,480]] so it\'s in the proper format.');
-      }
-      video.playerSize = videoSizes;
-      // Deprecation Warning: This property will be deprecated in next release in favor of adUnit.mediaTypes.video.playerSize
-      validatedAdUnit.sizes = videoSizes;
-    } else {
-      utils.logError('Detected incorrect configuration of mediaTypes.video.playerSize.  Please specify only one set of dimensions in a format like: [[640, 480]]. Removing invalid mediaTypes.video.playerSize property from request.');
-      delete validatedAdUnit.mediaTypes.video.playerSize;
-    }
-  }
-  return validatedAdUnit;
-}
-
-function validateNativeMediaType(adUnit) {
-  const validatedAdUnit = utils.deepClone(adUnit);
-  const native = validatedAdUnit.mediaTypes.native;
-  if (native.image && native.image.sizes && !Array.isArray(native.image.sizes)) {
-    utils.logError('Please use an array of sizes for native.image.sizes field.  Removing invalid mediaTypes.native.image.sizes property from request.');
-    delete validatedAdUnit.mediaTypes.native.image.sizes;
-  }
-  if (native.image && native.image.aspect_ratios && !Array.isArray(native.image.aspect_ratios)) {
-    utils.logError('Please use an array of sizes for native.image.aspect_ratios field.  Removing invalid mediaTypes.native.image.aspect_ratios property from request.');
-    delete validatedAdUnit.mediaTypes.native.image.aspect_ratios;
-  }
-  if (native.icon && native.icon.sizes && !Array.isArray(native.icon.sizes)) {
-    utils.logError('Please use an array of sizes for native.icon.sizes field.  Removing invalid mediaTypes.native.icon.sizes property from request.');
-    delete validatedAdUnit.mediaTypes.native.icon.sizes;
-  }
-  return validatedAdUnit;
-}
-
-export const adUnitSetupChecks = {
-  validateBannerMediaType,
-  validateVideoMediaType,
-  validateNativeMediaType,
-  validateSizes
-};
-
-export const checkAdUnitSetup = hook('sync', function (adUnits) {
-  const validatedAdUnits = [];
-
-  adUnits.forEach(adUnit => {
-    const mediaTypes = adUnit.mediaTypes;
-    const bids = adUnit.bids;
-    let validatedBanner, validatedVideo, validatedNative;
-
-    if (!bids || !utils.isArray(bids)) {
-      utils.logError(`Detected adUnit.code '${adUnit.code}' did not have 'adUnit.bids' defined or 'adUnit.bids' is not an array. Removing adUnit from auction.`);
-      return;
-    }
-
-    if (!mediaTypes || Object.keys(mediaTypes).length === 0) {
-      utils.logError(`Detected adUnit.code '${adUnit.code}' did not have a 'mediaTypes' object defined.  This is a required field for the auction, so this adUnit has been removed.`);
-      return;
-    }
-
-    if (mediaTypes.banner) {
-      validatedBanner = validateBannerMediaType(adUnit);
-    }
-
-    if (mediaTypes.video) {
-      validatedVideo = validatedBanner ? validateVideoMediaType(validatedBanner) : validateVideoMediaType(adUnit);
-    }
-
-    if (mediaTypes.native) {
-      validatedNative = validatedVideo ? validateNativeMediaType(validatedVideo) : validatedBanner ? validateNativeMediaType(validatedBanner) : validateNativeMediaType(adUnit);
-    }
-
-    const validatedAdUnit = Object.assign({}, validatedBanner, validatedVideo, validatedNative);
-
-    validatedAdUnits.push(validatedAdUnit);
-  });
-
-  return validatedAdUnits;
-}, 'checkAdUnitSetup');
 
 /// ///////////////////////////////
 //                              //
@@ -164,141 +44,10 @@ export const checkAdUnitSetup = hook('sync', function (adUnits) {
  */
 $$PREBID_GLOBAL$$.requestBids = hook('async', function ({ bidsBackHandler, timeout, adUnits, adUnitCodes, labels, auctionId } = {}) {
   events.emit(REQUEST_BIDS);
-  const cbTimeout = timeout || config.getConfig('bidderTimeout');
-  adUnits = adUnits || $$PREBID_GLOBAL$$.adUnits;
-
-  utils.logInfo('Invoking $$PREBID_GLOBAL$$.requestBids', arguments);
-
-  let _s2sConfigs = [];
-  const s2sBidders = [];
-  config.getConfig('s2sConfig', config => {
-    if (config && config.s2sConfig) {
-      _s2sConfigs = Array.isArray(config.s2sConfig) ? config.s2sConfig : [config.s2sConfig];
-    }
-  });
-
-  _s2sConfigs.forEach(s2sConfig => {
-    s2sBidders.push(...s2sConfig.bidders);
-  });
-
-  adUnits = checkAdUnitSetup(adUnits);
-
-  if (adUnitCodes && adUnitCodes.length) {
-    // if specific adUnitCodes supplied filter adUnits for those codes
-    adUnits = adUnits.filter(unit => includes(adUnitCodes, unit.code));
-  } else {
-    // otherwise derive adUnitCodes from adUnits
-    adUnitCodes = adUnits && adUnits.map(unit => unit.code);
-  }
-
-  /*
-   * for a given adunit which supports a set of mediaTypes
-   * and a given bidder which supports a set of mediaTypes
-   * a bidder is eligible to participate on the adunit
-   * if it supports at least one of the mediaTypes on the adunit
-   */
-  adUnits.forEach(adUnit => {
-    // get the adunit's mediaTypes, defaulting to banner if mediaTypes isn't present
-    const adUnitMediaTypes = Object.keys(adUnit.mediaTypes || { 'banner': 'banner' });
-
-    // get the bidder's mediaTypes
-    const allBidders = adUnit.bids.map(bid => bid.bidder);
-    const bidderRegistry = adapterManager.bidderRegistry;
-
-    const bidders = (s2sBidders) ? allBidders.filter(bidder => !includes(s2sBidders, bidder)) : allBidders;
-
-    adUnit.transactionId = utils.generateUUID();
-
-    bidders.forEach(bidder => {
-      const adapter = bidderRegistry[bidder];
-      const spec = adapter && adapter.getSpec && adapter.getSpec();
-      // banner is default if not specified in spec
-      const bidderMediaTypes = (spec && spec.supportedMediaTypes) || ['banner'];
-
-      // check if the bidder's mediaTypes are not in the adUnit's mediaTypes
-      const bidderEligible = adUnitMediaTypes.some(type => includes(bidderMediaTypes, type));
-      if (!bidderEligible) {
-        // drop the bidder from the ad unit if it's not compatible
-        utils.logWarn(utils.unsupportedBidderMessage(adUnit, bidder));
-        adUnit.bids = adUnit.bids.filter(bid => bid.bidder !== bidder);
-      } else {
-        adunitCounter.incrementBidderRequestsCounter(adUnit.code, bidder);
-      }
-    });
-    adunitCounter.incrementRequestsCounter(adUnit.code);
-  });
-
-  if (!adUnits || adUnits.length === 0) {
-    utils.logMessage('No adUnits configured. No bids requested.');
-    if (typeof bidsBackHandler === 'function') {
-      // executeCallback, this will only be called in case of first request
-      try {
-        bidsBackHandler();
-      } catch (e) {
-        utils.logError('Error executing bidsBackHandler', null, e);
-      }
-    }
-    return;
-  }
-
-  const auction = auctionManager.createAuction({ adUnits, adUnitCodes, callback: bidsBackHandler, cbTimeout, labels, auctionId });
-
-  let adUnitsLen = adUnits.length;
-  if (adUnitsLen > 15) {
-    utils.logInfo(`Current auction ${auction.getAuctionId()} contains ${adUnitsLen} adUnits.`, adUnits);
-  }
-
-  adUnitCodes.forEach(code => targeting.setLatestAuctionForAdUnit(code, auction.getAuctionId()));
-  auction.callBids();
 });
-
-export function executeCallbacks(fn, reqBidsConfigObj) {
-  runAll(storageCallbacks);
-  runAll(enableAnalyticsCallbacks);
-  fn.call(this, reqBidsConfigObj);
-
-  function runAll(queue) {
-    var queued;
-    while ((queued = queue.shift())) {
-      queued();
-    }
-  }
-}
 
 // This hook will execute all storage callbacks which were registered before gdpr enforcement hook was added. Some bidders, user id modules use storage functions when module is parsed but gdpr enforcement hook is not added at that stage as setConfig callbacks are yet to be called. Hence for such calls we execute all the stored callbacks just before requestBids. At this hook point we will know for sure that gdprEnforcement module is added or not
 $$PREBID_GLOBAL$$.requestBids.before(executeCallbacks, 49);
-
-/**
- * Enable sending analytics data to the analytics provider of your
- * choice.
- *
- * For usage, see [Integrate with the Prebid Analytics
- * API](http://prebid.org/dev-docs/integrate-with-the-prebid-analytics-api.html).
- *
- * For a list of analytics adapters, see [Analytics for
- * Prebid](http://prebid.org/overview/analytics.html).
- * @param  {Object} config
- * @param {string} config.provider The name of the provider, e.g., `"ga"` for Google Analytics.
- * @param {Object} config.options The options for this particular analytics adapter.  This will likely vary between adapters.
- * @alias module:pbjs.enableAnalytics
- */
-
-// Stores 'enableAnalytics' callbacks for later execution.
-const enableAnalyticsCallbacks = [];
-
-const enableAnalyticsCb = hook('async', function (config) {
-  if (config && !utils.isEmpty(config)) {
-    utils.logInfo('Invoking $$PREBID_GLOBAL$$.enableAnalytics for: ', config);
-    adapterManager.enableAnalytics(config);
-  } else {
-    utils.logError('$$PREBID_GLOBAL$$.enableAnalytics should be called with option {}');
-  }
-}, 'enableAnalyticsCb');
-
-/**
- * @alias module:pbjs.aliasBidder
- */
-
 
 /**
  * Get Prebid config options
