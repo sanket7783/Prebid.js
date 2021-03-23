@@ -6,7 +6,7 @@ import { Renderer } from '../src/Renderer.js';
 
 const BIDDER_CODE = 'pubmatic';
 const LOG_WARN_PREFIX = 'PubMatic: ';
-const ENDPOINT = 'https://hbopenbid.pubmatic.com/translator?source=prebid-client';
+const ENDPOINT = 'https://hbopenbid.pubmatic.com/translator?source=ow-client';
 const USER_SYNC_URL_IFRAME = 'https://ads.pubmatic.com/AdServer/js/showad.js#PIX&kdntuid=1&p=';
 const USER_SYNC_URL_IMAGE = 'https://image8.pubmatic.com/AdServer/ImgSync?p=';
 const DEFAULT_CURRENCY = 'USD';
@@ -17,7 +17,7 @@ const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
 const PREBID_NATIVE_HELP_LINK = 'http://prebid.org/dev-docs/show-native-ads.html';
 const PUBLICATION = 'pubmatic'; // Your publication on Blue Billywig, potentially with environment (e.g. publication.bbvms.com or publication.test.bbvms.com)
-const RENDERER_URL = 'https://pubmatic.bbvms.com/r/'.concat('$RENDERER', '.js');
+const RENDERER_URL = 'https://pubmatic.bbvms.com/r/'.concat('$RENDERER', '.js'); // URL of the renderer application
 const CUSTOM_PARAMS = {
   'kadpageurl': '', // Custom page url
   'gender': '', // User gender
@@ -102,7 +102,7 @@ const NATIVE_MINIMUM_REQUIRED_IMAGE_ASSETS = [
   }
 ]
 
-const NET_REVENUE = false;
+const NET_REVENUE = true;
 const dealChannelValues = {
   1: 'PMP',
   5: 'PREF',
@@ -838,19 +838,19 @@ function _handleDealCustomTargetings(payload, dctrArr, validBidRequests) {
   }
 }
 
-function _assignRenderer(br, request) {
+function _assignRenderer(newBid, request) {
   let bidParams, context, adUnitCode;
   if (request.bidderRequest && request.bidderRequest.bids) {
     for (let bidderRequestBidsIndex = 0; bidderRequestBidsIndex < request.bidderRequest.bids.length; bidderRequestBidsIndex++) {
-      if (request.bidderRequest.bids[bidderRequestBidsIndex].bidId === br.requestId) {
+      if (request.bidderRequest.bids[bidderRequestBidsIndex].bidId === newBid.requestId) {
         bidParams = request.bidderRequest.bids[bidderRequestBidsIndex].params;
         context = request.bidderRequest.bids[bidderRequestBidsIndex].mediaTypes[VIDEO].context;
         adUnitCode = request.bidderRequest.bids[bidderRequestBidsIndex].adUnitCode;
       }
     }
     if (context && context === 'outstream' && bidParams && bidParams.outstreamAU && adUnitCode) {
-      br.rendererCode = bidParams.outstreamAU;
-      br.renderer = BB_RENDERER.newRenderer(br.rendererCode, adUnitCode);
+      newBid.rendererCode = bidParams.outstreamAU;
+      newBid.renderer = BB_RENDERER.newRenderer(newBid.rendererCode, adUnitCode);
     }
   }
 };
@@ -869,7 +869,7 @@ export const spec = {
   isBidRequestValid: bid => {
     if (bid && bid.params) {
       if (!utils.isStr(bid.params.publisherId)) {
-        utils.logWarn(LOG_WARN_PREFIX + 'Error: publisherId is mandatory and cannot be numeric. Call to OpenBid will not be sent for ad unit: ' + JSON.stringify(bid));
+        utils.logWarn(LOG_WARN_PREFIX + 'Error: publisherId is mandatory and cannot be numeric (wrap it in quotes in your config). Call to OpenBid will not be sent for ad unit: ' + JSON.stringify(bid));
         return false;
       }
       // video ad validation
@@ -883,8 +883,8 @@ export const spec = {
             utils.logError(`${LOG_WARN_PREFIX}: no context specified in bid. Rejecting bid: `, bid);
             return false;
           }
-          if (bid.mediaTypes[VIDEO].context === 'outstream' && !utils.isStr(bid.params.outstreamAU)) {
-            utils.logError(`${LOG_WARN_PREFIX}: for "outstream" bids outstreamAU is required. Rejecting bid: `, bid);
+          if (bid.mediaTypes[VIDEO].context === 'outstream' && !utils.isStr(bid.params.outstreamAU) && !bid.hasOwnProperty('renderer') && !bid.mediaTypes[VIDEO].hasOwnProperty('renderer')) {
+            utils.logError(`${LOG_WARN_PREFIX}: for "outstream" bids either outstreamAU parameter must be provided or ad unit supplied renderer is required. Rejecting bid: `, bid);
             return false;
           }
         } else {
@@ -960,7 +960,7 @@ export const spec = {
     payload.ext.wrapper = {};
     payload.ext.wrapper.profile = parseInt(conf.profId) || UNDEFINED;
     payload.ext.wrapper.version = parseInt(conf.verId) || UNDEFINED;
-    payload.ext.wrapper.wiid = conf.wiid || UNDEFINED;
+    payload.ext.wrapper.wiid = conf.wiid || bidderRequest.auctionId;
     // eslint-disable-next-line no-undef
     payload.ext.wrapper.wv = $$REPO_AND_VERSION$$;
     payload.ext.wrapper.transactionId = conf.transactionId;
@@ -973,6 +973,11 @@ export const spec = {
     payload.device.geo = payload.user.geo;
     payload.site.page = conf.kadpageurl.trim() || payload.site.page.trim();
     payload.site.domain = _getDomainFromURL(payload.site.page);
+
+    // add the content object from config in request
+    if (typeof config.getConfig('content') === 'object') {
+      payload.site.content = config.getConfig('content');
+    }
 
     // merge the device from config.getConfig('device')
     if (typeof config.getConfig('device') === 'object') {
@@ -1019,6 +1024,11 @@ export const spec = {
       // not copying domain from site as it is a derived value from page
       payload.app.publisher = payload.site.publisher;
       payload.app.ext = payload.site.ext || UNDEFINED;
+      // We will also need to pass content object in app.content if app object is also set into the config;
+      // BUT do not use content object from config if content object is present in app as app.content
+      if (typeof payload.app.content !== 'object') {
+        payload.app.content = payload.site.content || UNDEFINED;
+      }
       delete payload.site;
     }
 
@@ -1081,7 +1091,8 @@ export const spec = {
                   br.referrer = parsedReferrer;
                   br.ad = bid.adm;
                   br.pm_seat = seatbidder.seat || null;
-                  br.pm_dspid = bid.ext && bid.ext.dspid ? bid.ext.dspid : null
+                  br.pm_dspid = bid.ext && bid.ext.dspid ? bid.ext.dspid : null;
+                  br.partnerImpId = bid.id || '' // partner impression Id
                   if (requestData.imp && requestData.imp.length > 0) {
                     requestData.imp.forEach(req => {
                       if (bid.impid === req.id) {
@@ -1113,6 +1124,7 @@ export const spec = {
                     br.meta.buyerId = bid.ext.advid;
                   }
                   if (bid.adomain && bid.adomain.length > 0) {
+                    br.meta.advertiserDomains = bid.adomain;
                     br.meta.clickUrl = bid.adomain[0];
                   }
                   // adserverTargeting
