@@ -6,11 +6,22 @@ var RequireEnsureWithoutJsonp = require('./plugins/RequireEnsureWithoutJsonp.js'
 var { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 var argv = require('yargs').argv;
 var allowedModules = require('./allowedModules');
-
 // list of module names to never include in the common bundle chunk
 var neverBundle = [
   'AnalyticsAdapter.js'
 ];
+
+if (argv.profile == "IH") {
+  neverBundle.push (
+    'adapter.js',
+    'adapterManager.js',
+    'adapters/bidderFactory.js',
+    'adServerManager.js',
+    'auctionManager.js',
+    'native.js',
+    'targeting.js'
+  )
+}
 
 var plugins = [
   new RequireEnsureWithoutJsonp(),

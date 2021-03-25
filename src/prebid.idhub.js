@@ -46,6 +46,19 @@ $$PREBID_GLOBAL$$.requestBids = hook('async', function ({ bidsBackHandler, timeo
   events.emit(REQUEST_BIDS);
 });
 
+export function executeCallbacks(fn, reqBidsConfigObj) {
+ /* runAll(storageCallbacks);
+  runAll(enableAnalyticsCallbacks);
+  fn.call(this, reqBidsConfigObj);*/
+
+  function runAll(queue) {
+    var queued;
+    while ((queued = queue.shift())) {
+      queued();
+    }
+  }
+}
+
 // This hook will execute all storage callbacks which were registered before gdpr enforcement hook was added. Some bidders, user id modules use storage functions when module is parsed but gdpr enforcement hook is not added at that stage as setConfig callbacks are yet to be called. Hence for such calls we execute all the stored callbacks just before requestBids. At this hook point we will know for sure that gdprEnforcement module is added or not
 $$PREBID_GLOBAL$$.requestBids.before(executeCallbacks, 49);
 

@@ -185,8 +185,8 @@ function updateModulesForIH(moduleSources) {
     var filePathArr = [];
     updatedModuleList = moduleSources.filter(function(x) {
       filePathArr = x.split("/");
-      var index = excludeModules.indexOf(filePathArr[filePathArr.length-1]);
-      return  index < 0;
+      return excludeModules.indexOf(filePathArr[filePathArr.length-1]) < 0;
+
     });
     return updatedModuleList;
   } else {
@@ -213,11 +213,10 @@ function makeWebpackPkg() {
   const analyticsSources = helpers.getAnalyticsSources();
   const moduleSources = helpers.getModulePaths(externalModules);
   updatedModuleList = updateModulesForIH(moduleSources);
-
   return gulp.src([].concat(updatedModuleList, analyticsSources, prebidSrc))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
-    //.pipe(uglify())
+    .pipe(uglify())
     .pipe(gulpif(file => file.basename === 'prebid-core.js', header(banner, { prebid: prebid })))
     .pipe(gulp.dest('build/dist'));
 }
