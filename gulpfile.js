@@ -46,11 +46,6 @@ var explicitModules = [
   'pre1api'
 ];
 
-var excludeModules = [
-  'adpod.js',
-  'sizeMappingV2.js'
-]
-
 // all the following functions are task functions
 function bundleToStdout() {
   nodeBundle().then(file => console.log(file));
@@ -180,6 +175,10 @@ function makeDevpackPkg() {
 function updateModulesForIH(moduleSources) {
   var temp = -1;
   var updatedModuleList = [];
+  var excludeModules = [
+    'adpod.js',
+    'sizeMappingV2.js'
+  ];
 
   if (profile == "IH") {
     var filePathArr = [];
