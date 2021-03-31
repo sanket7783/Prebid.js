@@ -9,7 +9,7 @@ const $$PREBID_GLOBAL$$ = getGlobal();
 const CONSTANTS = require('./constants.json');
 const utils = require('./utils.js');
 const events = require('./events.js');
-
+const temp_variable = "ThisIsIDHUBFile";
 /* private variables */
 const {REQUEST_BIDS } = CONSTANTS.EVENTS;
 // initialize existing debugging sessions if present
