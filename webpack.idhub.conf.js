@@ -11,6 +11,20 @@ var neverBundle = [
   'AnalyticsAdapter.js'
 ];
 
+//if (argv.profile == "IH") {
+var neverBundleForIH = [
+    'AnalyticsAdapter.js',
+    'adapter.js',
+    'adapterManager.js',
+    'adapters/bidderFactory.js',
+    'adServerManager.js',
+    'auctionManager.js',
+    'native.js',
+    'targeting.js'
+  ]
+//}
+
+
 
 var plugins = [
   new RequireEnsureWithoutJsonp(),
@@ -22,16 +36,17 @@ if (argv.analyze) {
     new BundleAnalyzerPlugin()
   )
 }
+console.log("****************webpack.idhub.conf*****************");
 
 plugins.push(  // this plugin must be last so it can be easily removed for karma unit tests
   new webpack.optimize.CommonsChunkPlugin({
     name: 'prebid',
-    filename: 'prebid-core.js',
+    filename: 'prebid-core-idhub.js',
     minChunks: function(module) {
        return (
         (
           module.context && module.context.startsWith(path.resolve('./src')) &&
-          !(module.resource && neverBundle.some(name => module.resource.includes(name)))
+          !(module.resource && neverBundleForIH.some(name => module.resource.includes(name)))
         ) ||
         module.resource && (allowedModules.src.concat(['core-js'])).some(
           name => module.resource.includes(path.resolve('./node_modules/' + name))
