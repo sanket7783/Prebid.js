@@ -155,6 +155,29 @@ function makeDevpackPkg() {
   var webpackStream = require('webpack-stream');
   var webpackConfig = require('./webpack.conf');
   var helpers = require('./gulpHelpers');
+  //var updatedModuleList = [];
+
+  var cloned = _.cloneDeep(webpackConfig);
+  cloned.devtool = 'source-map';
+  var externalModules = helpers.getArgModules();
+  const analyticsSources = helpers.getAnalyticsSources();
+  const moduleSources = helpers.getModulePaths(externalModules);
+  //updatedModuleList = updateModulesForIH(moduleSources);
+
+  return gulp.src([].concat(moduleSources, analyticsSources, "src/prebid.js"))
+    .pipe(helpers.nameModules(externalModules))
+    .pipe(webpackStream(cloned, webpack))
+    .pipe(gulp.dest('build/dev'))
+    .pipe(connect.reload());
+}
+
+function makeDevpackPkgForIh() {
+  var _ = require('lodash');
+  var connect = require('gulp-connect');
+  var webpack = require('webpack');
+  var webpackStream = require('webpack-stream');
+  var webpackConfig = require('./webpack.idhub.conf');
+  var helpers = require('./gulpHelpers');
   var updatedModuleList = [];
 
   var cloned = _.cloneDeep(webpackConfig);
@@ -164,7 +187,7 @@ function makeDevpackPkg() {
   const moduleSources = helpers.getModulePaths(externalModules);
   updatedModuleList = updateModulesForIH(moduleSources);
 
-  return gulp.src([].concat(updatedModuleList, analyticsSources, prebidSrc))
+  return gulp.src([].concat(updatedModuleList, analyticsSources, "src/prebid.idhub.js"))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
     .pipe(gulp.dest('build/dev'))
@@ -517,7 +540,7 @@ gulp.task(clean);
 
 gulp.task(escapePostbidConfig);
 
-gulp.task('build-bundle-dev', gulp.series(makeDevpackPkg, gulpBundle.bind(null, true)));
+gulp.task('build-bundle-dev', gulp.series(makeDevpackPkg, makeDevpackPkgForIh, gulpBundle.bind(null, true)));
 gulp.task('build-bundle-prod', gulp.series(makeWebpackPkg, makeWebpackPkgForIh, gulpBundle.bind(null, false)));
 
 // public tasks (dependencies are needed for each task since they can be ran on their own)
