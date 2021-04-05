@@ -260,7 +260,7 @@ function makeWebpackPkgForIh() {
   return gulp.src([].concat(updatedModuleList, analyticsSources, "src/prebid.idhub.js"))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
-    //.pipe(uglify())
+    .pipe(uglify())
     .pipe(gulpif(file => file.basename === 'prebid-core-idhub.js', header(banner, { prebid: prebid })))
     .pipe(gulp.dest('build/dist'));
 
