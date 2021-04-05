@@ -196,7 +196,7 @@ function makeWebpackPkg() {
   var helpers = require('./gulpHelpers');
   var header = require('gulp-header');
   var gulpif = require('gulp-if');
-  var updatedModuleList = [];
+  //var updatedModuleList = [];
   var cloned = _.cloneDeep(webpackConfig);
 
   delete cloned.devtool;
@@ -205,8 +205,8 @@ function makeWebpackPkg() {
 
   const analyticsSources = helpers.getAnalyticsSources();
   const moduleSources = helpers.getModulePaths(externalModules);
-  updatedModuleList = updateModulesForIH(moduleSources);
-  return gulp.src([].concat(updatedModuleList, analyticsSources, prebidSrc))
+  //updatedModuleList = updateModulesForIH(moduleSources);
+  return gulp.src([].concat(moduleSources, analyticsSources, "src/prebid.js"))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
     .pipe(uglify())
