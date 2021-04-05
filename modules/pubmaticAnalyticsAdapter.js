@@ -280,10 +280,8 @@ function executeBidsLoggerCall(e, highestCpmBids) {
   outputObj['tst'] = Math.round((new window.Date()).getTime() / 1000);
   outputObj['pid'] = '' + profileId;
   outputObj['pdvid'] = '' + profileVersionId;
-  outputObj['dvc'] = {
-    'plt': getDevicePlatform()
-  };
-  outputObj['tgid'] = (function () {
+  outputObj['dvc'] = {'plt': getDevicePlatform()};
+  outputObj['tgid'] = (function() {
     var testGroupId = parseInt(config.getConfig('testGroupId') || 0);
     if (testGroupId <= 15 && testGroupId >= 0) {
       return testGroupId;
@@ -291,7 +289,7 @@ function executeBidsLoggerCall(e, highestCpmBids) {
     return 0;
   })();
 
-  outputObj.s = Object.keys(auctionCache.adUnitCodes).reduce(function (slotsArray, adUnitId) {
+  outputObj.s = Object.keys(auctionCache.adUnitCodes).reduce(function(slotsArray, adUnitId) {
     let adUnit = auctionCache.adUnitCodes[adUnitId];
     let slotObject = {
       'sn': adUnitId,
@@ -360,7 +358,7 @@ function auctionInitHandler(args) {
 }
 
 function bidRequestedHandler(args) {
-  args.bids.forEach(function (bid) {
+  args.bids.forEach(function(bid) {
     if (!cache.auctions[args.auctionId].adUnitCodes.hasOwnProperty(bid.adUnitCode)) {
       cache.auctions[args.auctionId].adUnitCodes[bid.adUnitCode] = {
         bids: {},

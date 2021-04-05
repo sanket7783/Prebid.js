@@ -404,6 +404,38 @@ describe('adapterManager tests', function () {
     });
   }); // end onSetTargeting
 
+  describe('onBidViewable', function () {
+    var criteoSpec = { onBidViewable: sinon.stub() }
+    var criteoAdapter = {
+      bidder: 'criteo',
+      getSpec: function() { return criteoSpec; }
+    }
+    before(function () {
+      config.setConfig({s2sConfig: { enabled: false }});
+    });
+
+    beforeEach(function () {
+      adapterManager.bidderRegistry['criteo'] = criteoAdapter;
+    });
+
+    afterEach(function () {
+      delete adapterManager.bidderRegistry['criteo'];
+    });
+
+    it('should call spec\'s onBidViewable callback when callBidViewableBidder is called', function () {
+      const bids = [
+        {bidder: 'criteo', params: {placementId: 'id'}},
+      ];
+      const adUnits = [{
+        code: 'adUnit-code',
+        sizes: [[728, 90]],
+        bids
+      }];
+      adapterManager.callBidViewableBidder(bids[0].bidder, bids[0]);
+      sinon.assert.called(criteoSpec.onBidViewable);
+    });
+  }); // end onBidViewable
+
   describe('S2S tests', function () {
     beforeEach(function () {
       config.setConfig({s2sConfig: CONFIG});
@@ -1439,7 +1471,7 @@ describe('adapterManager tests', function () {
       checkServerCalled(2, 1, 0);
 
       // appnexus
-      sinon.assert.notCalled(appnexusAdapterMock.callBids);
+      checkClientCalled(appnexusAdapterMock, 2);
 
       // adequant
       sinon.assert.notCalled(adequantAdapterMock.callBids);
