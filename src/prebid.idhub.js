@@ -4,6 +4,7 @@ import { getGlobal } from './prebidGlobal.js';
 import { config } from './config.js';
 import { hook } from './hook.js';
 import { sessionLoader } from './debugging.js';
+import { storageCallbacks } from './storageManager.js';
 
 const $$PREBID_GLOBAL$$ = getGlobal();
 const CONSTANTS = require('./constants.json');
@@ -47,9 +48,8 @@ $$PREBID_GLOBAL$$.requestBids = hook('async', function ({ bidsBackHandler, timeo
 });
 
 export function executeCallbacks(fn, reqBidsConfigObj) {
- /* runAll(storageCallbacks);
-  runAll(enableAnalyticsCallbacks);
-  fn.call(this, reqBidsConfigObj);*/
+  runAll(storageCallbacks);
+  fn.call(this, reqBidsConfigObj);
 
   function runAll(queue) {
     var queued;
