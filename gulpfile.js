@@ -545,7 +545,7 @@ gulp.task(clean);
 gulp.task(escapePostbidConfig);
 
 gulp.task('build-bundle-dev', gulp.series(makeDevpackPkg, gulpBundle.bind(null, true),makeDevpackPkgForIh,  gulpBundleForIH.bind(null, true)));
-gulp.task('build-bundle-prod', gulp.series(makeWebpackPkg,gulpBundle.bind(null, false), makeWebpackPkgForIh, gulpBundleForIH.bind(null, true)));
+gulp.task('build-bundle-prod', gulp.series(makeWebpackPkg,gulpBundle.bind(null, false), makeWebpackPkgForIh, gulpBundleForIH.bind(null, false)));
 
 // public tasks (dependencies are needed for each task since they can be ran on their own)
 gulp.task('test', gulp.series(clean, lint, test));
