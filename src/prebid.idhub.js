@@ -1,18 +1,17 @@
-/** @module pbjs prebidjs for idhub*/
-
+/** @module pbjs */
+/** Module for IH only */
 import { getGlobal } from './prebidGlobal.js';
 import { config } from './config.js';
 import { hook } from './hook.js';
 import { sessionLoader } from './debugging.js';
-import { storageCallbacks } from './storageManager.js';
+import * as sm from './storageManager.js';
 
 const $$PREBID_GLOBAL$$ = getGlobal();
 const CONSTANTS = require('./constants.json');
 const utils = require('./utils.js');
 const events = require('./events.js');
-const temp_variable = "ThisIsIDHUBFile";
 /* private variables */
-const {REQUEST_BIDS } = CONSTANTS.EVENTS;
+const { REQUEST_BIDS } = CONSTANTS.EVENTS;
 // initialize existing debugging sessions if present
 sessionLoader();
 
@@ -48,7 +47,7 @@ $$PREBID_GLOBAL$$.requestBids = hook('async', function ({ bidsBackHandler, timeo
 });
 
 export function executeCallbacks(fn, reqBidsConfigObj) {
-  runAll(storageCallbacks);
+  runAll(sm.storageCallbacks);
   fn.call(this, reqBidsConfigObj);
 
   function runAll(queue) {

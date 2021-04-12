@@ -265,6 +265,7 @@ function makeWebpackPkgForIh() {
     .pipe(gulp.dest('build/distIH'));
 
 }
+
 function gulpBundle(dev) {
   //console.log(bundle(dev));
   if(profile == "IH"){
@@ -346,7 +347,7 @@ function bundle(dev, moduleArr) {
 }
 
 function bundleForIh(dev, moduleArr) {
-  //console.log(dev);
+  // console.log(dev);
   // console.time('Loading Plugins for Prebid');
   var _ = require('lodash');
   var gutil = require('gulp-util');
@@ -368,7 +369,7 @@ function bundleForIh(dev, moduleArr) {
       });
     }
   }
-  var prebidihcorefilename = helpers.getBuiltPrebidIHCoreFile(dev);
+  // var prebidihcor  efilename = helpers.getBuiltPrebidIHCoreFile(dev);
   var entries = [helpers.getBuiltPrebidIHCoreFile(dev)].concat(helpers.getBuiltModules(dev, modules));
   
   var outputFileNameForIH = 'prebid.idhub.js';
@@ -548,8 +549,8 @@ gulp.task(clean);
 
 gulp.task(escapePostbidConfig);
 
-gulp.task('build-bundle-dev', gulp.series(makeDevpackPkg, gulpBundle.bind(null, true), makeDevpackPkgForIh));
-gulp.task('build-bundle-prod', gulp.series(makeWebpackPkg, gulpBundle.bind(null, false), makeWebpackPkgForIh));
+gulp.task('build-bundle-dev', gulp.series(makeDevpackPkg, gulpBundle.bind(null, true), makeDevpackPkgForIh, gulpBundleForIH.bind(null, true)));
+gulp.task('build-bundle-prod', gulp.series(makeWebpackPkg, gulpBundle.bind(null, false), makeWebpackPkgForIh, gulpBundleForIH.bind(null, false)));
 
 // public tasks (dependencies are needed for each task since they can be ran on their own)
 gulp.task('test', gulp.series(clean, lint, test));
