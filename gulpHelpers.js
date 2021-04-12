@@ -10,7 +10,9 @@ const submodules = require('./modules/.submodules.json');
 
 const MODULE_PATH = './modules';
 const BUILD_PATH = './build/dist';
+const BUILD_PATH_IH = './build/distIH';
 const DEV_PATH = './build/dev';
+const DEV_PATH_IH = './build/devIH';
 const ANALYTICS_PATH = '../analytics';
 
 // get only subdirectories that contain package.json with 'main' property
@@ -43,7 +45,7 @@ module.exports = {
     var modules = (argv.modules || '')
       .split(',')
       .filter(module => !!module);
-
+    console.log('Module is ', modules);
     try {
       if (modules.length === 1 && path.extname(modules[0]).toLowerCase() === '.json') {
         var moduleFile = modules[0];
@@ -119,7 +121,7 @@ module.exports = {
   },
 
   getBuiltPrebidIHCoreFile: function(dev) {
-    return path.join(__dirname, dev ? DEV_PATH : BUILD_PATH, 'prebid-core-idhub' + '.js');
+    return path.join(__dirname, dev ? DEV_PATH_IH : BUILD_PATH_IH, 'prebid-core-idhub' + '.js');
   },
 
   getModulePaths: function(externalModules) {

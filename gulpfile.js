@@ -190,7 +190,7 @@ function makeDevpackPkgForIh() {
   return gulp.src([].concat(updatedModuleList, analyticsSources, "src/prebid.idhub.js"))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
-    .pipe(gulp.dest('build/dev'))
+    .pipe(gulp.dest('build/devIH'))
     .pipe(connect.reload());
 }
 
@@ -262,17 +262,21 @@ function makeWebpackPkgForIh() {
     .pipe(webpackStream(cloned, webpack))
     .pipe(uglify())
     .pipe(gulpif(file => file.basename === 'prebid-core-idhub.js', header(banner, { prebid: prebid })))
-    .pipe(gulp.dest('build/dist'));
+    .pipe(gulp.dest('build/distIH'));
 
 }
 function gulpBundle(dev) {
   //console.log(bundle(dev));
+  if(profile == "IH"){
+    console.log("Bundling for IH");
+    return bundleForIh(dev).pipe(gulp.dest('build/' + (dev ? 'devIH' : 'distIH')));
+  }
   return bundle(dev).pipe(gulp.dest('build/' + (dev ? 'dev' : 'dist')));
+
 }
 
 function gulpBundleForIH(dev){
   return bundleForIh(dev).pipe(gulp.dest('build/' + (dev ? 'dev' : 'dist')));
-
 }
 
 function nodeBundle(modules) {
@@ -544,8 +548,8 @@ gulp.task(clean);
 
 gulp.task(escapePostbidConfig);
 
-gulp.task('build-bundle-dev', gulp.series(makeDevpackPkg, gulpBundle.bind(null, true),makeDevpackPkgForIh,  gulpBundleForIH.bind(null, true)));
-gulp.task('build-bundle-prod', gulp.series(makeWebpackPkg,gulpBundle.bind(null, false), makeWebpackPkgForIh, gulpBundleForIH.bind(null, false)));
+gulp.task('build-bundle-dev', gulp.series(makeDevpackPkg, gulpBundle.bind(null, true), makeDevpackPkgForIh));
+gulp.task('build-bundle-prod', gulp.series(makeWebpackPkg, gulpBundle.bind(null, false), makeWebpackPkgForIh));
 
 // public tasks (dependencies are needed for each task since they can be ran on their own)
 gulp.task('test', gulp.series(clean, lint, test));
@@ -568,6 +572,7 @@ gulp.task('e2e-test', gulp.series(clean, setupE2e, gulp.parallel('build-bundle-p
 // other tasks
 gulp.task(bundleToStdout);
 gulp.task('bundle', gulpBundle.bind(null, false)); // used for just concatenating pre-built files with no build step
+gulp.task('bundleIH', gulpBundleForIH.bind(null, false)); // used for just concatenating pre-built files with no build step
 
 // build task for reviewers, runs test-coverage, serves, without watching
 gulp.task(viewReview);
