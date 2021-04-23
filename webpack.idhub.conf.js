@@ -1,3 +1,4 @@
+/* eslint-disable no-mixed-operators */
 var prebid = require('./package.json');
 var path = require('path');
 var webpack = require('webpack');
@@ -6,10 +7,18 @@ var RequireEnsureWithoutJsonp = require('./plugins/RequireEnsureWithoutJsonp.js'
 var { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 var argv = require('yargs').argv;
 var allowedModules = require('./allowedModules');
+prebid.main = "prebid.idhub.js";
 // list of module names to never include in the common bundle chunk
 var neverBundle = [
   'AnalyticsAdapter.js'
 ];
+
+//if (argv.profile == "IH") {
+var neverBundleForIH = [
+    'AnalyticsAdapter.js'
+  ]
+//}
+
 
 
 var plugins = [
@@ -22,16 +31,17 @@ if (argv.analyze) {
     new BundleAnalyzerPlugin()
   )
 }
+// console.log("****************webpack.idhub.conf*****************");
 
-plugins.push(  // this plugin must be last so it can be easily removed for karma unit tests
+plugins.push( // this plugin must be last so it can be easily removed for karma unit tests
   new webpack.optimize.CommonsChunkPlugin({
     name: 'prebid',
-    filename: 'prebid-core.js',
+    filename: 'prebid-core-idhub.js',
     minChunks: function(module) {
-       return (
+      return (
         (
           module.context && module.context.startsWith(path.resolve('./src')) &&
-          !(module.resource && neverBundle.some(name => module.resource.includes(name)))
+          !(module.resource && neverBundleForIH.some(name => module.resource.includes(name)))
         ) ||
         module.resource && (allowedModules.src.concat(['core-js'])).some(
           name => module.resource.includes(path.resolve('./node_modules/' + name))
