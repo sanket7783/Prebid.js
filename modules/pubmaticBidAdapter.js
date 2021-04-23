@@ -711,7 +711,7 @@ function _handleEids(payload, validBidRequests) {
 }
 
 function _checkMediaType(bid, newBid) {
-  if (bid.ext && bid.ext.bidType && Object.key(MEDIATYPE).indexOf(bid.ext.bidType.toString())) {
+  if (bid.ext && bid.ext.bidType && Object.keys(MEDIATYPE).indexOf(bid.ext.bidType.toString())) {
     newBid.mediaType = MEDIATYPE[bid.ext.bidType];
   } else {
     var adm = bid.adm;
