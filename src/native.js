@@ -187,11 +187,6 @@ export function getNativeTargeting(bid, bidReq) {
         const placeholder = `${key}:${bid.adId}`;
         value = placeholder;
       }
-
-      const assetSendTargetingKeys = deepAccess(
-        bidReq,
-        `nativeParams.${asset}.sendTargetingKeys`);
-
     let assetSendTargetingKeys = deepAccess(bidReq, `nativeParams.${asset}.sendTargetingKeys`)
     if (typeof assetSendTargetingKeys !== 'boolean') {
       assetSendTargetingKeys = deepAccess(bidReq, `nativeParams.ext.${asset}.sendTargetingKeys`);

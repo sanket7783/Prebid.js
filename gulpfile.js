@@ -252,20 +252,21 @@ function makeWebpackPkgForIh() {
   var cloned = _.cloneDeep(webpackConfig);
 
   delete cloned.devtool;
-  
   var externalModules = helpers.getArgModules();
 
   const analyticsSources = helpers.getAnalyticsSources();
   const moduleSources = helpers.getModulePaths(externalModules);
   updatedModuleList = updateModulesForIH(moduleSources);
+  const modulesString = getModulesListToAddInBanner(externalModules);
 
   return gulp.src([].concat(updatedModuleList, analyticsSources, 'src/prebid.idhub.js'))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
     .pipe(uglify())
-    .pipe(gulpif(file => file.basename === 'prebid-core-idhub.js', header(banner, { prebid: prebid })))
+    .pipe(gulpif(file => file.basename === 'prebid-core-idhub.js', header(banner, { prebid: prebid, modules: modulesString })))
     .pipe(gulp.dest('build/distIH'));
 }
+
 function getModulesListToAddInBanner(modules){
   return (modules.length > 0) ? modules.join(', ') :  'All available modules in current version.';
 }
