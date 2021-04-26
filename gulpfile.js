@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-console */
 'use strict';
 console.time('Loading Plugins in Prebid');
@@ -30,16 +31,16 @@ const execa = require('execa');
 
 var prebid = require('./package.json');
 var dateString = 'Updated : ' + (new Date()).toISOString().substring(0, 10);
-var banner = '/* <%= prebid.name %> v<%= prebid.version %>\n' + dateString + ' */\n';
+var banner = '/* <%= prebid.name %> v<%= prebid.version %>\n' + dateString + '\nModules: <%= modules %> */\n';
 var port = 9999;
 console.timeEnd('Loading Plugins in Prebid');
 const FAKE_SERVER_HOST = argv.host ? argv.host : 'localhost';
 const FAKE_SERVER_PORT = 4444;
 const { spawn } = require('child_process');
 var profile = argv.profile;
-//profile = (profile === "undefined") ? "OW" : profile.toUpperCase();
-var prebidSrc = (profile == "IH") ? "src/prebid.idhub.js" : "src/prebid.js";
-console.log("Loading profile = " + argv.profile + " prebidSrc = " + prebidSrc);
+// profile = (profile === "undefined") ? "OW" : profile.toUpperCase();
+var prebidSrc = (profile == 'IH') ? 'src/prebid.idhub.js' : 'src/prebid.js';
+console.log('Loading profile = ' + argv.profile + ' prebidSrc = ' + prebidSrc);
 // these modules must be explicitly listed in --modules to be included in the build, won't be part of "all" modules
 var explicitModules = [
   'pre1api'
@@ -155,16 +156,16 @@ function makeDevpackPkg() {
   var webpackStream = require('webpack-stream');
   var webpackConfig = require('./webpack.conf');
   var helpers = require('./gulpHelpers');
-  //var updatedModuleList = [];
+  // var updatedModuleList = [];
 
   var cloned = _.cloneDeep(webpackConfig);
   cloned.devtool = 'source-map';
   var externalModules = helpers.getArgModules();
   const analyticsSources = helpers.getAnalyticsSources();
   const moduleSources = helpers.getModulePaths(externalModules);
-  //updatedModuleList = updateModulesForIH(moduleSources);
+  // updatedModuleList = updateModulesForIH(moduleSources);
 
-  return gulp.src([].concat(moduleSources, analyticsSources, "src/prebid.js"))
+  return gulp.src([].concat(moduleSources, analyticsSources, 'src/prebid.js'))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
     .pipe(gulp.dest('build/dev'))
@@ -187,7 +188,7 @@ function makeDevpackPkgForIh() {
   const moduleSources = helpers.getModulePaths(externalModules);
   updatedModuleList = updateModulesForIH(moduleSources);
 
-  return gulp.src([].concat(updatedModuleList, analyticsSources, "src/prebid.idhub.js"))
+  return gulp.src([].concat(updatedModuleList, analyticsSources, 'src/prebid.idhub.js'))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
     .pipe(gulp.dest('build/devIH'))
@@ -204,7 +205,7 @@ function updateModulesForIH(moduleSources) {
 
   var filePathArr = [];
   updatedModuleList = moduleSources.filter(function(x) {
-    filePathArr = x.split("/");
+    filePathArr = x.split('/');
     return excludeModules.indexOf(filePathArr[filePathArr.length-1]) < 0;
   });
   return updatedModuleList;
@@ -219,7 +220,7 @@ function makeWebpackPkg() {
   var helpers = require('./gulpHelpers');
   var header = require('gulp-header');
   var gulpif = require('gulp-if');
-  //var updatedModuleList = [];
+  // var updatedModuleList = [];
   var cloned = _.cloneDeep(webpackConfig);
 
   delete cloned.devtool;
@@ -228,12 +229,13 @@ function makeWebpackPkg() {
 
   const analyticsSources = helpers.getAnalyticsSources();
   const moduleSources = helpers.getModulePaths(externalModules);
-  //updatedModuleList = updateModulesForIH(moduleSources);
-  return gulp.src([].concat(moduleSources, analyticsSources, "src/prebid.js"))
+  const modulesString = getModulesListToAddInBanner(externalModules);
+
+  return gulp.src([].concat(moduleSources, analyticsSources, 'src/prebid.js'))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
     .pipe(uglify())
-    .pipe(gulpif(file => file.basename === 'prebid-core.js', header(banner, { prebid: prebid })))
+    .pipe(gulpif(file => file.basename === 'prebid-core.js', header(banner, { prebid: prebid, modules: modulesString })))
     .pipe(gulp.dest('build/dist'));
 }
 
@@ -257,19 +259,21 @@ function makeWebpackPkgForIh() {
   const moduleSources = helpers.getModulePaths(externalModules);
   updatedModuleList = updateModulesForIH(moduleSources);
 
-  return gulp.src([].concat(updatedModuleList, analyticsSources, "src/prebid.idhub.js"))
+  return gulp.src([].concat(updatedModuleList, analyticsSources, 'src/prebid.idhub.js'))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
     .pipe(uglify())
     .pipe(gulpif(file => file.basename === 'prebid-core-idhub.js', header(banner, { prebid: prebid })))
     .pipe(gulp.dest('build/distIH'));
-
+}
+function getModulesListToAddInBanner(modules){
+  return (modules.length > 0) ? modules.join(', ') :  'All available modules in current version.';
 }
 
 function gulpBundle(dev) {
-  //console.log(bundle(dev));
-  if(profile == "IH"){
-    console.log("Bundling for IH");
+  // console.log(bundle(dev));
+  if(profile == 'IH'){
+    console.log('Bundling for IH');
     return bundleForIh(dev).pipe(gulp.dest('build/' + (dev ? 'devIH' : 'distIH')));
   }
   return bundle(dev).pipe(gulp.dest('build/' + (dev ? 'dev' : 'dist')));
@@ -337,6 +341,8 @@ function bundle(dev, moduleArr) {
   return gulp.src(
     entries
   )
+    // Need to uodate the "Modules: ..." section in comment with the current modules list
+    .pipe(replace(/(Modules: )(.*?)(\*\/)/, ('$1' + getModulesListToAddInBanner(helpers.getArgModules()) + ' $3')))
     .pipe(gulpif(dev, sourcemaps.init({ loadMaps: true })))
     .pipe(concat(outputFileName))
     .pipe(gulpif(!argv.manualEnable, footer('\n<%= global %>.processQueue();', {
@@ -574,6 +580,10 @@ gulp.task('e2e-test', gulp.series(clean, setupE2e, gulp.parallel('build-bundle-p
 gulp.task(bundleToStdout);
 gulp.task('bundle', gulpBundle.bind(null, false)); // used for just concatenating pre-built files with no build step
 gulp.task('bundleIH', gulpBundleForIH.bind(null, false)); // used for just concatenating pre-built files with no build step
+
+// build task for reviewers, runs test-coverage, serves, without watching
+gulp.task(viewReview);
+gulp.task('review-start', gulp.series(clean, lint, gulp.parallel('build-bundle-dev', watch, testCoverage), viewReview));
 
 // build task for reviewers, runs test-coverage, serves, without watching
 gulp.task(viewReview);

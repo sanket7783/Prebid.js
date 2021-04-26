@@ -873,25 +873,6 @@ describe('AppNexusAdapter', function () {
         omidpn: 'Appnexus',
         omidpv: '$prebid.version$'
       });
-    });
-
-    it('should populate iab_support object at the root level if omid support is detected', function () {
-      // with bid.params.frameworks
-      let bidRequest_A = Object.assign({}, bidRequests[0], {
-        params: {
-          frameworks: [1, 2, 5, 6],
-          video: {
-            frameworks: [1, 2, 5, 6]
-          }
-        }
-      });
-      let request = spec.buildRequests([bidRequest_A]);
-      let payload = JSON.parse(request.data);
-      expect(payload.iab_support).to.be.an('object');
-      expect(payload.iab_support).to.deep.equal({
-        omidpn: 'Appnexus',
-        omidpv: '$prebid.version$'
-      });
       expect(payload.tags[0].banner_frameworks).to.be.an('array');
       expect(payload.tags[0].banner_frameworks).to.deep.equal([1, 2, 5, 6]);
       expect(payload.tags[0].video_frameworks).to.be.an('array');
