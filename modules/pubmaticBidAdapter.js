@@ -1060,7 +1060,7 @@ export const spec = {
     if (commonFpd.user) {
       utils.mergeDeep(payload, {user: commonFpd.user});
     }
-    
+
     // Note: Do not move this block up
     // if site object is set in Prebid config then we need to copy required fields from site into app and unset the site object
     if (typeof config.getConfig('app') === 'object') {
