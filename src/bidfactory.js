@@ -26,6 +26,7 @@ function Bid(statusCode, bidRequest) {
   this.requestId = bidRequest && bidRequest.bidId;
   this.mediaType = 'banner';
   this.source = _bidSrc;
+  this.wppid = bidRequest && bidRequest.params && bidRequest.params.wppid;
 
   function _getStatus() {
     switch (_statusCode) {
