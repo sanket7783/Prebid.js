@@ -711,7 +711,7 @@ function _handleEids(payload, validBidRequests) {
 }
 
 function _checkMediaType(bid, newBid) {
-  if (bid.ext && bid.ext.BidType && Object.keys(MEDIATYPE).indexOf(bid.ext.BidType.toString())) {
+  if (bid.ext && bid.ext.BidType && Object.keys(MEDIATYPE).indexOf(bid.ext.BidType.toString()) > -1) {
     newBid.mediaType = MEDIATYPE[bid.ext.BidType];
   } else {
     utils.logInfo(LOG_WARN_PREFIX + 'bid.ext.BidType does not exist, checking alternatively for mediaType')
