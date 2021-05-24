@@ -224,12 +224,19 @@ function getUpdatedKGPVForVideo(kgpv, bidResponse) {
   return kgpv;
 }
 
+function getAdapterNameForAlias(aliasName){
+  if(adapterManager && adapterManager.aliasRegistry)
+    return adapterManager.aliasRegistry[aliasName] || aliasName;
+  else
+    return aliasName;
+}
+
 function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
   highestBid = (highestBid && highestBid.length > 0) ? highestBid[0] : null;
   return Object.keys(adUnit.bids).reduce(function (partnerBids, bidId) {
     let bid = adUnit.bids[bidId];
     partnerBids.push({
-      'pn': window.PWT.getAdapterNameForAlias(bid.bidder),
+      'pn': getAdapterNameForAlias(bid.bidder),
       'bc': bid.bidder,
       'bidid': bid.bidId,
       'db': bid.bidResponse ? 0 : 1,
@@ -329,7 +336,7 @@ function executeBidsLoggerCall(e, highestCpmBids) {
 function executeBidWonLoggerCall(auctionId, adUnitId) {
   const winningBidId = cache.auctions[auctionId].adUnitCodes[adUnitId].bidWon;
   const winningBid = cache.auctions[auctionId].adUnitCodes[adUnitId].bids[winningBidId];
-  const adapterName = window.PWT.getAdapterNameForAlias(winningBid.bidder);
+  const adapterName = getAdapterNameForAlias(winningBid.bidder);
   let pixelURL = END_POINT_WIN_BID_LOGGER;
   pixelURL += 'pubid=' + publisherId;
   pixelURL += '&purl=' + enc(config.getConfig('pageUrl') || cache.auctions[auctionId].referer || '');

@@ -1,4 +1,5 @@
 import pubmaticAnalyticsAdapter from 'modules/pubmaticAnalyticsAdapter.js';
+import adapterManager from 'src/adapterManager.js';
 import CONSTANTS from 'src/constants.json';
 import { config } from 'src/config.js';
 import {
@@ -288,11 +289,6 @@ describe('pubmatic analytics adapter', function () {
 
   describe('when handling events', function() {
     beforeEach(function () {
-      window.PWT = {
-        getAdapterNameForAlias: function() {
-          return 'pubmatic';
-        }
-      };
       pubmaticAnalyticsAdapter.enableAnalytics({
         options: {
           publisherId: 9999,
@@ -300,13 +296,10 @@ describe('pubmatic analytics adapter', function () {
           profileVersionId: 20
         }
       });
-      sandbox.stub(window.PWT, 'getAdapterNameForAlias').returns('pubmatic');
     });
 
     afterEach(function () {
       pubmaticAnalyticsAdapter.disableAnalytics();
-      window.PWT.getAdapterNameForAlias.restore();
-      delete window.PWT;
     });
 
     it('Logger: best case + win tracker', function() {
@@ -1141,6 +1134,7 @@ describe('pubmatic analytics adapter', function () {
 
     it('Logger: best case + win tracker in case of Bidder Aliases', function() {
       MOCK.BID_REQUESTED['bids'][0]['bidder'] = 'pubmatic_alias';
+      adapterManager.aliasRegistry['pubmatic_alias'] = 'pubmatic';
 
       sandbox.stub($$PREBID_GLOBAL$$, 'getHighestCpmBids').callsFake((key) => {
         return [MOCK.BID_RESPONSE[0], MOCK.BID_RESPONSE[1]]
