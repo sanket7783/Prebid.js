@@ -167,7 +167,7 @@ export function prepareExchange(storageValue) {
   });
 }
 
-function initAdagio() {
+(function initAdagio() {
   if (canAccessTopWindow()) {
     currentWindow = (canAccessTopWindow()) ? utils.getWindowTop() : utils.getWindowSelf();
   }
@@ -191,7 +191,7 @@ function initAdagio() {
   });
 
   getAdagioScript();
-}
+})();
 
 export const _features = {
   getPrintNumber(adUnitCode) {
@@ -1080,6 +1080,6 @@ export const spec = {
   },
 };
 
-initAdagio();
+// initAdagio();
 
 registerBidder(spec);
