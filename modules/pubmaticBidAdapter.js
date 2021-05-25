@@ -83,6 +83,12 @@ const NATIVE_ASSET_IMAGE_TYPE = {
   'IMAGE': 3
 }
 
+const MEDIATYPE = {
+  0: BANNER,
+  1: VIDEO,
+  2: NATIVE
+}
+
 // check if title, image can be added with mandatory field default values
 const NATIVE_MINIMUM_REQUIRED_IMAGE_ASSETS = [
   {
@@ -666,43 +672,11 @@ function _createImpressionObject(bid, conf) {
     impObj.banner = bannerObj;
   }
 
-  _addImpressionFPD(impObj, bid);
-
   _addFloorFromFloorModule(impObj, bid);
 
   return impObj.hasOwnProperty(BANNER) ||
           impObj.hasOwnProperty(NATIVE) ||
             impObj.hasOwnProperty(VIDEO) ? impObj : UNDEFINED;
-}
-
-function _addImpressionFPD(imp, bid) {
-  const ortb2 = {...utils.deepAccess(bid, 'ortb2Imp.ext.data')};
-  Object.keys(ortb2).forEach(prop => {
-    /**
-      * Prebid AdSlot
-      * @type {(string|undefined)}
-    */
-    if (prop === 'pbadslot') {
-      if (typeof ortb2[prop] === 'string' && ortb2[prop]) utils.deepSetValue(imp, 'ext.data.pbadslot', ortb2[prop]);
-    } else if (prop === 'adserver') {
-      /**
-       * Copy GAM AdUnit and Name to imp
-       */
-      ['name', 'adslot'].forEach(name => {
-        /** @type {(string|undefined)} */
-        const value = utils.deepAccess(ortb2, `adserver.${name}`);
-        if (typeof value === 'string' && value) {
-          utils.deepSetValue(imp, `ext.data.adserver.${name.toLowerCase()}`, value);
-          // copy GAM ad unit id as imp[].ext.dfp_ad_unit_code
-          if (name === 'adslot') {
-            utils.deepSetValue(imp, `ext.dfp_ad_unit_code`, value);
-          }
-        }
-      });
-    } else {
-      utils.deepSetValue(imp, `ext.data.${prop}`, ortb2[prop]);
-    }
-  });
 }
 
 function _addFloorFromFloorModule(impObj, bid) {
@@ -736,22 +710,28 @@ function _handleEids(payload, validBidRequests) {
   }
 }
 
-function _checkMediaType(adm, newBid) {
-  // Create a regex here to check the strings
-  var admStr = '';
-  var videoRegex = new RegExp(/VAST\s+version/);
-  if (adm.indexOf('span class="PubAPIAd"') >= 0) {
-    newBid.mediaType = BANNER;
-  } else if (videoRegex.test(adm)) {
-    newBid.mediaType = VIDEO;
+function _checkMediaType(bid, newBid) {
+  if (bid.ext && bid.ext['BidType'] != undefined && Object.keys(MEDIATYPE).indexOf(bid.ext.BidType.toString()) > -1) {
+    newBid.mediaType = MEDIATYPE[bid.ext.BidType];
   } else {
-    try {
-      admStr = JSON.parse(adm.replace(/\\/g, ''));
-      if (admStr && admStr.native) {
-        newBid.mediaType = NATIVE;
+    utils.logInfo(LOG_WARN_PREFIX + 'bid.ext.BidType does not exist, checking alternatively for mediaType')
+    var adm = bid.adm;
+    // Create a regex here to check the strings
+    var admStr = '';
+    var videoRegex = new RegExp(/VAST\s+version/);
+    if (adm.indexOf('span class="PubAPIAd"') >= 0) {
+      newBid.mediaType = BANNER;
+    } else if (videoRegex.test(adm)) {
+      newBid.mediaType = VIDEO;
+    } else {
+      try {
+        admStr = JSON.parse(adm.replace(/\\/g, ''));
+        if (admStr && admStr.native) {
+          newBid.mediaType = NATIVE;
+        }
+      } catch (e) {
+        utils.logWarn(LOG_WARN_PREFIX + 'Error: Cannot parse native reponse for ad response: ' + adm);
       }
-    } catch (e) {
-      utils.logWarn(LOG_WARN_PREFIX + 'Error: Cannot parse native reponse for ad response: ' + adm);
     }
   }
 }
@@ -1140,7 +1120,7 @@ export const spec = {
                   if (requestData.imp && requestData.imp.length > 0) {
                     requestData.imp.forEach(req => {
                       if (bid.impid === req.id) {
-                        _checkMediaType(bid.adm, br);
+                        _checkMediaType(bid, br);
                         switch (br.mediaType) {
                           case BANNER:
                             break;
