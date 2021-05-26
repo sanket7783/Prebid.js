@@ -225,10 +225,7 @@ function getUpdatedKGPVForVideo(kgpv, bidResponse) {
 }
 
 function getAdapterNameForAlias(aliasName){
-  if(adapterManager && adapterManager.aliasRegistry)
-    return adapterManager.aliasRegistry[aliasName] || aliasName;
-  else
-    return aliasName;
+  return adapterManager.aliasRegistry[aliasName] || aliasName;
 }
 
 function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
