@@ -87,7 +87,6 @@ function buildRequest(bid, topWindowUrl, sizes, bidderRequest) {
   if (bidderRequest.uspConsent) {
     data.usPrivacy = bidderRequest.uspConsent
   }
-
   const dto = {
     method: 'POST',
     url: `${createDomain(subDomain)}/prebid/multi/${cId}`,

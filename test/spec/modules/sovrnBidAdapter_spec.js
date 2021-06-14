@@ -352,7 +352,6 @@ describe('sovrnBidAdapter', function() {
       })
     })
   });
-
   describe('interpretResponse', function () {
     let response;
     beforeEach(function () {
