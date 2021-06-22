@@ -78,7 +78,8 @@ export const spec = {
     { code: 'adasta' },
     { code: 'beintoo', gvlid: 618 },
     { code: 'dg' },
-    { code: 'gps' }
+    { code: 'gps' },
+    { code: 'appnexus2' }
   ],
   supportedMediaTypes: [BANNER, VIDEO, NATIVE],
 
