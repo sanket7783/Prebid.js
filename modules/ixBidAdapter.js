@@ -764,7 +764,6 @@ function buildIXDiag(validBidRequests) {
 
   return ixdiag;
 }
-
 /**
  *
  * @param {Object} impressions containing ixImps and possibly missingImps

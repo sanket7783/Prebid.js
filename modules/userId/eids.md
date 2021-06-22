@@ -26,6 +26,21 @@ userIdAsEids = [
         uids: [{
             id: 'some-random-id-value',
             atype: 1
+        },
+        ext: {
+            linkType: 2
+        }]
+    },
+
+    {
+        source: 'id5-sync.com',
+        uids: [{
+            id: 'some-random-id-value',
+            atype: 1,
+            ext: {
+                linkType: 2,
+                abTestingControlGroup: false
+            }
         }]
     },
 
@@ -107,7 +122,6 @@ userIdAsEids = [
             atype: 1
         }]
     },
-
     {
         source: 'sharedid.org',
         uids: [{

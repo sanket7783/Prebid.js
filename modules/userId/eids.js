@@ -8,7 +8,10 @@ const USER_IDS_CONFIG = {
   // intentIqId
   'intentIqId': {
     source: 'intentiq.com',
-    atype: 1
+    atype: 1,
+    getValue: function(data) {
+      return data.RESULT;
+    }
   },
 
   // pubCommonId
@@ -133,7 +136,6 @@ const USER_IDS_CONFIG = {
     source: 'netid.de',
     atype: 1
   },
-
   // sharedid
   'sharedid': {
     source: 'sharedid.org',
@@ -151,7 +153,10 @@ const USER_IDS_CONFIG = {
   // zeotapIdPlus
   'IDP': {
     source: 'zeotap.com',
-    atype: 1
+    atype: 1,
+    getValue: function getValue(data) {
+      return data.id;
+    }
   },
 
   // haloId
