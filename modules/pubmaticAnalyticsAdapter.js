@@ -254,12 +254,11 @@ function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
   }, [])
 }
 
-function getSizesForAdUnit(adUnit, adUnitId){
-  var bid = Object.values(adUnit.bids).filter((bid)=> !!bid.bidResponse && bid.bidResponse.mediaType === "native")[0];
-  if(!!bid || (bid === undefined  && adUnit.dimensions.length === 0)){
-    return ["1x1"];
-  }
-  else{
+function getSizesForAdUnit(adUnit, adUnitId) {
+  var bid = Object.values(adUnit.bids).filter((bid) => !!bid.bidResponse && bid.bidResponse.mediaType === 'native')[0];
+  if (!!bid || (bid === undefined && adUnit.dimensions.length === 0)) {
+    return ['1x1'];
+  } else {
     return adUnit.dimensions.map(function (e) {
       return e[0] + 'x' + e[1];
     })
