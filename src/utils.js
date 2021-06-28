@@ -1238,7 +1238,13 @@ export function mergeDeep(target, ...sources) {
         if (!target[key]) {
           Object.assign(target, { [key]: source[key] });
         } else if (isArray(target[key])) {
-          target[key] = Array.from(new Set(target[key].concat(source[key]))); // This will ensure unique values in target object
+          source[key].forEach(function(ele, idx) {
+            if (target[key].indexOf(ele) < 0) {
+              target[key].push(ele);
+            }
+          });
+          // Commenting below as Set and Array.from is not supported in IE
+          // target[key] = Array.from(new Set(target[key].concat(source[key]))); // This will ensure unique values in target object.
         }
       } else {
         Object.assign(target, { [key]: source[key] });
