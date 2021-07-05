@@ -5,6 +5,9 @@ import {
   setConfig,
   addBidResponseHook,
 } from 'modules/currency.js';
+import {
+  getGlobal
+} from 'src/prebidGlobal.js';
 
 // using es6 "import * as events from 'src/events'" causes the events.getEvents stub not to work...
 let events = require('src/events');
@@ -261,6 +264,20 @@ describe('pubmatic analytics adapter', function () {
     xhr.onCreate = request => requests.push(request);
 
     sandbox.stub(events, 'getEvents').returns([]);
+    getGlobal().adUnits = [
+      {
+        divID: 'Slot_1',
+        code: '/19968336/header-bid-tag-0',
+        adUnitId: '/19968336/header-bid-tag-0',
+        mediaTypes: ['banner']
+      },
+      {
+        divID: 'Slot_2',
+        code: '/19968336/header-bid-tag-1',
+        adUnitId: '/19968336/header-bid-tag-1',
+        mediaTypes: ['banner', 'video']
+      }
+    ];
 
     clock = sandbox.useFakeTimers(1519767013781);
 
@@ -276,6 +293,7 @@ describe('pubmatic analytics adapter', function () {
   afterEach(function () {
     sandbox.restore();
     config.resetConfig();
+    getGlobal().adUnits = [];
   });
 
   it('should require publisherId', function () {
@@ -338,6 +356,9 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s.length).to.equal(2);
       // slot 1
       expect(data.s[0].sn).to.equal('/19968336/header-bid-tag-0');
+      expect(data.s[0].au).to.equal('/19968336/header-bid-tag-0');
+      expect(data.s[0].mt).to.be.an('array');
+      expect(data.s[0].mt[0]).to.equal(0);
       expect(data.s[0].sz).to.deep.equal(['640x480']);
       expect(data.s[0].ps).to.be.an('array');
       expect(data.s[0].ps.length).to.equal(1);
@@ -362,6 +383,10 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[0].ps[0].ocry).to.equal('USD');
       // slot 2
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -437,6 +462,9 @@ describe('pubmatic analytics adapter', function () {
       expect(data.tgid).to.equal(0);
       // slot 1
       expect(data.s[0].sn).to.equal('/19968336/header-bid-tag-0');
+      expect(data.s[0].au).to.equal('/19968336/header-bid-tag-0');
+      expect(data.s[0].mt).to.be.an('array');
+      expect(data.s[0].mt[0]).to.equal(0);
       expect(data.s[0].sz).to.deep.equal(['640x480']);
       expect(data.s[0].ps).to.be.an('array');
       expect(data.s[0].ps.length).to.equal(1);
@@ -504,6 +532,9 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s.length).to.equal(2);
       // slot 1
       expect(data.s[0].sn).to.equal('/19968336/header-bid-tag-0');
+      expect(data.s[0].au).to.equal('/19968336/header-bid-tag-0');
+      expect(data.s[0].mt).to.be.an('array');
+      expect(data.s[0].mt[0]).to.equal(0);
       expect(data.s[0].sz).to.deep.equal(['640x480']);
       expect(data.s[0].ps).to.be.an('array');
       expect(data.s[0].ps.length).to.equal(1);
@@ -547,6 +578,10 @@ describe('pubmatic analytics adapter', function () {
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.tgid).to.equal(0);// test group id should be an INT between 0-15 else set to 0
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -583,6 +618,10 @@ describe('pubmatic analytics adapter', function () {
       let request = requests[0];
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -625,6 +664,10 @@ describe('pubmatic analytics adapter', function () {
       let request = requests[0];
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -681,6 +724,10 @@ describe('pubmatic analytics adapter', function () {
       expect(request.url).to.equal('https://t.pubmatic.com/wl?pubid=9999');
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -726,6 +773,10 @@ describe('pubmatic analytics adapter', function () {
       expect(request.url).to.equal('https://t.pubmatic.com/wl?pubid=9999');
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -779,6 +830,10 @@ describe('pubmatic analytics adapter', function () {
       expect(request.url).to.equal('https://t.pubmatic.com/wl?pubid=9999');
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -829,6 +884,10 @@ describe('pubmatic analytics adapter', function () {
       expect(request.url).to.equal('https://t.pubmatic.com/wl?pubid=9999');
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -881,6 +940,10 @@ describe('pubmatic analytics adapter', function () {
       expect(request.url).to.equal('https://t.pubmatic.com/wl?pubid=9999');
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -930,6 +993,10 @@ describe('pubmatic analytics adapter', function () {
       expect(request.url).to.equal('https://t.pubmatic.com/wl?pubid=9999');
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -982,6 +1049,10 @@ describe('pubmatic analytics adapter', function () {
       expect(request.url).to.equal('https://t.pubmatic.com/wl?pubid=9999');
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -1032,6 +1103,10 @@ describe('pubmatic analytics adapter', function () {
       expect(request.url).to.equal('https://t.pubmatic.com/wl?pubid=9999');
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
@@ -1084,6 +1159,10 @@ describe('pubmatic analytics adapter', function () {
       expect(request.url).to.equal('https://t.pubmatic.com/wl?pubid=9999');
       let data = getLoggerJsonFromRequest(request.requestBody);
       expect(data.s[1].sn).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].au).to.equal('/19968336/header-bid-tag-1');
+      expect(data.s[1].mt).to.be.an('array');
+      expect(data.s[1].mt[0]).to.equal(0);
+      expect(data.s[1].mt[1]).to.equal(1);
       expect(data.s[1].sz).to.deep.equal(['1000x300', '970x250', '728x90']);
       expect(data.s[1].ps).to.be.an('array');
       expect(data.s[1].ps.length).to.equal(1);
