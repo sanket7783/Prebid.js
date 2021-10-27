@@ -707,7 +707,6 @@ export const spec = {
     // @todo - what is Neustar fabrick called & where to look for it? If it's a simple value then it will automatically be ok
     // it is not in the table 'Bidder Adapter Implementation' on https://docs.prebid.org/dev-docs/modules/userId.html#prebidjs-adapters
     let searchKeysSingle = ['pubcid', 'tdid', 'idl_env', 'criteoId', 'lotamePanoramaId', 'fabrickId'];
-
     if (bidRequest.hasOwnProperty('userId')) {
       for (let arrayId in searchKeysSingle) {
         let key = searchKeysSingle[arrayId];

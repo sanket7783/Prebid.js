@@ -169,6 +169,9 @@ let submodules = [];
 /** @type {SubmoduleContainer[]} */
 let initializedSubmodules;
 
+/** @type {boolean} */
+let initializedSubmodulesUpdated = false;
+
 /** @type {SubmoduleConfig[]} */
 let configRegistry = [];
 
@@ -184,6 +187,8 @@ export let syncDelay;
 /** @type {(number|undefined)} */
 export let auctionDelay;
 
+/** @type {(Object|undefined)} */
+let userIdentity;
 /** @param {Submodule[]} submodules */
 export function setSubmoduleRegistry(submodules) {
   submoduleRegistry = submodules;
@@ -496,8 +501,16 @@ function addIdDataToAdUnitBids(adUnits, submodules) {
 function initializeSubmodulesAndExecuteCallbacks(continueAuction) {
   let delayed = false;
 
+  // initializedSubmodulesUpdated - flag to identify if any module has been added from the page post module initialization. This is specifically for OW use case
+  if (initializedSubmodulesUpdated && initializedSubmodules !== undefined) {
+    for (var index in initializedSubmodules) {
+      submodules.push(initializedSubmodules[index]);
+    }
+  }
+
   // initialize submodules only when undefined
-  if (typeof initializedSubmodules === 'undefined') {
+  if (typeof initializedSubmodules === 'undefined' || initializedSubmodulesUpdated) {
+    initializedSubmodulesUpdated = false;
     initializedSubmodules = initSubmodules(submodules, gdprDataHandler.getConsentData());
     if (initializedSubmodules.length) {
       setPrebidServerEidPermissions(initializedSubmodules);
@@ -521,8 +534,8 @@ function initializeSubmodulesAndExecuteCallbacks(continueAuction) {
           processSubmoduleCallbacks(submodulesWithCallbacks, continueCallback);
         } else {
           // wait for auction complete before processing submodule callbacks
-          events.on(CONSTANTS.EVENTS.AUCTION_END, function auctionEndHandler() {
-            events.off(CONSTANTS.EVENTS.AUCTION_END, auctionEndHandler);
+          events.on(CONSTANTS.EVENTS.REQUEST_BIDS, function auctionEndHandler() {
+            events.off(CONSTANTS.EVENTS.REQUEST_BIDS, auctionEndHandler);
 
             // when syncDelay is zero, process callbacks now, otherwise delay process with a setTimeout
             if (syncDelay > 0) {
@@ -586,7 +599,11 @@ function getUserIdsAsEids() {
 * This function will be exposed in the global-name-space so that userIds can be refreshed after initialization.
 * @param {RefreshUserIdsOptions} options
 */
-function refreshUserIds(options, callback) {
+function refreshUserIds(options, callback, moduleUpdated) {
+  if (moduleUpdated !== undefined) {
+    initializedSubmodulesUpdated = moduleUpdated;
+  }
+
   let submoduleNames = options ? options.submoduleNames : null;
   if (!submoduleNames) {
     submoduleNames = [];
@@ -634,6 +651,14 @@ function refreshUserIds(options, callback) {
       callback();
     }
   });
+}
+
+function setUserIdentities(userIdentityData) {
+  userIdentity = userIdentityData;
+};
+
+function getUserIdentities() {
+  return userIdentity;
 }
 
 /**
@@ -854,6 +879,8 @@ export function init(config) {
   (getGlobal()).getUserIds = getUserIds;
   (getGlobal()).getUserIdsAsEids = getUserIdsAsEids;
   (getGlobal()).refreshUserIds = refreshUserIds;
+  (getGlobal()).setUserIdentities = setUserIdentities;
+  (getGlobal()).getUserIdentities = getUserIdentities;
 }
 
 // init config update listener to start the application

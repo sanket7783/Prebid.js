@@ -108,12 +108,12 @@
     "rendererUrl": "hb_renderer_url",
     "adTemplate": "hb_adTemplate"
   },
-  "S2S" : {
-    "SRC" : "s2s",
-    "DEFAULT_ENDPOINT" : "https://prebid.adnxs.com/pbs/v1/openrtb2/auction",
+  "S2S": {
+    "SRC": "s2s",
+    "DEFAULT_ENDPOINT": "https://prebid.adnxs.com/pbs/v1/openrtb2/auction",
     "SYNCED_BIDDERS_KEY": "pbjsSyncs"
   },
-  "BID_STATUS" : {
+  "BID_STATUS": {
     "BID_TARGETING_SET": "targetingSet",
     "RENDERED": "rendered",
     "BID_REJECTED": "bidRejected"

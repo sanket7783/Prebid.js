@@ -50,6 +50,9 @@ logInfo('Prebid.js v$prebid.version$ loaded');
 // modules list generated from build
 $$PREBID_GLOBAL$$.installedModules = ['v$prebid.modulesList$'];
 
+// modules list generated from build
+$$PREBID_GLOBAL$$.installedModules = ['v$prebid.modulesList$'];
+
 // create adUnit array
 $$PREBID_GLOBAL$$.adUnits = $$PREBID_GLOBAL$$.adUnits || [];
 
@@ -226,6 +229,24 @@ $$PREBID_GLOBAL$$.getAdserverTargetingForAdUnitCodeStr = function (adunitCode) {
     return transformAdServerTargetingObj(res);
   } else {
     logMessage('Need to call getAdserverTargetingForAdUnitCodeStr with adunitCode');
+  }
+};
+
+/**
+ * This function returns the query string targeting parameters available at this moment for a given ad unit. Note that some bidder's response may not have been received if you call this function too quickly after the requests are sent.
+ * @param adUnitCode {string} adUnitCode to get the bid responses for
+ * @alias module:pbjs.getHighestUnusedBidResponseForAdUnitCode
+ * @returns {Object}  returnObj return bid
+ */
+$$PREBID_GLOBAL$$.getHighestUnusedBidResponseForAdUnitCode = function (adunitCode) {
+  if (adunitCode) {
+    const bid = auctionManager.getAllBidsForAdUnitCode(adunitCode)
+      .filter(filters.isUnusedBid)
+      .filter(filters.isBidNotExpired)
+
+    return bid.length ? bid.reduce(getHighestCpm) : {}
+  } else {
+    logMessage('Need to call getHighestUnusedBidResponseForAdUnitCode with adunitCode');
   }
 };
 

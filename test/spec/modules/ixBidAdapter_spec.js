@@ -1453,6 +1453,18 @@ describe('IndexexchangeAdapter', function () {
       expect(payload.id).to.be.a('string');
     });
 
+    it('payload should have correct format and value for r.id when bidderRequestId is a number ', function () {
+      const bidWithIntId = utils.deepClone(DEFAULT_BANNER_VALID_BID);
+      bidWithIntId[0].bidderRequestId = 123456;
+
+      request = spec.buildRequests(bidWithIntId, DEFAULT_OPTION)[0];
+
+      const payload = JSON.parse(request.data.r);
+      expect(bidWithIntId[0].bidderRequestId).to.be.a('number');
+      expect(payload.id).to.equal(bidWithIntId[0].bidderRequestId.toString());
+      expect(payload.id).to.be.a('string');
+    });
+
     it('payload should not include schain when not provided', function () {
       const payload = JSON.parse(queryWithoutSchain.r);
       expect(payload.source).to.not.exist; // source object currently only written for schain

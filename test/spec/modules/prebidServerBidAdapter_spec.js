@@ -585,6 +585,10 @@ describe('S2S Adapter', function () {
       expect(requestBid.imp[0].banner).to.not.exist;
       expect(requestBid.imp[0].video).to.exist;
       expect(requestBid.imp[0].video.placement).to.equal(1);
+      expect(requestBid.imp[0].video.w).to.equal(640);
+      expect(requestBid.imp[0].video.h).to.equal(480);
+      expect(requestBid.imp[0].video.playerSize).to.be.undefined;
+      expect(requestBid.imp[0].video.context).to.be.undefined;
     });
 
     it('converts video mediaType properties into openRTB format', function () {
