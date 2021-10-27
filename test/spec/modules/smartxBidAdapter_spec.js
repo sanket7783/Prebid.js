@@ -495,7 +495,7 @@ describe('The smartx adapter', function () {
       };
     });
 
-    it('should attempt to insert the script', function () {
+    it('should attempt to insert the script without outstream config options set', function () {
       var scriptTag;
       sinon.stub(window.document, 'getElementById').returns({
         appendChild: sinon.stub().callsFake(function (script) {
@@ -506,10 +506,151 @@ describe('The smartx adapter', function () {
 
       responses[0].renderer.render(responses[0]);
 
-      expect(scriptTag.getAttribute('type')).to.equal('text/javascript');
-      expect(scriptTag.getAttribute('src')).to.equal('https://dco.smartclip.net/?plc=7777778');
+      expect(responses[0].renderer.url).to.equal('https://dco.smartclip.net/?plc=7777778');
 
       window.document.getElementById.restore();
+    });
+
+    it('should attempt to insert the script with outstream config options set', function () {
+      var scriptTag;
+      sinon.stub(window.document, 'getElementById').returns({
+        appendChild: sinon.stub().callsFake(function (script) {
+          scriptTag = script
+        })
+      });
+      var responses = spec.interpretResponse(serverResponse, bidderRequestObj);
+
+      bidderRequestObj.bidRequest.bids[0].params.outstream_options.startOpen = 'true';
+      bidderRequestObj.bidRequest.bids[0].params.outstream_options.endingScreen = 'true';
+      bidderRequestObj.bidRequest.bids[0].params.outstream_options.title = 'abc';
+      bidderRequestObj.bidRequest.bids[0].params.outstream_options.skipOffset = 2;
+      bidderRequestObj.bidRequest.bids[0].params.outstream_options.desiredBitrate = 123;
+
+      responses[0].renderer.render(responses[0]);
+
+      bidderRequestObj.bidRequest.bids[0].params.outstream_options.startOpen = 'false';
+      bidderRequestObj.bidRequest.bids[0].params.outstream_options.endingScreen = 'false';
+
+      responses[0].renderer.render(responses[0]);
+
+      expect(responses[0].renderer.url).to.equal('https://dco.smartclip.net/?plc=7777778');
+
+      window.document.getElementById.restore();
+    });
+
+    it('should attempt to insert the script without defined slot', function () {
+      var scriptTag;
+      sinon.stub(window.document, 'getElementById').returns({
+        appendChild: sinon.stub().callsFake(function (script) {
+          scriptTag = script
+        })
+      });
+      var responses = spec.interpretResponse(serverResponse, bidderRequestObj);
+
+      delete bidderRequestObj.bidRequest.bids[0].params.outstream_options.slot;
+
+      responses[0].renderer.render(responses[0]);
+
+      expect(responses[0].renderer.url).to.equal('https://dco.smartclip.net/?plc=7777778');
+
+      window.document.getElementById.restore();
+    });
+  });
+
+  describe('price floor module', function () {
+    var bid,
+      bidRequestObj;
+
+    beforeEach(function () {
+      bid = getValidBidObject();
+      bidRequestObj = {
+        refererInfo: {
+          referer: 'prebid.js'
+        }
+      };
+      delete bid.params.bidfloor;
+    });
+
+    it('obtain floor from getFloor', function () {
+      bid.getFloor = () => {
+        return {
+          currency: 'EUR',
+          floor: 3.21
+        };
+      };
+
+      const payload = spec.buildRequests([bid], bidRequestObj)[0];
+      expect(payload.data.imp[0]).to.have.property('bidfloor', 3.21);
+    });
+
+    it('obtain floor from params', function () {
+      bid.getFloor = () => {
+        return {
+          currency: 'EUR',
+          floor: 3.21
+        };
+      };
+      bid.params.bidfloor = 0.64;
+
+      const payload = spec.buildRequests([bid], bidRequestObj)[0];
+      expect(payload.data.imp[0]).to.have.property('bidfloor', 0.64);
+    });
+
+    it('check currency USD', function () {
+      bid.getFloor = () => {
+        return {
+          currency: 'USD',
+          floor: 1.23
+        };
+      };
+      bid.params.bidfloorcur = 'USD'
+
+      const payload = spec.buildRequests([bid], bidRequestObj)[0];
+      expect(payload.data.imp[0]).to.have.property('bidfloorcur', 'USD');
+      expect(payload.data.imp[0]).to.have.property('bidfloor', 1.23);
+    });
+
+    it('check defaut currency EUR', function () {
+      delete bid.params.bidfloorcur;
+
+      bid.getFloor = () => {
+        return {
+          currency: 'EUR',
+          floor: 4.56
+        };
+      };
+
+      const payload = spec.buildRequests([bid], bidRequestObj)[0];
+      expect(payload.data.imp[0]).to.have.property('bidfloorcur', 'EUR');
+      expect(payload.data.imp[0]).to.have.property('bidfloor', 4.56);
+    });
+
+    it('bad floor value', function () {
+      bid.getFloor = () => {
+        return {
+          currency: 'EUR',
+          floor: 'bad'
+        };
+      };
+
+      const payload = spec.buildRequests([bid], bidRequestObj)[0];
+      expect(payload.data.imp[0]).to.have.property('bidfloor', 0);
+    });
+
+    it('empty floor object', function () {
+      bid.getFloor = () => {
+        return {};
+      };
+
+      const payload = spec.buildRequests([bid], bidRequestObj)[0];
+      expect(payload.data.imp[0]).to.have.property('bidfloor', 0);
+    });
+
+    it('undefined floor result', function () {
+      bid.getFloor = () => {};
+
+      const payload = spec.buildRequests([bid], bidRequestObj)[0];
+      expect(payload.data.imp[0]).to.have.property('bidfloor', 0);
     });
   });
 
