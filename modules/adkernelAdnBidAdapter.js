@@ -79,9 +79,6 @@ function buildRequestParams(tags, bidderRequest) {
   if (config.getConfig('coppa')) {
     deepSetValue(req, 'user.coppa', 1);
   }
-  if (config.getConfig('coppa')) {
-    utils.deepSetValue(req, 'user.coppa', 1);
-  }
   return req;
 }
 

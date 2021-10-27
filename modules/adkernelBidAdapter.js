@@ -404,9 +404,6 @@ function buildRtbRequest(imps, bidderRequest, schain) {
   if (coppa) {
     deepSetValue(req, 'regs.coppa', 1);
   }
-  if (coppa) {
-    utils.deepSetValue(req, 'regs.coppa', 1);
-  }
   let syncMethod = getAllowedSyncMethod(bidderCode);
   if (syncMethod) {
     deepSetValue(req, 'ext.adk_usersync', syncMethod);
@@ -417,10 +414,6 @@ function buildRtbRequest(imps, bidderRequest, schain) {
   let eids = getExtendedUserIds(bidderRequest);
   if (eids) {
     deepSetValue(req, 'user.ext.eids', eids);
-  }
-  let eids = getExtendedUserIds(bidderRequest);
-  if (eids) {
-    utils.deepSetValue(req, 'user.ext.eids', eids);
   }
   return req;
 }

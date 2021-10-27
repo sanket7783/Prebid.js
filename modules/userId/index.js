@@ -503,9 +503,9 @@ function initializeSubmodulesAndExecuteCallbacks(continueAuction) {
 
   // initializedSubmodulesUpdated - flag to identify if any module has been added from the page post module initialization. This is specifically for OW use case
   if (initializedSubmodulesUpdated && initializedSubmodules !== undefined) {
-      for (var index in initializedSubmodules) {
-       submodules.push(initializedSubmodules[index]);
-      }
+    for (var index in initializedSubmodules) {
+      submodules.push(initializedSubmodules[index]);
+    }
   }
 
   // initialize submodules only when undefined
@@ -603,7 +603,7 @@ function refreshUserIds(options, callback, moduleUpdated) {
   if (moduleUpdated !== undefined) {
     initializedSubmodulesUpdated = moduleUpdated;
   }
-  
+
   let submoduleNames = options ? options.submoduleNames : null;
   if (!submoduleNames) {
     submoduleNames = [];
@@ -881,7 +881,6 @@ export function init(config) {
   (getGlobal()).refreshUserIds = refreshUserIds;
   (getGlobal()).setUserIdentities = setUserIdentities;
   (getGlobal()).getUserIdentities = getUserIdentities;
-
 }
 
 // init config update listener to start the application

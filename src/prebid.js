@@ -264,7 +264,7 @@ $$PREBID_GLOBAL$$.getHighestUnusedBidResponseForAdUnitCode = function (adunitCod
 
     return bid.length ? bid.reduce(getHighestCpm) : {}
   } else {
-    utils.logMessage('Need to call getHighestUnusedBidResponseForAdUnitCode with adunitCode');
+    logMessage('Need to call getHighestUnusedBidResponseForAdUnitCode with adunitCode');
   }
 };
 

@@ -200,27 +200,6 @@ export const spec = {
         request.regs.coppa = 1;
       }
 
-      const video = utils.deepAccess(bid, 'mediaTypes.video') || {};
-      const paramsVideo = Object.assign({}, params.video);
-      VIDEO_KEYS.forEach((key) => {
-        if (!(key in paramsVideo) && key in video) {
-          paramsVideo[key] = video[key];
-        }
-      });
-
-      if (!paramsVideo.size && video.playerSize && video.playerSize.length === 2) {
-        paramsVideo.size = video.playerSize.join('x');
-      }
-
-      if (!('mind' in paramsVideo) && 'minduration' in video) {
-        paramsVideo.mind = video.minduration;
-      }
-      if (!('maxd' in paramsVideo) && 'maxduration' in video) {
-        paramsVideo.maxd = video.maxduration;
-      }
-
-      const paramsToSend = Object.assign({}, params, {video: paramsVideo});
-
       requests.push({
         method: 'POST',
         url: ENDPOINT_URL + '?no_mapping=1&sp=' + source,

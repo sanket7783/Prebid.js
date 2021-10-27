@@ -256,48 +256,4 @@ function parseSizes(sizes) {
   return [parseSize(sizes)]; // or a single one ? (ie. [728,90])
 }
 
-/**
- * Get video sizes
- *
- * @param {BidRequest} bid - Bid request generated from ad slots
- * @returns {object} True if it's a video bid
- */
-function getVideoSizes(bid) {
-  return parseSizes(utils.deepAccess(bid, 'mediaTypes.video.playerSize') || bid.sizes);
-}
-
-/**
- * Get banner sizes
- *
- * @param {BidRequest} bid - Bid request generated from ad slots
- * @returns {object} True if it's a video bid
- */
-function getBannerSizes(bid) {
-  return parseSizes(utils.deepAccess(bid, 'mediaTypes.banner.sizes') || bid.sizes);
-}
-
-/**
- * Parse size
- * @param sizes
- * @returns {width: number, h: height}
- */
-function parseSize(size) {
-  let sizeObj = {}
-  sizeObj.width = parseInt(size[0], 10);
-  sizeObj.height = parseInt(size[1], 10);
-  return sizeObj;
-}
-
-/**
- * Parse sizes
- * @param sizes
- * @returns {{width: number , height: number }[]}
- */
-function parseSizes(sizes) {
-  if (Array.isArray(sizes[0])) { // is there several sizes ? (ie. [[728,90],[200,300]])
-    return sizes.map(size => parseSize(size));
-  }
-  return [parseSize(sizes)]; // or a single one ? (ie. [728,90])
-}
-
 registerBidder(spec);

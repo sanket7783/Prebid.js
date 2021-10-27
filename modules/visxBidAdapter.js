@@ -29,7 +29,6 @@ const LOG_ERROR_MESS = {
   videoMissing: 'Bid request videoType property is missing - '
 };
 const currencyWhiteList = ['EUR', 'USD', 'GBP', 'PLN'];
-const RE_EMPTY_OR_ONLY_COMMAS = /^,*$/;
 export const spec = {
   code: BIDDER_CODE,
   gvlid: GVLID,

@@ -241,11 +241,6 @@ export const spec = {
       return false;
     }
 
-    if (bid.params.hasOwnProperty('rendererSettings') && (bid.params.rendererSettings === null || typeof bid.params.rendererSettings !== 'object')) {
-      utils.logError(`${BB_CONSTANTS.BIDDER_CODE}: params.rendererSettings must be of type object. Rejecting bid: `, bid);
-      return false;
-    }
-
     if (bid.hasOwnProperty('mediaTypes') && bid.mediaTypes.hasOwnProperty(VIDEO)) {
       if (!bid.mediaTypes[VIDEO].hasOwnProperty('context')) {
         logError(`${BB_CONSTANTS.BIDDER_CODE}: no context specified in bid. Rejecting bid: `, bid);

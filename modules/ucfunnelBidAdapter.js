@@ -289,32 +289,6 @@ function getRequestData(bid, bidderRequest) {
     }
   }
 
-  try {
-    bidData.host = window.top.location.hostname;
-    bidData.u = window.top.location.href;
-    bidData.xr = 0;
-  } catch (e) {
-    bidData.host = window.location.hostname;
-    bidData.u = document.referrer || window.location.href;
-    bidData.xr = 1;
-  }
-
-  if (window.location.ancestorOrigins && window.location.ancestorOrigins.length > 0) {
-    bidData.ao = window.location.ancestorOrigins[window.location.ancestorOrigins.length - 1];
-  }
-
-  if (storage.cookiesAreEnabled()) {
-    let ucfUid = '';
-    if (storage.getCookie(COOKIE_NAME) != undefined) {
-      ucfUid = storage.getCookie(COOKIE_NAME);
-      bidData.ucfUid = ucfUid;
-    } else {
-      ucfUid = utils.generateUUID();
-      bidData.ucfUid = ucfUid;
-      storage.setCookie(COOKIE_NAME, ucfUid);
-    }
-  }
-
   if (size != undefined && size.length == 2) {
     bidData.w = size[0];
     bidData.h = size[1];

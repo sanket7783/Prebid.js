@@ -316,7 +316,7 @@ function executeBidsLoggerCall(e, highestCpmBids) {
     return 0;
   })();
 
-  if (!!floorData) {
+  if (floorData) {
     outputObj['fmv'] = floorData.floorRequestData ? floorData.floorRequestData.modelVersion || undefined : undefined;
     outputObj['ft'] = floorData.floorResponseData ? (floorData.floorResponseData.enforcements.enforceJS == false ? 0 : 1) : undefined;
   }

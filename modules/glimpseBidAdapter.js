@@ -13,17 +13,6 @@ const LOCAL_STORAGE_KEY = {
   },
 }
 
-function transformEachBidResponse(glimpseBid) {
-  const bid = glimpseBid;
-  bid.meta = { advertiserDomains: [] };
-
-  if (glimpseBid.adomain) {
-    bid.meta.advertiserDomains = glimpseBid.adomain;
-  }
-
-  return bid;
-}
-
 export const spec = {
   code: BIDDER_CODE,
   supportedMediaTypes: [BANNER],

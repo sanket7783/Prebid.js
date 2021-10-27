@@ -205,10 +205,6 @@ export const spec = {
       if (bid.meta && bid.meta.advertiserDomains && isArray(bid.meta.advertiserDomains)) {
         bidResponse.meta.advertiserDomains = bid.meta.advertiserDomains;
       }
-      bidResponse.meta = {};
-      if (bid.meta && bid.meta.advertiserDomains && utils.isArray(bid.meta.advertiserDomains)) {
-        bidResponse.meta.advertiserDomains = bid.meta.advertiserDomains;
-      }
       bidResponses.push(bidResponse);
     });
     return bidResponses;

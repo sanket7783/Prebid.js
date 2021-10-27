@@ -30,7 +30,6 @@ describe('SharedId System', function () {
       sandbox.stub(utils, 'hasDeviceAccess').returns(true);
       coppaDataHandlerDataStub.returns('');
       callbackSpy.resetHistory();
-      uspConsentDataStub = sinon.stub(uspDataHandler, 'getConsentData');
     });
 
     afterEach(function () {
@@ -90,26 +89,6 @@ describe('SharedId System', function () {
       coppaDataHandlerDataStub.returns('true');
       sharedIdSystemSubmodule.extendId({}, undefined, 'TestId');
       expect(utils.logInfo.args[0][0]).to.exist.and.to.equal('PubCommonId: IDs not provided for coppa requests, exiting PubCommonId');
-    });
-
-    it('should call shared id endpoint with usp consent data and handle a valid response', function () {
-      uspConsentDataStub.returns('1YYY');
-      let consentData = {
-        gdprApplies: true,
-        consentString: 'abc12345234',
-      };
-
-      let submoduleCallback = sharedIdSubmodule.getId(undefined, consentData).callback;
-      submoduleCallback(callbackSpy);
-
-      let request = server.requests[0];
-      expect(request.url).to.equal('https://id.sharedid.org/id?us_privacy=1YYY&gdpr=1&gdpr_consent=abc12345234');
-      expect(request.withCredentials).to.be.true;
-
-      request.respond(200, {}, JSON.stringify(SHAREDID_RESPONSE));
-
-      expect(callbackSpy.calledOnce).to.be.true;
-      expect(callbackSpy.lastCall.lastArg.id).to.equal(SHAREDID_RESPONSE.sharedId);
     });
   });
 });

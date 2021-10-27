@@ -296,7 +296,7 @@ function parseBid(rawBid, currency, bidRequest) {
  * @return {boolean}      True if this is a valid size format, and false otherwise.
  */
 function isValidSize(size) {
-  return Array.isArray(size) && size.length === 2 && utils.isInteger(size[0]) && utils.isInteger(size[1]);
+  return Array.isArray(size) && size.length === 2 && isInteger(size[0]) && isInteger(size[1]);
 }
 
 /**
@@ -739,17 +739,6 @@ function buildRequest(validBidRequests, bidderRequest, impressions, version) {
   }
 
   return requests;
-}
-
-/**
- * Return an object of user IDs stored by Prebid User ID module
- *
- * @returns {array} ID providers that are present in userIds
- */
-function _getUserIds(bidRequest) {
-  const userIds = bidRequest.userId || {};
-
-  return PROVIDERS.filter(provider => userIds[provider]);
 }
 
 /**
