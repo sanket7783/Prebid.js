@@ -27,6 +27,7 @@ const isOpenWrapSetup = true;
 let beforeRequestBidsHandlerAdded = false;
 let pbjsAuctionTimeoutFromLastAuction;
 let excludedGptSlotNames = {};
+let pbjsAdUnits = {};
 
 let pbjsSetup = {
   callbackFunction: function(gptSlotName, gptSlot, pbjsAdUnit, KeyValuePairs) {
@@ -220,7 +221,7 @@ function refreshSlotIfNeeded(gptSlotName, gptSlot, dsEntry, slotConf) {
   }
 
   // find the pbjsAdUnit and pass it
-  let pbjsAdUnit = find(getGlobal().adUnits,
+  let pbjsAdUnit = find( Object.keys(pbjsAdUnits).map(code => pbjsAdUnits[code]) ,
     pbjsAU => slotConf.gptSlotToPbjsAdUnitMapFunction(gptSlotName, gptSlot, pbjsAU)
   ) || null;
 
@@ -377,4 +378,9 @@ function init() {
 }
 
 events.on(EVENTS.BEFORE_REQUEST_BIDS, init);
-events.on(EVENTS.AUCTION_INIT, (arg) => { pbjsAuctionTimeoutFromLastAuction = arg.timeout });
+events.on(EVENTS.AUCTION_INIT, (arg) => {
+  pbjsAuctionTimeoutFromLastAuction = arg.timeout
+  arg.adUnits.forEach(au => {
+    pbjsAdUnits[ au.code ] = au;
+  });
+});
