@@ -2922,4 +2922,20 @@ describe('User ID', function () {
       });
     });
   });
+
+  describe('Handle SSO Login', function() {
+    it('Email hashes are stored in userIdentities Object on SSO login', function () {
+      function getEmail() {
+        return 'abc@def.com';
+      }
+      function getBasicProfile() {
+        return { 'getEmail': getEmail }
+      }
+      var dummyGoogleUserObject = { 'getBasicProfile': getBasicProfile }
+
+      expect(typeof (getGlobal()).onSSOLogin).to.equal('function');
+      getGlobal().onSSOLogin({'provider': 'google', 'googleUserObject': dummyGoogleUserObject});
+      expect((getGlobal()).getUserIdentities().emailHash).to.exist;
+    });
+  });
 });

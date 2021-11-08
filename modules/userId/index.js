@@ -504,9 +504,9 @@ function initializeSubmodulesAndExecuteCallbacks(continueAuction) {
 
   // initializedSubmodulesUpdated - flag to identify if any module has been added from the page post module initialization. This is specifically for OW use case
   if (initializedSubmodulesUpdated && initializedSubmodules !== undefined) {
-      for (var index in initializedSubmodules) {
-       submodules.push(initializedSubmodules[index]);
-      }
+    for (var index in initializedSubmodules) {
+      submodules.push(initializedSubmodules[index]);
+    }
   }
 
   // initialize submodules only when undefined
@@ -604,7 +604,7 @@ function refreshUserIds(options, callback, moduleUpdated) {
   if (moduleUpdated !== undefined) {
     initializedSubmodulesUpdated = moduleUpdated;
   }
-  
+
   let submoduleNames = options ? options.submoduleNames : null;
   if (!submoduleNames) {
     submoduleNames = [];
@@ -663,21 +663,20 @@ function getUserIdentities() {
  * @param {Object} userObject Google's user object, passed from google's callback function
  */
 function onSSOLogin(data) {
-  //console.log("SSO - in onSSOLogin function");
   var refThis = this;
-  var email = undefined;
+  var email;
   var emailHash = {};
 
   switch (data.provider) {
     case undefined:
     case 'facebook':
-      window.FB && window.FB.api('/me?fields=email&access_token='+data.fbAccessToken, function (response) {
-        utils.logInfo("SSO - returned from fb api");
+      window.FB && window.FB.api('/me?fields=email&access_token=' + data.fbAccessToken, function (response) {
+        utils.logInfo('SSO - returned from fb api');
         if (response.error) {
-          utils.logInfo("SSO - User information could not be retrieved by facebook api [", response.error.message, "]");
+          utils.logInfo('SSO - User information could not be retrieved by facebook api [', response.error.message, ']');
         }
         email = response.email || undefined;
-        utils.logInfo("SSO - User information retrieved by facebook api - ", email);
+        utils.logInfo('SSO - User information retrieved by facebook api - ', email);
         generateEmailHash(email, emailHash);
         refThis.setUserIdentities({
           emailHash: emailHash
@@ -686,8 +685,8 @@ function onSSOLogin(data) {
       break;
     case 'google':
       var profile = data.googleUserObject.getBasicProfile();
-      var email = profile.getEmail() || undefined;
-      utils.logInfo("SSO - data available from google api - ",email);
+      email = profile.getEmail() || undefined;
+      utils.logInfo('SSO - data available from google api - ', email);
       generateEmailHash(email, emailHash);
       refThis.setUserIdentities({
         emailHash: emailHash
@@ -704,7 +703,7 @@ function onSSOLogout() {
 }
 
 function generateEmailHash(email, emailHash) {
-  email = email !== undefined ? email.trim().toLowerCase() : "";
+  email = email !== undefined ? email.trim().toLowerCase() : '';
   var regex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
   if (regex.test(email)) {
     emailHash.MD5 = MD5(email).toString();
