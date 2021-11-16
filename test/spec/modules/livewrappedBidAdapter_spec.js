@@ -885,7 +885,7 @@ describe('Livewrapped adapter tests', function () {
     expect(data.rtbData.user.ext.eids).to.deep.equal(testbidRequest.bids[0].userIdAsEids);
   });
 
-  it('should make use of criteoId if available', function() {
+  xit('should make use of criteoId if available', function() {
     sandbox.stub(utils, 'isSafariBrowser').callsFake(() => false);
     sandbox.stub(storage, 'cookiesAreEnabled').callsFake(() => true);
     let testbidRequest = clone(bidderRequest);
