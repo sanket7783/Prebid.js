@@ -679,7 +679,7 @@ function onSSOLogin(data) {
             window.PWT = window.PWT || {};
             window.PWT.fbAt = response.authResponse.accessToken;
             window.FB && window.FB.api('/me?fields=email&access_token=' + window.PWT.fbAt, function (response) {
-              utils.logInfo('SSO - returned from fb api');
+              utils.logInfo('SSO - Data received from FB API');
 
               if (response.error) {
                 utils.logInfo('SSO - User information could not be retrieved by facebook api [', response.error.message, ']');
@@ -687,14 +687,14 @@ function onSSOLogin(data) {
               }
 
               email = response.email || undefined;
-              utils.logInfo('SSO - User information retrieved by facebook api - ', email);
+              utils.logInfo('SSO - Information successfully retrieved by Facebook API.');
               generateEmailHash(email, emailHash);
               refThis.setUserIdentities({
                 emailHash: emailHash
               });
             });
           } else {
-            utils.logInfo("SSO - error fetching login information from facebook");
+            utils.logInfo('SSO - Error fetching login information from facebook');
           }
         }, true);
       }, timeout);
@@ -702,7 +702,7 @@ function onSSOLogin(data) {
     case 'google':
       var profile = data.googleUserObject.getBasicProfile();
       email = profile.getEmail() || undefined;
-      utils.logInfo('SSO - data available from google api - ', email);
+      utils.logInfo('SSO - Information successfully retrieved by Google API');
       generateEmailHash(email, emailHash);
       refThis.setUserIdentities({
         emailHash: emailHash
