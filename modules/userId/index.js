@@ -672,32 +672,33 @@ function onSSOLogin(data) {
   switch (data.provider) {
     case undefined:
     case 'facebook':
+      var timeout = data.provider === 'facebook' ? 0 : 2000;
       setTimeout(function() {
         window.FB && window.FB.getLoginStatus(function (response) {
           if (response.status === 'connected') {
             window.PWT = window.PWT || {};
             window.PWT.fbAt = response.authResponse.accessToken;
             window.FB && window.FB.api('/me?fields=email&access_token=' + window.PWT.fbAt, function (response) {
-              __WEBPACK_IMPORTED_MODULE_3__src_utils_js__["logInfo"]('SSO - returned from fb api');
+              utils.logInfo('SSO - returned from fb api');
 
               if (response.error) {
-                __WEBPACK_IMPORTED_MODULE_3__src_utils_js__["logInfo"]('SSO - User information could not be retrieved by facebook api [', response.error.message, ']');
+                utils.logInfo('SSO - User information could not be retrieved by facebook api [', response.error.message, ']');
                 return;
               }
 
               email = response.email || undefined;
-              __WEBPACK_IMPORTED_MODULE_3__src_utils_js__["logInfo"]('SSO - User information retrieved by facebook api - ', email);
+              utils.logInfo('SSO - User information retrieved by facebook api - ', email);
               generateEmailHash(email, emailHash);
               refThis.setUserIdentities({
                 emailHash: emailHash
               });
             });
           } else {
-            __WEBPACK_IMPORTED_MODULE_3__src_utils_js__["logInfo"]("SSO - error fetching login information from facebook");
+            utils.logInfo("SSO - error fetching login information from facebook");
           }
         }, true);
-      }, 2000);
-    break;
+      }, timeout);
+    break;ß
     case 'google':
       var profile = data.googleUserObject.getBasicProfile();
       email = profile.getEmail() || undefined;
