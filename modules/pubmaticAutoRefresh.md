@@ -142,7 +142,7 @@ pbjs.setConfig({
 
 - Do not refresh GPT ad slot if GPT creativeId = 1234, refer https://developers.google.com/publisher-tag/reference#googletag.events.slotrenderendedevent for `event` specification
 
-````
+```
 pbjs.setConfig({
     'pubmaticAutoRefresh': {
         enabled: true,
