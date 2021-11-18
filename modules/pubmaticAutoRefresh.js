@@ -90,6 +90,9 @@ let openWrapSetup = {
       window.googletag.pubads().refresh([gptSlot]);
     }
 
+    // remove old KVs
+    PWT.removeKeyValuePairsFromGPTSlots([gptSlot]);
+
     PWT.requestBids(
         PWT.generateConfForGPT([gptSlot]),
         function(adUnitsArray) {
