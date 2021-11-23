@@ -376,7 +376,7 @@ function init() {
       window.googletag.pubads().addEventListener('slotVisibilityChanged', gptSlotVisibilityChangedHandler);
     });
   } else {
-    logWarn(MODULE_NAME, 'is included but not enbaled.');
+    logWarn(MODULE_NAME, 'is included but not enabaled.');
   }
 }
 
