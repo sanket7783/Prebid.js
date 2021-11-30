@@ -323,9 +323,9 @@ function gptSlotVisibilityChangedHandler(event) {
       dsEntry['hasCounterStarted'] = true;
       dsEntry['counterStartedAt'] = timestamp();
       logMessage(MODULE_NAME, 'started the countdown to refresh slot', gptSlotName,
-        'after viewability confition is met. startCountdownWithMinimumViewabilityPercentage',
+        'after viewability condition is met. startCountdownWithMinimumViewabilityPercentage',
         slotConf.startCountdownWithMinimumViewabilityPercentage,
-        'inViewPercentage', dsEntry['inViewPercentage']);
+        ', inViewPercentage', dsEntry['inViewPercentage']);
       setTimeout(function() {
         refreshSlotIfNeeded(gptSlotName, gptSlot, dsEntry, slotConf);
       }, slotConf.countdownDuration);
