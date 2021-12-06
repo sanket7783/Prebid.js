@@ -91,15 +91,21 @@ let openWrapSetup = {
     }
 
     // remove old KVs
-    PWT.removeKeyValuePairsFromGPTSlots([gptSlot]);
-
-    PWT.requestBids(
-        PWT.generateConfForGPT([gptSlot]),
-        function(adUnitsArray) {
-            PWT.addKeyValuePairsToGPTSlots(adUnitsArray);
-            sendAdserverRequest();
-        }
-    );
+    if(isFn(PWT.removeKeyValuePairsFromGPTSlots) == true){
+      PWT.removeKeyValuePairsFromGPTSlots([gptSlot]);  
+    }
+    
+    if(isFn(PWT.requestBids) == true){
+      PWT.requestBids(
+          PWT.generateConfForGPT([gptSlot]),
+          function(adUnitsArray) {
+              PWT.addKeyValuePairsToGPTSlots(adUnitsArray);
+              sendAdserverRequest();
+          }
+      );  
+    } else {
+      sendAdserverRequest();
+    }    
 
     // to make sure we call sendAdserverRequest even when PrebidJS fails to execute bidsBackHandler
     setTimeout(sendAdserverRequest, pbjsAuctionTimeoutFromLastAuction + 100)
