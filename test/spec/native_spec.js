@@ -406,7 +406,7 @@ describe('native.js', function () {
       message: 'Prebid Native',
       action: 'assetRequest',
       adId: '123',
-      assets: ['pwt_native_body', 'pwt_native_image', 'pwt_native_linkurl'],
+      assets: ['hb_native_body', 'hb_native_image', 'hb_native_linkurl'],
     };
 
     const message = getAssetMessage(messageRequest, bid);

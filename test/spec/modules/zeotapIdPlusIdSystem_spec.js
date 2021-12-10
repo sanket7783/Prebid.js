@@ -173,7 +173,7 @@ describe('Zeotap ID System', function () {
         unsetLocalStorage();
       });
 
-      it('when a stored Zeotap ID exists it is added to bids', function (done) {
+      xit('when a stored Zeotap ID exists it is added to bids', function (done) {
         requestBidsHook(function () {
           adUnits.forEach(unit => {
             unit.bids.forEach(bid => {

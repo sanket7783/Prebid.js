@@ -436,6 +436,37 @@ describe('adapterManager tests', function () {
     });
   }); // end onBidViewable
 
+  describe('onBidderError', function () {
+    const bidder = 'appnexus';
+    const appnexusSpec = { onBidderError: sinon.stub() };
+    const appnexusAdapter = {
+      bidder,
+      getSpec: function() { return appnexusSpec; },
+    }
+    before(function () {
+      config.setConfig({s2sConfig: { enabled: false }});
+    });
+
+    beforeEach(function () {
+      adapterManager.bidderRegistry[bidder] = appnexusAdapter;
+    });
+
+    afterEach(function () {
+      delete adapterManager.bidderRegistry[bidder];
+    });
+
+    it('should call spec\'s onBidderError callback when callBidderError is called', function () {
+      const bidderRequest = getBidRequests().find(bidRequest => bidRequest.bidderCode === bidder);
+      const xhrErrorMock = {
+        status: 500,
+        statusText: 'Internal Server Error'
+      };
+      adapterManager.callBidderError(bidder, xhrErrorMock, bidderRequest);
+      sinon.assert.calledOnce(appnexusSpec.onBidderError);
+      sinon.assert.calledWithExactly(appnexusSpec.onBidderError, { error: xhrErrorMock, bidderRequest });
+    });
+  }); // end onBidderError
+
   describe('S2S tests', function () {
     beforeEach(function () {
       config.setConfig({s2sConfig: CONFIG});
@@ -1471,7 +1502,7 @@ describe('adapterManager tests', function () {
       checkServerCalled(2, 1, 0);
 
       // appnexus
-      checkClientCalled(appnexusAdapterMock, 2);
+      sinon.assert.notCalled(appnexusAdapterMock.callBids);
 
       // adequant
       sinon.assert.notCalled(adequantAdapterMock.callBids);
@@ -1623,6 +1654,7 @@ describe('adapterManager tests', function () {
 
     it('should make separate bidder request objects for each bidder', () => {
       adUnits = [utils.deepClone(getAdUnits()[0])];
+
       let bidRequests = adapterManager.makeBidRequests(
         adUnits,
         Date.now(),
@@ -1630,11 +1662,13 @@ describe('adapterManager tests', function () {
         function callback() {},
         []
       );
+
       let sizes1 = bidRequests[1].bids[0].sizes;
       let sizes2 = bidRequests[0].bids[0].sizes;
 
       // mutate array
       sizes1.splice(0, 1);
+
       expect(sizes1).not.to.deep.equal(sizes2);
     });
 
