@@ -91,15 +91,21 @@ let openWrapSetup = {
     }
 
     // remove old KVs
-    PWT.removeKeyValuePairsFromGPTSlots([gptSlot]);
-
-    PWT.requestBids(
-        PWT.generateConfForGPT([gptSlot]),
-        function(adUnitsArray) {
-            PWT.addKeyValuePairsToGPTSlots(adUnitsArray);
-            sendAdserverRequest();
-        }
-    );
+    if(isFn(PWT.removeKeyValuePairsFromGPTSlots) == true){
+      PWT.removeKeyValuePairsFromGPTSlots([gptSlot]);  
+    }
+    
+    if(isFn(PWT.requestBids) == true){
+      PWT.requestBids(
+          PWT.generateConfForGPT([gptSlot]),
+          function(adUnitsArray) {
+              PWT.addKeyValuePairsToGPTSlots(adUnitsArray);
+              sendAdserverRequest();
+          }
+      );  
+    } else {
+      sendAdserverRequest();
+    }    
 
     // to make sure we call sendAdserverRequest even when PrebidJS fails to execute bidsBackHandler
     setTimeout(sendAdserverRequest, pbjsAuctionTimeoutFromLastAuction + 100)
@@ -323,9 +329,9 @@ function gptSlotVisibilityChangedHandler(event) {
       dsEntry['hasCounterStarted'] = true;
       dsEntry['counterStartedAt'] = timestamp();
       logMessage(MODULE_NAME, 'started the countdown to refresh slot', gptSlotName,
-        'after viewability confition is met. startCountdownWithMinimumViewabilityPercentage',
+        'after viewability condition is met. startCountdownWithMinimumViewabilityPercentage',
         slotConf.startCountdownWithMinimumViewabilityPercentage,
-        'inViewPercentage', dsEntry['inViewPercentage']);
+        ', inViewPercentage', dsEntry['inViewPercentage']);
       setTimeout(function() {
         refreshSlotIfNeeded(gptSlotName, gptSlot, dsEntry, slotConf);
       }, slotConf.countdownDuration);
