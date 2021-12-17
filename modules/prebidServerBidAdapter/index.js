@@ -491,6 +491,7 @@ const OPEN_RTB_PROTOCOL = {
     let aliases = {};
     const firstBidRequest = bidRequests[0];
 
+
     // transform ad unit into array of OpenRTB impression objects
     let impIds = new Set();
     adUnits.forEach(adUnit => {
@@ -775,7 +776,31 @@ const OPEN_RTB_PROTOCOL = {
 
     if (!utils.isEmpty(aliases)) {
       request.ext.prebid.aliases = {...request.ext.prebid.aliases, ...aliases};
+      for(var bidder in request.ext.prebid.aliases) {
+        if(request.ext.prebid.aliases[bidder].includes('pubmatic')) {
+          request.ext.prebid.aliases[bidder] = 'pubmatic';
+        }
+      }
     }
+
+    // Updating request.ext.prebid.bidderparams wiid if present
+    var listOfPubMaticBidders = Object.keys(s2sConfig.extPrebid.bidderparams);
+    var pubMaticWiid;
+    if(listOfPubMaticBidders.length) {
+      var pubMaticBidderParams = adUnits[0].bids.filter(function(bid) {
+        if(bid.bidder == listOfPubMaticBidders[0]) {
+          return bid;
+        }
+      });
+      if(pubMaticBidderParams.length) {
+        pubMaticWiid = pubMaticBidderParams[0].params.wiid;
+      } 
+    }
+    listOfPubMaticBidders.forEach(function(bidder) {
+      if(request.ext.prebid.bidderparams[bidder]) {
+        request.ext.prebid.bidderparams[bidder]['wiid'] = pubMaticWiid;
+      }
+    })    
 
     const bidUserIdAsEids = utils.deepAccess(bidRequests, '0.bids.0.userIdAsEids');
     if (utils.isArray(bidUserIdAsEids) && bidUserIdAsEids.length > 0) {
