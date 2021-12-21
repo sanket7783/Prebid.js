@@ -3612,7 +3612,7 @@ describe('PubMatic adapter', function () {
               'h': 0,
               'dealId': 'ASEA-MS-KLY-TTD-DESKTOP-ID-VID-6S-030420',
               'ext': {
-                'BidType': 1
+                'bidtype': 1
               }
             }],
             'ext': {
@@ -3857,7 +3857,7 @@ describe('PubMatic adapter', function () {
               'h': 0,
               'dealId': 'ASEA-MS-KLY-TTD-DESKTOP-ID-VID-6S-030420',
               'ext': {
-                'BidType': 1
+                'bidtype': 1
               }
             }],
             'ext': {
