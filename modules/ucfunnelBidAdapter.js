@@ -1,8 +1,8 @@
+import { generateUUID, _each } from '../src/utils.js';
 import {registerBidder} from '../src/adapters/bidderFactory.js';
 import {BANNER, VIDEO, NATIVE} from '../src/mediaTypes.js';
 import { getStorageManager } from '../src/storageManager.js';
 import { config } from '../src/config.js';
-import * as utils from '../src/utils.js';
 const storage = getStorageManager();
 const COOKIE_NAME = 'ucf_uid';
 const VER = 'ADGENT_PREBID-2018011501';
@@ -283,33 +283,7 @@ function getRequestData(bid, bidderRequest) {
       ucfUid = storage.getCookie(COOKIE_NAME);
       bidData.ucfUid = ucfUid;
     } else {
-      ucfUid = utils.generateUUID();
-      bidData.ucfUid = ucfUid;
-      storage.setCookie(COOKIE_NAME, ucfUid);
-    }
-  }
-
-  try {
-    bidData.host = window.top.location.hostname;
-    bidData.u = window.top.location.href;
-    bidData.xr = 0;
-  } catch (e) {
-    bidData.host = window.location.hostname;
-    bidData.u = document.referrer || window.location.href;
-    bidData.xr = 1;
-  }
-
-  if (window.location.ancestorOrigins && window.location.ancestorOrigins.length > 0) {
-    bidData.ao = window.location.ancestorOrigins[window.location.ancestorOrigins.length - 1];
-  }
-
-  if (storage.cookiesAreEnabled()) {
-    let ucfUid = '';
-    if (storage.getCookie(COOKIE_NAME) != undefined) {
-      ucfUid = storage.getCookie(COOKIE_NAME);
-      bidData.ucfUid = ucfUid;
-    } else {
-      ucfUid = utils.generateUUID();
+      ucfUid = generateUUID();
       bidData.ucfUid = ucfUid;
       storage.setCookie(COOKIE_NAME, ucfUid);
     }
@@ -361,16 +335,8 @@ function getRequestData(bid, bidderRequest) {
 
 function addUserId(bidData, userId) {
   bidData['eids'] = '';
-  utils._each(userId, (userIdObjectOrValue, userIdProviderKey) => {
+  _each(userId, (userIdObjectOrValue, userIdProviderKey) => {
     switch (userIdProviderKey) {
-      case 'sharedid':
-        if (userIdObjectOrValue.id) {
-          bidData[userIdProviderKey + '_id'] = userIdObjectOrValue.id;
-        }
-        if (userIdObjectOrValue.third) {
-          bidData[userIdProviderKey + '_third'] = userIdObjectOrValue.third;
-        }
-        break;
       case 'haloId':
         if (userIdObjectOrValue.haloId) {
           bidData[userIdProviderKey + 'haloId'] = userIdObjectOrValue.haloId;

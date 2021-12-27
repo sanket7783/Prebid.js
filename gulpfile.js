@@ -1,30 +1,31 @@
 /* eslint-disable no-console */
 'use strict';
-console.time('Loading Plugins in Prebid');
+
+var _ = require('lodash');
 var argv = require('yargs').argv;
 var gulp = require('gulp');
-// var gutil = require('gulp-util');
-// var connect = require('gulp-connect');
-// var webpack = require('webpack');
-// var webpackStream = require('webpack-stream');
-// var uglify = require('gulp-uglify');
-// var gulpClean = require('gulp-clean');
-// var KarmaServer = require('karma').Server;
-// var karmaConfMaker = require('./karma.conf.maker');
-// var opens = require('opn');
-// var webpackConfig = require('./webpack.conf');
-// var helpers = require('./gulpHelpers');
+var gutil = require('gulp-util');
+var connect = require('gulp-connect');
+var webpack = require('webpack');
+var webpackStream = require('webpack-stream');
+var terser = require('gulp-terser');
+var gulpClean = require('gulp-clean');
+var KarmaServer = require('karma').Server;
+var karmaConfMaker = require('./karma.conf.maker.js');
+var opens = require('opn');
+var webpackConfig = require('./webpack.conf.js');
+var helpers = require('./gulpHelpers.js');
 var concat = require('gulp-concat');
-// var header = require('gulp-header');
-// var footer = require('gulp-footer');
+var header = require('gulp-header');
+var footer = require('gulp-footer');
 var replace = require('gulp-replace');
-// var shell = require('gulp-shell');
-// var eslint = require('gulp-eslint');
-// var gulpif = require('gulp-if');
-// var sourcemaps = require('gulp-sourcemaps');
-// var through = require('through2');
-// var fs = require('fs');
-// var jsEscape = require('gulp-js-escape');
+var shell = require('gulp-shell');
+var eslint = require('gulp-eslint');
+var gulpif = require('gulp-if');
+var sourcemaps = require('gulp-sourcemaps');
+var through = require('through2');
+var fs = require('fs');
+var jsEscape = require('gulp-js-escape');
 const path = require('path');
 const execa = require('execa');
 
@@ -32,7 +33,6 @@ var prebid = require('./package.json');
 var dateString = 'Updated : ' + (new Date()).toISOString().substring(0, 10);
 var banner = '/* <%= prebid.name %> v<%= prebid.version %>\n' + dateString + '*/\n';
 var port = 9999;
-console.timeEnd('Loading Plugins in Prebid');
 const FAKE_SERVER_HOST = argv.host ? argv.host : 'localhost';
 const FAKE_SERVER_PORT = 4444;
 const { spawn } = require('child_process');
@@ -49,7 +49,6 @@ function bundleToStdout() {
 bundleToStdout.displayName = 'bundle-to-stdout';
 
 function clean() {
-  var gulpClean = require('gulp-clean');
   return gulp.src(['build'], {
     read: false,
     allowEmpty: true
@@ -59,8 +58,6 @@ function clean() {
 
 // Dependant task for building postbid. It escapes postbid-config file.
 function escapePostbidConfig() {
-  var jsEscape = require('gulp-js-escape');
-
   gulp.src('./integrationExamples/postbid/oas/postbid-config.js')
     .pipe(jsEscape())
     .pipe(gulp.dest('build/postbid/'));
@@ -68,16 +65,19 @@ function escapePostbidConfig() {
 escapePostbidConfig.displayName = 'escape-postbid-config';
 
 function lint(done) {
-  var eslint = require('gulp-eslint');
-  var gulpif = require('gulp-if');
-
   if (argv.nolint) {
     return done();
   }
   const isFixed = function (file) {
     return file.eslint != null && file.eslint.fixed;
   }
-  return gulp.src(['src/**/*.js', 'modules/**/*.js', 'test/**/*.js'], { base: './' })
+  return gulp.src([
+    'src/**/*.js',
+    'modules/**/*.js',
+    'test/**/*.js',
+    'plugins/**/*.js',
+    './*.js'
+  ], { base: './' })
     .pipe(gulpif(argv.nolintfix, eslint(), eslint({ fix: true })))
     .pipe(eslint.format('stylish'))
     .pipe(eslint.failAfterError())
@@ -86,9 +86,6 @@ function lint(done) {
 
 // View the code coverage report in the browser.
 function viewCoverage(done) {
-  var connect = require('gulp-connect');
-  var opens = require('opn');
-
   var coveragePort = 1999;
   var mylocalhost = (argv.host) ? argv.host : 'localhost';
 
@@ -119,8 +116,6 @@ viewReview.displayName = 'view-review';
 
 // Watch Task with Live Reload
 function watch(done) {
-  var connect = require('gulp-connect');
-
   var mainWatcher = gulp.watch([
     'src/**/*.js',
     'modules/**/*.js',
@@ -152,13 +147,6 @@ function makeModuleList(modules) {
 }
 
 function makeDevpackPkg() {
-  var _ = require('lodash');
-  var connect = require('gulp-connect');
-  var webpack = require('webpack');
-  var webpackStream = require('webpack-stream');
-  var webpackConfig = require('./webpack.conf');
-  var helpers = require('./gulpHelpers');
-
   var cloned = _.cloneDeep(webpackConfig);
   cloned.devtool = 'source-map';
   var externalModules = helpers.getArgModules();
@@ -175,15 +163,6 @@ function makeDevpackPkg() {
 }
 
 function makeWebpackPkg() {
-  var _ = require('lodash');
-  var webpack = require('webpack');
-  var webpackStream = require('webpack-stream');
-  var uglify = require('gulp-uglify');
-  var webpackConfig = require('./webpack.conf');
-  var helpers = require('./gulpHelpers');
-  var header = require('gulp-header');
-  var gulpif = require('gulp-if');
-
   var cloned = _.cloneDeep(webpackConfig);
   delete cloned.devtool;
 
@@ -195,7 +174,7 @@ function makeWebpackPkg() {
   return gulp.src([].concat(moduleSources, analyticsSources, 'src/prebid.js'))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
-    .pipe(uglify())
+    .pipe(terser())
     .pipe(replace(/('|")v\$prebid\.modulesList\$('|")/g, makeModuleList(externalModules)))
     .pipe(gulpif(file => file.basename === 'prebid-core.js', header(banner, { prebid: prebid })))
     .pipe(gulp.dest('build/dist'));
@@ -210,8 +189,6 @@ function gulpBundle(dev) {
 }
 
 function nodeBundle(modules) {
-  var through = require('through2');
-
   return new Promise((resolve, reject) => {
     bundle(false, modules)
       .on('error', (err) => {
@@ -225,17 +202,9 @@ function nodeBundle(modules) {
 }
 
 function bundle(dev, moduleArr) {
-  // console.time('Loading Plugins for Prebid');
-  var _ = require('lodash');
-  var gutil = require('gulp-util');
-  var helpers = require('./gulpHelpers');
-  var footer = require('gulp-footer');
-  var gulpif = require('gulp-if');
-  var sourcemaps = require('gulp-sourcemaps');
   var modules = moduleArr || helpers.getArgModules();
   var allModules = helpers.getModuleNames(modules);
-  // console.timeEnd('Loading Plugins for Prebid');
-  // console.time('Getting Modules for Prebid');
+
   if (modules.length === 0) {
     modules = allModules.filter(module => explicitModules.indexOf(module) === -1);
   } else {
@@ -247,8 +216,7 @@ function bundle(dev, moduleArr) {
       });
     }
   }
-  // console.timeEnd('Getting Modules for Prebid');
-  // console.time('Concating Starts');
+
   var entries = [helpers.getBuiltPrebidCoreFile(dev)].concat(helpers.getBuiltModules(dev, modules));
 
   var outputFileName = argv.bundleName ? argv.bundleName : 'prebid.js';
@@ -258,10 +226,10 @@ function bundle(dev, moduleArr) {
     outputFileName = outputFileName.replace(/\.js$/, `.${argv.tag}.js`);
   }
 
-  // gutil.log('Concatenating files:\n', entries);
-  // gutil.log('Appending ' + prebid.globalVarName + '.processQueue();');
-  // gutil.log('Generating bundle:', outputFileName);
-  // console.timeEnd('Concating Starts');
+  gutil.log('Concatenating files:\n', entries);
+  gutil.log('Appending ' + prebid.globalVarName + '.processQueue();');
+  gutil.log('Generating bundle:', outputFileName);
+
   return gulp.src(
     entries
   )
@@ -287,10 +255,6 @@ function bundle(dev, moduleArr) {
 // If --notest is given, it will immediately skip the test task (useful for developing changes with `gulp serve --notest`)
 
 function test(done) {
-  var KarmaServer = require('karma').Server;
-  var karmaConfMaker = require('./karma.conf.maker');
-  var helpers = require('./gulpHelpers');
-
   if (argv.notest) {
     done();
   } else if (argv.e2e) {
@@ -362,15 +326,10 @@ function newKarmaCallback(done) {
 
 // If --file "<path-to-test-file>" is given, the task will only run tests in the specified file.
 function testCoverage(done) {
-  var KarmaServer = require('karma').Server;
-  var karmaConfMaker = require('./karma.conf.maker');
-
   new KarmaServer(karmaConfMaker(true, false, false, argv.file), newKarmaCallback(done)).start();
 }
 
 function coveralls() { // 2nd arg is a dependency: 'test' must be finished
-  var shell = require('gulp-shell');
-
   // first send results of istanbul's test coverage to coveralls.io.
   return gulp.src('gulpfile.js', { read: false }) // You have to give it a file, but you don't
     // have to read it.
@@ -381,8 +340,6 @@ function coveralls() { // 2nd arg is a dependency: 'test' must be finished
 // More info can be found here http://prebid.org/overview/what-is-post-bid.html
 
 function buildPostbid() {
-  var fs = require('fs');
-
   var fileContent = fs.readFileSync('./build/postbid/postbid-config.js', 'utf8');
 
   return gulp.src('./integrationExamples/postbid/oas/postbid.js')
@@ -391,8 +348,6 @@ function buildPostbid() {
 }
 
 function setupE2e(done) {
-  var gutil = require('gulp-util');
-
   if (!argv.host) {
     throw new gutil.PluginError({
       plugin: 'E2E test',
