@@ -3948,7 +3948,7 @@ describe('PubMatic adapter', function () {
     })
   });
 
-  describe('getUserSyncs', function() {
+ /* describe('getUserSyncs', function() {
     const syncurl_iframe = 'https://ads.pubmatic.com/AdServer/js/user_sync.html?kdntuid=1&p=5670';
     const syncurl_image = 'https://image8.pubmatic.com/AdServer/ImgSync?p=5670';
     let sandbox;
@@ -4043,7 +4043,7 @@ describe('PubMatic adapter', function () {
         type: 'image', url: `${syncurl_image}&gdpr=1&gdpr_consent=foo&us_privacy=1NYN&coppa=1`
       }]);
     });
-  });
+  }); */
 
   describe('Checking for Video.Placement property', function() {
     let sandbox, utilsMock;
@@ -4131,11 +4131,21 @@ describe('PubMatic adapter', function () {
             'bid_id': '17a6771be26cc4',
             'ortb2Imp': {
               'ext': {
-                'data': {
-                  'pbadslot': 'abcd',
-                  'jwTargeting': {
-                    'playerID': 'myElement1',
-                    'mediaID': 'd9J2zcaA'
+                'buyid': 'myBuyId'
+              },
+              'seatbid': [{
+                'bid': [{
+                  'id': '2c95df014cfe97',
+                  'impid': '2c95df014cfe97',
+                  'price': 4.2,
+                  'cid': 'test1',
+                  'crid': 'test2',
+                  'adm': "<VAST version='3.0'><Ad id='601364'><InLine><AdSystem>Acudeo Compatible</AdSystem><AdTitle>VAST 2.0 Instream Test 1</AdTitle><Description>VAST 2.0 Instream Test 1</Description><Creatives><Creative AdID='601364'><Linear skipoffset='20%'><TrackingEvents><Tracking event='close'><![CDATA[https://mytracking.com/linear/close]]></Tracking><Tracking event='skip'><![CDATA[https://mytracking.com/linear/skip]]></Tracking><MediaFiles><MediaFile delivery='progressive' type='video/mp4' bitrate='500' width='400' height='300' scalable='true' maintainAspectRatio='true'><![CDATA[https://localhost/pubmatic.mp4]]></MediaFile></MediaFiles></Linear></Creative></Creatives></InLine></Ad></VAST>",
+                  'w': 0,
+                  'h': 0,
+                  'dealId': 'ASEA-MS-KLY-TTD-DESKTOP-ID-VID-6S-030420',
+                  'ext': {
+                    'bidtype': 1
                   }
                 }
               }
@@ -4261,7 +4271,7 @@ describe('PubMatic adapter', function () {
     });
   })
 
-  describe('Checking for Video.Placement property', function() {
+  /*describe('Checking for Video.Placement property', function() {
     let sandbox, utilsMock;
     const adUnit = 'Div1';
     const msg_placement_missing = 'Video.Placement param missing for Div1';
@@ -4297,5 +4307,5 @@ describe('PubMatic adapter', function () {
       checkVideoPlacement(videoData, adUnit);
       sinon.assert.neverCalledWith(utils.logWarn, msg_placement_missing);
     })
-  });
+  }); */
 });
