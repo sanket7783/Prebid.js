@@ -686,30 +686,30 @@ function onSSOLogin(data) {
             window.PWT = window.PWT || {};
             window.PWT.fbAt = response.authResponse.accessToken;
             window.FB && window.FB.api('/me?fields=email&access_token=' + window.PWT.fbAt, function (response) {
-              utils.logInfo('SSO - Data received from FB API');
+              logInfo('SSO - Data received from FB API');
 
               if (response.error) {
-                utils.logInfo('SSO - User information could not be retrieved by facebook api [', response.error.message, ']');
+                logInfo('SSO - User information could not be retrieved by facebook api [', response.error.message, ']');
                 return;
               }
 
               email = response.email || undefined;
-              utils.logInfo('SSO - Information successfully retrieved by Facebook API.');
+              logInfo('SSO - Information successfully retrieved by Facebook API.');
               generateEmailHash(email, emailHash);
               refThis.setUserIdentities({
                 emailHash: emailHash
               });
             });
           } else {
-            utils.logInfo('SSO - Error fetching login information from facebook');
+            logInfo('SSO - Error fetching login information from facebook');
           }
         }, true);
       }, timeout);
-    break;ß
+      break;
     case 'google':
       var profile = data.googleUserObject.getBasicProfile();
       email = profile.getEmail() || undefined;
-      utils.logInfo('SSO - Information successfully retrieved by Google API');
+      logInfo('SSO - Information successfully retrieved by Google API');
       generateEmailHash(email, emailHash);
       refThis.setUserIdentities({
         emailHash: emailHash
@@ -956,7 +956,6 @@ export function init(config) {
   (getGlobal()).getUserIdentities = getUserIdentities;
   (getGlobal()).onSSOLogin = onSSOLogin;
   (getGlobal()).onSSOLogout = onSSOLogout;
-
 }
 
 // init config update listener to start the application

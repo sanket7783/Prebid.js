@@ -28,7 +28,7 @@ let beforeRequestBidsHandlerAdded = false;
 let pbjsAuctionTimeoutFromLastAuction;
 let excludedGptSlotNames = {};
 let pbjsAdUnits = {};
-
+let PWT = window.PWT || {};
 let pbjsSetup = {
   callbackFunction: function(gptSlotName, gptSlot, pbjsAdUnit, KeyValuePairs) {
     // todo: pick only required fields from the pbjsAdUnit
@@ -91,21 +91,21 @@ let openWrapSetup = {
     }
 
     // remove old KVs
-    if(isFn(PWT.removeKeyValuePairsFromGPTSlots) == true){
-      PWT.removeKeyValuePairsFromGPTSlots([gptSlot]);  
+    if (isFn(PWT.removeKeyValuePairsFromGPTSlots) == true) {
+      PWT.removeKeyValuePairsFromGPTSlots([gptSlot]);
     }
-    
-    if(isFn(PWT.requestBids) == true){
+
+    if (isFn(PWT.requestBids) == true) {
       PWT.requestBids(
-          PWT.generateConfForGPT([gptSlot]),
-          function(adUnitsArray) {
-              PWT.addKeyValuePairsToGPTSlots(adUnitsArray);
-              sendAdserverRequest();
-          }
-      );  
+        PWT.generateConfForGPT([gptSlot]),
+        function(adUnitsArray) {
+          PWT.addKeyValuePairsToGPTSlots(adUnitsArray);
+          sendAdserverRequest();
+        }
+      );
     } else {
       sendAdserverRequest();
-    }    
+    }
 
     // to make sure we call sendAdserverRequest even when PrebidJS fails to execute bidsBackHandler
     setTimeout(sendAdserverRequest, pbjsAuctionTimeoutFromLastAuction + 100)
@@ -230,7 +230,7 @@ function refreshSlotIfNeeded(gptSlotName, gptSlot, dsEntry, slotConf) {
   }
 
   // find the pbjsAdUnit and pass it
-  let pbjsAdUnit = find( Object.keys(pbjsAdUnits).map(code => pbjsAdUnits[code]) ,
+  let pbjsAdUnit = find(Object.keys(pbjsAdUnits).map(code => pbjsAdUnits[code]),
     pbjsAU => slotConf.gptSlotToPbjsAdUnitMapFunction(gptSlotName, gptSlot, pbjsAU)
   ) || null;
 

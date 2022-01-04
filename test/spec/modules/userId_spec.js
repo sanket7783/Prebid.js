@@ -2568,7 +2568,6 @@ describe('User ID', function () {
         return { 'getEmail': getEmail }
       }
       var dummyGoogleUserObject = { 'getBasicProfile': getBasicProfile }
-      console.log('***************** window.PWT = ', window.PWT);
       window.PWT = window.PWT || {};
       window.PWT.ssoEnabled = true;
       expect(typeof (getGlobal()).onSSOLogin).to.equal('function');
