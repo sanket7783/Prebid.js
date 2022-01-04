@@ -3948,103 +3948,6 @@ describe('PubMatic adapter', function () {
     })
   });
 
- /* describe('getUserSyncs', function() {
-    const syncurl_iframe = 'https://ads.pubmatic.com/AdServer/js/user_sync.html?kdntuid=1&p=5670';
-    const syncurl_image = 'https://image8.pubmatic.com/AdServer/ImgSync?p=5670';
-    let sandbox;
-    beforeEach(function () {
-      sandbox = sinon.sandbox.create();
-    });
-    afterEach(function() {
-      sandbox.restore();
-    });
-
-    it('execute as per config', function() {
-      expect(spec.getUserSyncs({ iframeEnabled: true }, {}, undefined, undefined)).to.deep.equal([{
-        type: 'iframe', url: syncurl_iframe
-      }]);
-      expect(spec.getUserSyncs({ iframeEnabled: false }, {}, undefined, undefined)).to.deep.equal([{
-        type: 'image', url: syncurl_image
-      }]);
-    });
-
-    it('CCPA/USP', function() {
-      expect(spec.getUserSyncs({ iframeEnabled: true }, {}, undefined, '1NYN')).to.deep.equal([{
-        type: 'iframe', url: `${syncurl_iframe}&us_privacy=1NYN`
-      }]);
-      expect(spec.getUserSyncs({ iframeEnabled: false }, {}, undefined, '1NYN')).to.deep.equal([{
-        type: 'image', url: `${syncurl_image}&us_privacy=1NYN`
-      }]);
-    });
-
-    it('GDPR', function() {
-      expect(spec.getUserSyncs({ iframeEnabled: true }, {}, {gdprApplies: true, consentString: 'foo'}, undefined)).to.deep.equal([{
-        type: 'iframe', url: `${syncurl_iframe}&gdpr=1&gdpr_consent=foo`
-      }]);
-      expect(spec.getUserSyncs({ iframeEnabled: true }, {}, {gdprApplies: false, consentString: 'foo'}, undefined)).to.deep.equal([{
-        type: 'iframe', url: `${syncurl_iframe}&gdpr=0&gdpr_consent=foo`
-      }]);
-      expect(spec.getUserSyncs({ iframeEnabled: true }, {}, {gdprApplies: true, consentString: undefined}, undefined)).to.deep.equal([{
-        type: 'iframe', url: `${syncurl_iframe}&gdpr=1&gdpr_consent=`
-      }]);
-
-      expect(spec.getUserSyncs({ iframeEnabled: false }, {}, {gdprApplies: true, consentString: 'foo'}, undefined)).to.deep.equal([{
-        type: 'image', url: `${syncurl_image}&gdpr=1&gdpr_consent=foo`
-      }]);
-      expect(spec.getUserSyncs({ iframeEnabled: false }, {}, {gdprApplies: false, consentString: 'foo'}, undefined)).to.deep.equal([{
-        type: 'image', url: `${syncurl_image}&gdpr=0&gdpr_consent=foo`
-      }]);
-      expect(spec.getUserSyncs({ iframeEnabled: false }, {}, {gdprApplies: true, consentString: undefined}, undefined)).to.deep.equal([{
-        type: 'image', url: `${syncurl_image}&gdpr=1&gdpr_consent=`
-      }]);
-    });
-
-    it('COPPA: true', function() {
-      sandbox.stub(config, 'getConfig').callsFake(key => {
-        const config = {
-          'coppa': true
-        };
-        return config[key];
-      });
-      expect(spec.getUserSyncs({ iframeEnabled: true }, {}, undefined, undefined)).to.deep.equal([{
-        type: 'iframe', url: `${syncurl_iframe}&coppa=1`
-      }]);
-      expect(spec.getUserSyncs({ iframeEnabled: false }, {}, undefined, undefined)).to.deep.equal([{
-        type: 'image', url: `${syncurl_image}&coppa=1`
-      }]);
-    });
-
-    it('COPPA: false', function() {
-      sandbox.stub(config, 'getConfig').callsFake(key => {
-        const config = {
-          'coppa': false
-        };
-        return config[key];
-      });
-      expect(spec.getUserSyncs({ iframeEnabled: true }, {}, undefined, undefined)).to.deep.equal([{
-        type: 'iframe', url: `${syncurl_iframe}`
-      }]);
-      expect(spec.getUserSyncs({ iframeEnabled: false }, {}, undefined, undefined)).to.deep.equal([{
-        type: 'image', url: `${syncurl_image}`
-      }]);
-    });
-
-    it('GDPR + COPPA:true + CCPA/USP', function() {
-      sandbox.stub(config, 'getConfig').callsFake(key => {
-        const config = {
-          'coppa': true
-        };
-        return config[key];
-      });
-      expect(spec.getUserSyncs({ iframeEnabled: true }, {}, {gdprApplies: true, consentString: 'foo'}, '1NYN')).to.deep.equal([{
-        type: 'iframe', url: `${syncurl_iframe}&gdpr=1&gdpr_consent=foo&us_privacy=1NYN&coppa=1`
-      }]);
-      expect(spec.getUserSyncs({ iframeEnabled: false }, {}, {gdprApplies: true, consentString: 'foo'}, '1NYN')).to.deep.equal([{
-        type: 'image', url: `${syncurl_image}&gdpr=1&gdpr_consent=foo&us_privacy=1NYN&coppa=1`
-      }]);
-    });
-  }); */
-
   describe('Checking for Video.Placement property', function() {
     let sandbox, utilsMock;
     const adUnit = 'Div1';
@@ -4147,8 +4050,8 @@ describe('PubMatic adapter', function () {
                   'ext': {
                     'bidtype': 1
                   }
-                }
-              }
+                }]
+              }]
             }
           }
         ],
@@ -4270,42 +4173,4 @@ describe('PubMatic adapter', function () {
       expect(bidRequests[0].params.dctr).to.equal('key1:val1,val2|key2:val1');
     });
   })
-
-  /*describe('Checking for Video.Placement property', function() {
-    let sandbox, utilsMock;
-    const adUnit = 'Div1';
-    const msg_placement_missing = 'Video.Placement param missing for Div1';
-    let videoData = {
-      battr: [6, 7],
-      skipafter: 15,
-      maxduration: 50,
-      context: 'instream',
-      playerSize: [640, 480],
-      skip: 0,
-      connectiontype: [1, 2, 6],
-      skipmin: 10,
-      minduration: 10,
-      mimes: ['video/mp4', 'video/x-flv'],
-    }
-    beforeEach(() => {
-      utilsMock = sinon.mock(utils);
-      sandbox = sinon.sandbox.create();
-      sandbox.spy(utils, 'logWarn');
-    });
-
-    afterEach(() => {
-      utilsMock.restore();
-      sandbox.restore();
-    })
-
-    it('should log Video.Placement param missing', function() {
-      checkVideoPlacement(videoData, adUnit);
-      sinon.assert.calledWith(utils.logWarn, msg_placement_missing);
-    })
-    it('shoud not log Video.Placement param missing', function() {
-      videoData['placement'] = 1;
-      checkVideoPlacement(videoData, adUnit);
-      sinon.assert.neverCalledWith(utils.logWarn, msg_placement_missing);
-    })
-  }); */
 });

@@ -881,7 +881,7 @@ function _checkMediaType(bid, newBid) {
   if (bid.ext && bid.ext['bidtype'] != undefined) {
     newBid.mediaType = MEDIATYPE[bid.ext.bidtype];
   } else {
-    utils.logInfo(LOG_WARN_PREFIX + 'bid.ext.bidtype does not exist, checking alternatively for mediaType')
+    logInfo(LOG_WARN_PREFIX + 'bid.ext.bidtype does not exist, checking alternatively for mediaType')
     var adm = bid.adm;
     var admStr = '';
     var videoRegex = new RegExp(/VAST\s+version/);
