@@ -226,9 +226,11 @@ function getUpdatedKGPVForVideo(kgpv, bidResponse) {
 }
 
 function getAdapterNameForAlias(aliasName) {
+  // This condition  is OpenWrap specific, not to contribute to Prebid
   if (window.PWT && isFn(window.PWT.getAdapterNameForAlias)) {
     return window.PWT.getAdapterNameForAlias(aliasName)
   }
+  // Fallback mechanism which is conrtibuted to Prebid
   return adapterManager.aliasRegistry[aliasName] || aliasName;
 }
 
