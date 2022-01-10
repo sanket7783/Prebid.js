@@ -238,7 +238,7 @@ function getAdDomain(bidResponse) {
         return hostname.hostname.replace('www.', '');
       } catch (e) {
         logWarn(LOG_PRE_FIX + 'Adomain URL (Not a proper URL):', adomain);
-        return adomain.replace('www.', '');
+        return adomain.split('/')[0].replace('www.', '');
       }
     }
   }
