@@ -230,7 +230,7 @@ function getAdapterNameForAlias(aliasName) {
 }
 
 function getAdDomain(bidResponse) {
-  if (bidResponse.meta && bidResponse.meta.advertiserDomains) {
+  if (bidResponse.meta && bidResponse.meta.advertiserDomains && bidResponse.meta.advertiserDomains.length > 0) {
     let adomain = bidResponse.meta.advertiserDomains[0]
     if (adomain) {
       try {

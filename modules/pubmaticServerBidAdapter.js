@@ -664,7 +664,10 @@ export const spec = {
                         cpm: (parseFloat(summary.bid) || 0).toFixed(2),
                         serverSideResponseTime: partnerResponseTimeObj[summary.bidder] || 0,
                         mi: miObj.hasOwnProperty(summary.bidder) ? miObj[summary.bidder] : UNDEFINED,
-                        regexPattern: summary.regex || undefined
+                        regexPattern: summary.regex || undefined,
+                        meta: {
+                          advertiserDomains: (bid.adomain && bid.adomain.length > 0) ? bid.adomain : undefined
+                        }
                       }
                       if (bid.ext.crtype) {
                         switch (bid.ext.crtype) {
