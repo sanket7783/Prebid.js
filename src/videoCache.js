@@ -61,10 +61,7 @@ function wrapURI(uri, impUrl) {
  */
 function toStorageRequest(bid) {
   let vastValue = bid.vastXml ? bid.vastXml : wrapURI(bid.vastUrl, bid.vastImpUrl);
-  /* istanbul ignore next */
-  if (window && window.PWT) {
-    vastValue = window.PWT.UpdateVastWithTracker(bid, vastValue);
-  }
+
   let payload = {
     type: 'xml',
     value: vastValue,
