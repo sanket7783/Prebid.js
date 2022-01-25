@@ -1,4 +1,4 @@
-import { _each, pick, logWarn, isStr, isArray, logError } from '../src/utils.js';
+import { _each, pick, logWarn, isStr, isArray, logError, isFn } from '../src/utils.js';
 import adapter from '../src/AnalyticsAdapter.js';
 import adapterManager from '../src/adapterManager.js';
 import CONSTANTS from '../src/constants.json';
@@ -226,6 +226,11 @@ function getUpdatedKGPVForVideo(kgpv, bidResponse) {
 }
 
 function getAdapterNameForAlias(aliasName) {
+  // This condition  is OpenWrap specific, not to contribute to Prebid
+  if (window.PWT && isFn(window.PWT.getAdapterNameForAlias)) {
+    return window.PWT.getAdapterNameForAlias(aliasName)
+  }
+  // Fallback mechanism which is conrtibuted to Prebid
   return adapterManager.aliasRegistry[aliasName] || aliasName;
 }
 
