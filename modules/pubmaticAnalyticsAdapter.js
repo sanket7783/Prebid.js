@@ -1,4 +1,4 @@
-import { _each, pick, logWarn, isStr, isArray, logError } from '../src/utils.js';
+import { _each, pick, logWarn, isStr, isArray, logError, isFn } from '../src/utils.js';
 import adapter from '../src/AnalyticsAdapter.js';
 import adapterManager from '../src/adapterManager.js';
 import CONSTANTS from '../src/constants.json';
@@ -226,7 +226,27 @@ function getUpdatedKGPVForVideo(kgpv, bidResponse) {
 }
 
 function getAdapterNameForAlias(aliasName) {
+  // This condition  is OpenWrap specific, not to contribute to Prebid
+  if (window.PWT && isFn(window.PWT.getAdapterNameForAlias)) {
+    return window.PWT.getAdapterNameForAlias(aliasName)
+  }
+  // Fallback mechanism which is conrtibuted to Prebid
   return adapterManager.aliasRegistry[aliasName] || aliasName;
+}
+
+function getAdDomain(bidResponse) {
+  if (bidResponse.meta && bidResponse.meta.advertiserDomains && bidResponse.meta.advertiserDomains.length > 0) {
+    let adomain = bidResponse.meta.advertiserDomains[0]
+    if (adomain) {
+      try {
+        let hostname = (new URL(adomain));
+        return hostname.hostname.replace('www.', '');
+      } catch (e) {
+        logWarn(LOG_PRE_FIX + 'Adomain URL (Not a proper URL):', adomain);
+        return adomain.split('/')[0].replace('www.', '');
+      }
+    }
+  }
 }
 
 function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
@@ -247,6 +267,7 @@ function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
       'dc': bid.bidResponse ? (bid.bidResponse.dealChannel || EMPTY_STRING) : EMPTY_STRING,
       'l1': bid.bidResponse ? bid.clientLatencyTimeMs : 0,
       'l2': 0,
+      'adv': bid.bidResponse ? getAdDomain(bid.bidResponse) || undefined : undefined,
       'ss': (s2sBidders.indexOf(bid.bidder) > -1) ? 1 : 0,
       't': (bid.status == ERROR && bid.error.code == TIMEOUT_ERROR) ? 1 : 0,
       'wb': (highestBid && highestBid.adId === bid.bidId ? 1 : 0),
