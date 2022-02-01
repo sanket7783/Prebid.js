@@ -76,6 +76,60 @@ const REQUEST = {
   ]
 };
 
+const REQUEST_PUBMATIC = {
+  'account_id': '1',
+  'tid': '437fbbf5-33f5-487a-8e16-a7112903cfe5',
+  'max_bids': 1,
+  'timeout_millis': 1000,
+  'secure': 0,
+  'url': '',
+  'prebid_version': '0.30.0-pre',
+  's2sConfig': CONFIG,
+  'ad_units': [
+    {
+      'code': 'div-gpt-ad-1460505748561-0',
+      'sizes': [[300, 250], [300, 600]],
+      'mediaTypes': {
+        'banner': {
+          'sizes': [[300, 250], [300, 300]]
+        },
+        'native': {
+          'title': {
+            'required': true,
+            'len': 800
+          },
+          'image': {
+            'required': true,
+            'sizes': [989, 742],
+          },
+          'icon': {
+            'required': true,
+            'aspect_ratios': [{
+              'min_height': 10,
+              'min_width': 10,
+              'ratio_height': 1,
+              'ratio_width': 1
+            }]
+          },
+          'sponsoredBy': {
+            'required': true
+          }
+        }
+      },
+      'transactionId': '4ef956ad-fd83-406d-bd35-e4bb786ab86c',
+      'bids': [
+        {
+          'bid_id': '123',
+          'bidder': 'pubmatic2',
+          'params': {
+            'wiid': '1234567890'
+          }
+        }
+      ]
+    }
+  ]
+};
+
 const VIDEO_REQUEST = {
   'account_id': '1',
   'tid': '437fbbf5-33f5-487a-8e16-a7112903cfe5',
@@ -514,7 +568,6 @@ describe('S2S Adapter', function () {
 
       let badCfgRequest = utils.deepClone(REQUEST);
       badCfgRequest.s2sConfig = badConfig;
-
       adapter.callBids(badCfgRequest, BID_REQUESTS, addBidResponse, done, ajax);
 
       expect(server.requests.length).to.equal(0);
@@ -1148,6 +1201,33 @@ describe('S2S Adapter', function () {
       });
     });
 
+    it('adds pubmatic2 aliases to request', function () {
+      config.setConfig({ s2sConfig: CONFIG });
+
+      const aliasBidder = {
+        bidder: 'pubmatic2',
+        params: { placementId: '123456' }
+      };
+
+      const request = utils.deepClone(REQUEST);
+      request.ad_units[0].bids = [aliasBidder];
+
+      adapter.callBids(request, BID_REQUESTS, addBidResponse, done, ajax);
+
+      const requestBid = JSON.parse(server.requests[0].requestBody);
+      expect(requestBid.ext).to.haveOwnProperty('prebid');
+      expect(requestBid.ext.prebid).to.deep.include({
+        aliases: {
+          pubmatic2: 'pubmatic'
+        },
+        auctiontimestamp: 1510852447530,
+        targeting: {
+          includebidderkeys: false,
+          includewinners: true
+        }
+      });
+    });
+
     it('adds dynamic aliases to request', function () {
       config.setConfig({ s2sConfig: CONFIG });
 
@@ -1571,6 +1651,41 @@ describe('S2S Adapter', function () {
       expect(requestBid.ext.prebid).to.deep.include({
         auctiontimestamp: 1510852447530,
         foo: 'bar',
+        targeting: {
+          includewinners: true,
+          includebidderkeys: false
+        }
+      });
+    });
+
+    it('adds s2sConfig ext.prebid.bidderparams to request for ORTB', function () {
+      const s2sConfig = Object.assign({}, CONFIG, {
+        extPrebid: {
+          bidderparams: {
+            pubmatic2: {}
+          }
+        }
+      });
+      const _config = {
+        s2sConfig: s2sConfig,
+        device: { ifa: '6D92078A-8246-4BA4-AE5B-76104861E7DC' },
+        app: { bundle: 'com.test.app' },
+      };
+
+      const s2sBidRequest = utils.deepClone(REQUEST_PUBMATIC);
+      s2sBidRequest.s2sConfig = s2sConfig;
+
+      config.setConfig(_config);
+      adapter.callBids(s2sBidRequest, BID_REQUESTS, addBidResponse, done, ajax);
+      const requestBid = JSON.parse(server.requests[0].requestBody);
+
+      expect(requestBid).to.haveOwnProperty('ext');
+      expect(requestBid.ext).to.haveOwnProperty('prebid');
+      expect(requestBid.ext.prebid).to.deep.include({
+        auctiontimestamp: 1510852447530,
+        bidderparams: {
+          pubmatic2: {wiid: '1234567890'}
+        },
         targeting: {
           includewinners: true,
           includebidderkeys: false
