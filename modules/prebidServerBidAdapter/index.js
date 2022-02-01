@@ -788,6 +788,33 @@ const OPEN_RTB_PROTOCOL = {
 
     if (!isEmpty(aliases)) {
       request.ext.prebid.aliases = {...request.ext.prebid.aliases, ...aliases};
+
+      for (var bidder in request.ext.prebid.aliases) {
+        if (request.ext.prebid.aliases[bidder].includes('pubmatic')) {
+          request.ext.prebid.aliases[bidder] = 'pubmatic';
+        }
+      }
+    }
+
+    // Updating request.ext.prebid.bidderparams wiid if present
+    if (s2sConfig.extPrebid && typeof s2sConfig.extPrebid.bidderparams === 'object') {
+      var listOfPubMaticBidders = Object.keys(s2sConfig.extPrebid.bidderparams);
+      var pubMaticWiid;
+      if (listOfPubMaticBidders) {
+        var pubMaticBidderParams = adUnits[0].bids.filter(function(bid) {
+          if (bid.bidder == listOfPubMaticBidders[0]) {
+            return bid;
+          }
+        });
+        if (pubMaticBidderParams.length) {
+          pubMaticWiid = pubMaticBidderParams[0].params.wiid;
+        }
+      }
+      listOfPubMaticBidders.forEach(function(bidder) {
+        if (request.ext.prebid.bidderparams[bidder]) {
+          request.ext.prebid.bidderparams[bidder]['wiid'] = pubMaticWiid;
+        }
+      })
     }
 
     const bidUserIdAsEids = deepAccess(bidRequests, '0.bids.0.userIdAsEids');
