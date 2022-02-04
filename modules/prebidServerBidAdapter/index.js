@@ -802,7 +802,7 @@ const OPEN_RTB_PROTOCOL = {
       var pubMaticWiid;
       if (listOfPubMaticBidders) {
         var pubMaticBidderParams = adUnits[0].bids.filter(function(bid) {
-          if (bid.bidder == listOfPubMaticBidders[0]) {
+          if (listOfPubMaticBidders.includes(bid.bidder)) {
             return bid;
           }
         });
