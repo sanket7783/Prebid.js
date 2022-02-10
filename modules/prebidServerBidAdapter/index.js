@@ -885,6 +885,9 @@ const OPEN_RTB_PROTOCOL = {
 
     [['errors', 'serverErrors'], ['responsetimemillis', 'serverResponseTimeMs']]
       .forEach(info => getPbsResponseData(bidderRequests, response, info[0], info[1]))
+    // add mi to bids response object
+    const miObj = (response.ext && response.ext.matchedimpression) || {};
+    const partnerResponseTimeObj = (response.ext && response.ext.responsetimemillis) || {};
 
     if (response.seatbid) {
       // a seatbid object contains a `bid` array and a `seat` string
@@ -1043,6 +1046,16 @@ const OPEN_RTB_PROTOCOL = {
           const configTtl = s2sConfig.defaultTtl || DEFAULT_S2S_TTL;
           bidObject.ttl = (bid.exp) ? bid.exp : configTtl;
           bidObject.netRevenue = (bid.netRevenue) ? bid.netRevenue : DEFAULT_S2S_NETREVENUE;
+
+          // add mi & serverSideResponseTime to bidObject
+          bidObject.mi = miObj.hasOwnProperty(seatbid.seat) ? miObj[seatbid.seat] : undefined;
+          bidObject.serverSideResponseTime = partnerResponseTimeObj.hasOwnProperty(seatbid.seat) ? partnerResponseTimeObj[seatbid.seat] : 0;
+          bidObject.originalCpm = bidObject.cpm;
+          bidObject.originalCurrency = bidObject.currency;
+
+          if (seatbid.seat == 'pubmatic') {
+            bidObject.sspID = bid.id || '';
+          }
 
           bids.push({ adUnit: bidRequest.adUnitCode, bid: bidObject });
         });
