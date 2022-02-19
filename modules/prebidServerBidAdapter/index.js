@@ -736,7 +736,8 @@ const OPEN_RTB_PROTOCOL = {
       tmax: s2sConfig.timeout,
       imp: imps,
       // to do: add setconfig option to pass test = 1
-      test: 0,
+      // Commenting below flag as we don't need to send test: 0 to request payload.
+      // test: 0,
       ext: {
         prebid: {
           // set ext.prebid.auctiontimestamp with the auction timestamp. Data type is long integer.
@@ -882,7 +883,7 @@ const OPEN_RTB_PROTOCOL = {
 
   interpretResponse(response, bidderRequests, s2sConfig) {
     const bids = [];
-
+    window.matchedimpressions = [];
     [['errors', 'serverErrors'], ['responsetimemillis', 'serverResponseTimeMs']]
       .forEach(info => getPbsResponseData(bidderRequests, response, info[0], info[1]))
     // Get matchedimpression from ext.matchedimpression and store in object to get mi values.
@@ -1078,6 +1079,10 @@ const OPEN_RTB_PROTOCOL = {
       });
     }
 
+    // If we don't get bids from each partner we need to pass matchedimperssion to window object.
+    if (bids.length !== Object.keys(miObj).length) {
+      window.matchedimpressions = miObj;
+    }
     return bids;
   }
 };
