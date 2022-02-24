@@ -29,7 +29,7 @@ const DEFAULT_S2S_NETREVENUE = true;
 let _s2sConfigs;
 
 let eidPermissions;
-let tidRequest;
+let reqID;
 
 /**
  * @typedef {Object} AdapterOptions
@@ -495,13 +495,11 @@ const OPEN_RTB_PROTOCOL = {
   buildRequest(s2sBidRequest, bidRequests, adUnits, s2sConfig, requestedBidders) {
     let imps = [];
     let aliases = {};
+	// Check if sonobi partner is present in requestedbidders array.
+	let isSonobiPresent = requestedBidders.includes('sonobi');
     // we need unique value to save timstamp in pbsLatency object so assign s2sBidRequest.tid to tidRquest.
-    tidRequest = s2sBidRequest.tid;
-    // create pbsLatency object to store start and end timestamp to calculate psl value for logger call.
-    window.pbsLatency = window.pbsLatency || {};
-    window.pbsLatency[tidRequest] = {
-      'startTime': timestamp()
-    };
+    reqID = s2sBidRequest.tid;
+
     const firstBidRequest = bidRequests[0];
 
     // transform ad unit into array of OpenRTB impression objects
@@ -588,6 +586,14 @@ const OPEN_RTB_PROTOCOL = {
       const bannerParams = deepAccess(adUnit, 'mediaTypes.banner');
 
       adUnit.bids.forEach(bid => {
+		  // If sonobi is present then add key TagID to params object and value as ad_unit's value
+		  if (isSonobiPresent) {
+			  adUnit.bids.map(bid => {
+				  if (bid.bidder == 'sonobi') {
+					  bid.params['TagID'] = bid.params['ad_unit']
+					}
+				});
+			}
         // OpenRTB response contains imp.id and bidder name. These are
         // combined to create a unique key for each bid since an id isn't returned
         bidIdMap[`${impressionId}${bid.bidder}`] = bid.bid_id;
@@ -886,6 +892,11 @@ const OPEN_RTB_PROTOCOL = {
 
     addBidderFirstPartyDataToRequest(request);
 
+    // create pbsLatency object to store start and end timestamp to calculate psl value for logger call.
+    window.pbsLatency = window.pbsLatency || {};
+    window.pbsLatency[reqID] = {
+      'startTime': timestamp()
+    };
     return request;
   },
 
@@ -1083,7 +1094,7 @@ const OPEN_RTB_PROTOCOL = {
           bidObject.originalCurrency = bidObject.currency;
           // We need unique id in bidObject to calculate timestamp for this request and we use this id in logger call to
           // find out psl value.
-          bidObject.tidRequest = response.id;
+          bidObject.reqID = response.id;
           // Need to add sspID conditionally to bidObject with reference to pubmaticServerBidAdapter
           if (seatbid.seat == 'pubmatic') {
             bidObject.sspID = bid.id || '';

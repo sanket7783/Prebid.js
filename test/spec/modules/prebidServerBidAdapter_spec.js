@@ -76,6 +76,73 @@ const REQUEST = {
   ]
 };
 
+let CONFIG_SONOBI = {
+  accountId: '1',
+  enabled: true,
+  bidders: ['sonobi'],
+  timeout: 1000,
+  cacheMarkup: 2,
+  endpoint: {
+	  p1Consent: 'https://prebid.adnxs.com/pbs/v1/openrtb2/auction',
+	  noP1Consent: 'https://prebid.adnxs.com/pbs/v1/openrtb2/auction'
+  }
+};
+
+const REQUEST_SONOBI = {
+  'account_id': '1',
+  'tid': '437fbbf5-33f5-487a-8e16-a7112903cfe5',
+  'max_bids': 1,
+  'timeout_millis': 1000,
+  'secure': 0,
+  'url': '',
+  'prebid_version': '0.30.0-pre',
+  's2sConfig': CONFIG,
+  'ad_units': [
+	  {
+      'code': 'div-gpt-ad-1460505748561-0',
+      'sizes': [[300, 250], [300, 600]],
+      'mediaTypes': {
+		  'banner': {
+          'sizes': [[300, 250], [300, 300]]
+		  },
+		  'native': {
+          'title': {
+			  'required': true,
+			  'len': 800
+          },
+          'image': {
+			  'required': true,
+			  'sizes': [989, 742],
+          },
+          'icon': {
+			  'required': true,
+			  'aspect_ratios': [{
+              'min_height': 10,
+              'min_width': 10,
+              'ratio_height': 1,
+              'ratio_width': 1
+			  }]
+          },
+          'sponsoredBy': {
+			  'required': true
+          }
+		  }
+      },
+      'transactionId': '4ef956ad-fd83-406d-bd35-e4bb786ab86c',
+      'bids': [
+		  {
+          'bid_id': '123',
+          'bidder': 'sonobi',
+          'params': {
+			  'ad_unit': '/43743431/DMDemo',
+			  'placement_id': '1a2b3c4d5e6f1a2b3c4d'
+          }
+		  }
+      ]
+	  }
+  ]
+};
+
 const REQUEST_PUBMATIC = {
   'account_id': '1',
   'tid': '437fbbf5-33f5-487a-8e16-a7112903cfe5',
@@ -674,6 +741,16 @@ describe('S2S Adapter', function () {
       const requestBid = JSON.parse(server.requests[0].requestBody);
       expect(requestBid.imp[0].banner).to.exist;
       expect(requestBid.imp[0].video).to.exist;
+    });
+
+    it('should add TagID parameter to adunits bid property for Sonobi partner', function () {
+      config.setConfig({ s2sConfig: CONFIG_SONOBI });
+
+      adapter.callBids(REQUEST_SONOBI, BID_REQUESTS, addBidResponse, done, ajax);
+
+      const requestBid = JSON.parse(server.requests[0].requestBody);
+      expect(requestBid.imp[0].ext.sonobi.TagID).to.exist;
+      expect(requestBid.imp[0].ext.sonobi.TagID).to.equal('/43743431/DMDemo');
     });
 
     it('should default video placement if not defined and instream', function () {
