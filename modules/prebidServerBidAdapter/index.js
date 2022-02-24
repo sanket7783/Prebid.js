@@ -498,7 +498,7 @@ const OPEN_RTB_PROTOCOL = {
     // we need unique value to save timstamp in pbsLatency object so assign s2sBidRequest.tid to tidRquest.
     tidRequest = s2sBidRequest.tid;
     // create pbsLatency object to store start and end timestamp to calculate psl value for logger call.
-    window.pbsLatency = {};
+    window.pbsLatency = window.pbsLatency || {};
     window.pbsLatency[tidRequest] = {
       'startTime': timestamp()
     };
@@ -892,8 +892,8 @@ const OPEN_RTB_PROTOCOL = {
   interpretResponse(response, bidderRequests, s2sConfig) {
     const bids = [];
     // Generate timestamp when we receive response and save it in pbsLatency object to calculate psl value for logger call
-    window.pbsLatency[tidRequest] = {
-      'endTime': timestamp()
+    if (window.pbsLatency[response.id]) {
+      window.pbsLatency[response.id]['endTime'] = timestamp();
     }
     window.matchedimpressions = [];
     [['errors', 'serverErrors'], ['responsetimemillis', 'serverResponseTimeMs']]
@@ -1083,7 +1083,7 @@ const OPEN_RTB_PROTOCOL = {
           bidObject.originalCurrency = bidObject.currency;
           // We need unique id in bidObject to calculate timestamp for this request and we use this id in logger call to
           // find out psl value.
-          bidObject.tidRequest = tidRequest;
+          bidObject.tidRequest = response.id;
           // Need to add sspID conditionally to bidObject with reference to pubmaticServerBidAdapter
           if (seatbid.seat == 'pubmatic') {
             bidObject.sspID = bid.id || '';
