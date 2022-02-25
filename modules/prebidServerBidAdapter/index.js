@@ -1105,7 +1105,7 @@ const OPEN_RTB_PROTOCOL = {
     }
 
     // If we don't get bids from each partner we need to pass matchedimperssion to window object.
-    if (response.seatbid && response.seatbid.length !== Object.keys(miObj).length) {
+    if (response.seatbid == undefined || (response.seatbid && response.seatbid.length !== Object.keys(miObj).length)) {
       window.matchedimpressions = miObj;
     }
     return bids;
