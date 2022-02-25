@@ -905,7 +905,7 @@ const OPEN_RTB_PROTOCOL = {
 
   interpretResponse(response, bidderRequests, s2sConfig) {
     const bids = [];
-	// Get impressionID from impressionReqIdMap to check response belongs to same request
+    // Get impressionID from impressionReqIdMap to check response belongs to same request
     let impValue = impressionReqIdMap[response.id];
     if (impValue && window.pbsLatency[impValue]) {
       window.pbsLatency[impValue]['endTime'] = timestamp();
@@ -969,13 +969,9 @@ const OPEN_RTB_PROTOCOL = {
               extPrebidTargeting = getDefinedParams(extPrebidTargeting, Object.keys(extPrebidTargeting)
                 .filter(i => (i.indexOf('hb_winurl') === -1 && i.indexOf('hb_bidid') === -1)));
             }
-            // We will be coverting only hb_pb key to pwtpb key and adding it to bidObject.adserverTargeting
-            // Also we will be checking for hb_buyid_pubmatic key and if it present we are converting to pwtbuyid_pubmatic before
+            // We will be checking for hb_buyid_pubmatic key and if it present we are converting to pwtbuyid_pubmatic before
             // adding to pwtbuyid_pubmatic
             bidObject.adserverTargeting = {};
-            if (extPrebidTargeting.hasOwnProperty('hb_pb')) {
-              bidObject.adserverTargeting['pwtpb'] = extPrebidTargeting['hb_pb'];
-            }
             if (extPrebidTargeting.hasOwnProperty('hb_buyid_pubmatic')) {
               bidObject.adserverTargeting['pwtbuyid_pubmatic'] = extPrebidTargeting['hb_buyid_pubmatic'];
             }
