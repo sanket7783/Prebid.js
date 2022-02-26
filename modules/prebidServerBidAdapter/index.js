@@ -30,7 +30,7 @@ let _s2sConfigs;
 
 let eidPermissions;
 let impressionReqIdMap = {};
-
+let impressionAuctionId;
 /**
  * @typedef {Object} AdapterOptions
  * @summary s2sConfig parameter that adds arguments to resulting OpenRTB payload that goes to Prebid Server
@@ -384,13 +384,20 @@ function addBidderFirstPartyDataToRequest(request) {
   }
 }
 
-function createLatencyMap(adUnit, id) {
-  const bid = adUnit && adUnit.bids[0];
-  const impressionID = bid && bid.params.wiid;
-  impressionReqIdMap[id] = impressionID;
-  window.pbsLatency[impressionID] = {
-    'startTime': timestamp()
-  };
+function createLatencyMap(adUnit, id, impressionAuctionId) {
+  if (impressionAuctionId) {
+    impressionReqIdMap[id] = impressionAuctionId;
+    window.pbsLatency[impressionAuctionId] = {
+      'startTime': timestamp()
+    };
+  } else {
+    const bid = adUnit && adUnit.bids[0];
+    const impressionID = bid && bid.params.wiid;
+    impressionReqIdMap[id] = impressionID;
+    window.pbsLatency[impressionID] = {
+      'startTime': timestamp()
+    };
+  }
 }
 
 // https://iabtechlab.com/wp-content/uploads/2016/07/OpenRTB-Native-Ads-Specification-Final-1.2.pdf#page=40
@@ -508,7 +515,11 @@ const OPEN_RTB_PROTOCOL = {
     let isSonobiPresent = requestedBidders.includes('sonobi');
     window.pbsLatency = window.pbsLatency || {};
     const firstBidRequest = bidRequests[0];
-
+    // check if isPrebidPubMaticAnalyticsEnabled in s2sConfig and if it is then get auctionId from adUnit
+    let isAnalyticsEnabled = s2sConfig.extPrebid && s2sConfig.extPrebid.isPrebidPubMaticAnalyticsEnabled;
+    if (isAnalyticsEnabled) {
+      impressionAuctionId = firstBidRequest.auctionId;
+    }
     // transform ad unit into array of OpenRTB impression objects
     let impIds = new Set();
     adUnits.forEach(adUnit => {
@@ -751,7 +762,7 @@ const OPEN_RTB_PROTOCOL = {
       logError('Request to Prebid Server rejected due to invalid media type(s) in adUnit.');
       return;
     }
-    createLatencyMap(adUnits[0], s2sBidRequest.tid);
+    createLatencyMap(adUnits[0], s2sBidRequest.tid, impressionAuctionId);
 
     const request = {
       id: s2sBidRequest.tid,
@@ -836,7 +847,7 @@ const OPEN_RTB_PROTOCOL = {
       }
       listOfPubMaticBidders.forEach(function(bidder) {
         if (request.ext.prebid.bidderparams[bidder]) {
-          request.ext.prebid.bidderparams[bidder]['wiid'] = pubMaticWiid;
+          request.ext.prebid.bidderparams[bidder]['wiid'] = isAnalyticsEnabled ? impressionAuctionId : pubMaticWiid;
         }
       })
     }
@@ -1092,10 +1103,9 @@ const OPEN_RTB_PROTOCOL = {
           // to calculates values for properties like ocpm, ocry & eg respectively.
           bidObject.originalCpm = bidObject.cpm;
           bidObject.originalCurrency = bidObject.currency;
-
-          // Need to add sspID conditionally to bidObject with reference to pubmaticServerBidAdapter
+          // Add bid.id to sspID & partnerImpId as these are used in tracker and logger call
           if (seatbid.seat == 'pubmatic') {
-            bidObject.sspID = bid.id || '';
+            bidObject.partnerImpId = bidObject.sspID = bid.id || '';
           }
           bids.push({ adUnit: bidRequest.adUnitCode, bid: bidObject });
         });
