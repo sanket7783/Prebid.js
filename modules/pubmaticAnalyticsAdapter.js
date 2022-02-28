@@ -302,10 +302,12 @@ function getAdUnit(adUnits, adUnitId) {
   return adUnits.filter(adUnit => (adUnit.divID && adUnit.divID == adUnitId) || (adUnit.code == adUnitId))[0];
 }
 
-function getpsl(auctionId) {
-  var latency = window.pbsLatency;
-  var latencyValues = latency && latency[auctionId]
-  var pslTime = latencyValues ? 0 : undefined;
+function getPSL(auctionId) {
+  let latency = window.pbsLatency;
+  let latencyValues = latency && latency[auctionId]
+  // If we do not have latencyValues, means we are not using prebidServerBidAdapter i.e. auction end point
+  // so for 2.5 endpoint we need to make sure that we are not passing this key as earlier.
+  let pslTime = latencyValues ? 0 : undefined;
   if (latencyValues && latencyValues['startTime'] && latencyValues['endTime']) {
     pslTime = latencyValues['endTime'] - latencyValues['startTime']
   }
@@ -339,7 +341,7 @@ function executeBidsLoggerCall(e, highestCpmBids) {
   outputObj['tst'] = Math.round((new window.Date()).getTime() / 1000);
   outputObj['pid'] = '' + profileId;
   outputObj['pdvid'] = '' + profileVersionId;
-  outputObj['psl'] = getpsl(auctionId);
+  outputObj['psl'] = getPSL(auctionId);
   outputObj['dvc'] = {'plt': getDevicePlatform()};
   outputObj['tgid'] = (function() {
     var testGroupId = parseInt(config.getConfig('testGroupId') || 0);
