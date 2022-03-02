@@ -915,9 +915,7 @@ const OPEN_RTB_PROTOCOL = {
     mergeDeep(request, commonFpd);
     // delete isPrebidPubMaticAnalyticsEnabled from extPrebid object as it not required in request.
     // it is only used to decide impressionId for wiid parameter in logger and tracker calls.
-    if (isAnalyticsEnabled) {
-      delete request.ext.prebid.isPrebidPubMaticAnalyticsEnabled;
-    }
+    delete request.ext.prebid.isPrebidPubMaticAnalyticsEnabled;
     addBidderFirstPartyDataToRequest(request);
     return request;
   },
