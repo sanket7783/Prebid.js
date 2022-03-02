@@ -30,7 +30,18 @@ let _s2sConfigs;
 
 let eidPermissions;
 let impressionReqIdMap = {};
-let impressionAuctionId;
+let dealChannelValues = {
+  1: 'PMP',
+  5: 'PREF',
+  6: 'PMPG'
+};
+let defaultAliases = {
+  adg: 'adgeneration',
+  districtm: 'appnexus',
+  districtmDMX: 'dmx',
+  pubmatic2: 'pubmatic'
+}
+
 /**
  * @typedef {Object} AdapterOptions
  * @summary s2sConfig parameter that adds arguments to resulting OpenRTB payload that goes to Prebid Server
@@ -384,20 +395,11 @@ function addBidderFirstPartyDataToRequest(request) {
   }
 }
 
-function createLatencyMap(adUnit, id, impressionAuctionId) {
-  if (impressionAuctionId) {
-    impressionReqIdMap[id] = impressionAuctionId;
-    window.pbsLatency[impressionAuctionId] = {
-      'startTime': timestamp()
-    };
-  } else {
-    const bid = adUnit && adUnit.bids[0];
-    const impressionID = bid && bid.params.wiid;
-    impressionReqIdMap[id] = impressionID;
-    window.pbsLatency[impressionID] = {
-      'startTime': timestamp()
-    };
-  }
+function createLatencyMap(impressionID, id) {
+  impressionReqIdMap[id] = impressionID;
+  window.pbsLatency[impressionID] = {
+    'startTime': timestamp()
+  };
 }
 
 // https://iabtechlab.com/wp-content/uploads/2016/07/OpenRTB-Native-Ads-Specification-Final-1.2.pdf#page=40
@@ -511,15 +513,19 @@ const OPEN_RTB_PROTOCOL = {
   buildRequest(s2sBidRequest, bidRequests, adUnits, s2sConfig, requestedBidders) {
     let imps = [];
     let aliases = {};
-    // Check if sonobi partner is present in requestedbidders array.
+    let owAliases;
+
+	// Check if sonobi partner is present in requestedbidders array.
     let isSonobiPresent = requestedBidders.includes('sonobi');
     window.pbsLatency = window.pbsLatency || {};
     const firstBidRequest = bidRequests[0];
     // check if isPrebidPubMaticAnalyticsEnabled in s2sConfig and if it is then get auctionId from adUnit
     let isAnalyticsEnabled = s2sConfig.extPrebid && s2sConfig.extPrebid.isPrebidPubMaticAnalyticsEnabled;
-    if (isAnalyticsEnabled) {
-      impressionAuctionId = firstBidRequest.auctionId;
-    }
+    const iidValue = isAnalyticsEnabled ? firstBidRequest.auctionId : firstBidRequest.bids[0].params.wiid;
+	if (typeof s2sConfig.extPrebid === 'object') {
+		owAliases = s2sConfig.extPrebid.aliases;
+	}
+
     // transform ad unit into array of OpenRTB impression objects
     let impIds = new Set();
     adUnits.forEach(adUnit => {
@@ -604,6 +610,15 @@ const OPEN_RTB_PROTOCOL = {
       const bannerParams = deepAccess(adUnit, 'mediaTypes.banner');
 
       adUnit.bids.forEach(bid => {
+        // If bid params contains kgpv then delete it as we do not want to pass it in request.
+        delete bid.params.kgpv;
+        if ((bid.bidder !== 'pubmatic') && !(owAliases && owAliases[bid.bidder] && owAliases[bid.bidder].includes('pubmatic'))) {
+          delete bid.params.wiid;
+        } else {
+          if (isAnalyticsEnabled && bid.params.wiid == undefined) {
+            bid.params.wiid = iidValue;
+          }
+        }
         // If sonobi is present then add key TagID to params object and value as ad_unit's value
         if (isSonobiPresent) {
           adUnit.bids.map(bid => {
@@ -762,7 +777,7 @@ const OPEN_RTB_PROTOCOL = {
       logError('Request to Prebid Server rejected due to invalid media type(s) in adUnit.');
       return;
     }
-    createLatencyMap(adUnits[0], s2sBidRequest.tid, impressionAuctionId);
+    createLatencyMap(iidValue, s2sBidRequest.tid);
 
     const request = {
       id: s2sBidRequest.tid,
@@ -823,10 +838,10 @@ const OPEN_RTB_PROTOCOL = {
 
     if (!isEmpty(aliases)) {
       request.ext.prebid.aliases = {...request.ext.prebid.aliases, ...aliases};
-
       for (var bidder in request.ext.prebid.aliases) {
-        if (request.ext.prebid.aliases[bidder].includes('pubmatic')) {
-          request.ext.prebid.aliases[bidder] = 'pubmatic';
+        var defaultAlias = defaultAliases[request.ext.prebid.aliases[bidder]];
+        if (defaultAlias) {
+          request.ext.prebid.aliases[bidder] = defaultAlias;
         }
       }
     }
@@ -834,20 +849,9 @@ const OPEN_RTB_PROTOCOL = {
     // Updating request.ext.prebid.bidderparams wiid if present
     if (s2sConfig.extPrebid && typeof s2sConfig.extPrebid.bidderparams === 'object') {
       var listOfPubMaticBidders = Object.keys(s2sConfig.extPrebid.bidderparams);
-      var pubMaticWiid;
-      if (listOfPubMaticBidders) {
-        var pubMaticBidderParams = adUnits[0].bids.filter(function(bid) {
-          if (listOfPubMaticBidders.includes(bid.bidder)) {
-            return bid;
-          }
-        });
-        if (pubMaticBidderParams.length) {
-          pubMaticWiid = pubMaticBidderParams[0].params.wiid;
-        }
-      }
       listOfPubMaticBidders.forEach(function(bidder) {
         if (request.ext.prebid.bidderparams[bidder]) {
-          request.ext.prebid.bidderparams[bidder]['wiid'] = isAnalyticsEnabled ? impressionAuctionId : pubMaticWiid;
+          request.ext.prebid.bidderparams[bidder]['wiid'] = iidValue;
         }
       })
     }
@@ -909,7 +913,11 @@ const OPEN_RTB_PROTOCOL = {
 
     const commonFpd = getConfig('ortb2') || {};
     mergeDeep(request, commonFpd);
-
+    // delete isPrebidPubMaticAnalyticsEnabled from extPrebid object as it not required in request.
+    // it is only used to decide impressionId for wiid parameter in logger and tracker calls.
+    if (isAnalyticsEnabled) {
+      delete request.ext.prebid.isPrebidPubMaticAnalyticsEnabled;
+    }
     addBidderFirstPartyDataToRequest(request);
     return request;
   },
@@ -1106,6 +1114,11 @@ const OPEN_RTB_PROTOCOL = {
           // Add bid.id to sspID & partnerImpId as these are used in tracker and logger call
           if (seatbid.seat == 'pubmatic') {
             bidObject.partnerImpId = bidObject.sspID = bid.id || '';
+          }
+
+          // check if bid ext contains deal_channel if present get value from dealChannelValues object
+          if (bid.ext && bid.ext.deal_channel) {
+            bidObject.dealChannel = dealChannelValues[bid.ext.deal_channel];
           }
           bids.push({ adUnit: bidRequest.adUnitCode, bid: bidObject });
         });

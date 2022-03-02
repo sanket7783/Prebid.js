@@ -1813,7 +1813,7 @@ describe('S2S Adapter', function () {
       expect(requestBid.ext.prebid).to.deep.include({
         auctiontimestamp: 1510852447530,
         bidderparams: {
-          pubmatic2: {wiid: '1234567890'}
+          pubmatic2: {}
         },
         targeting: {
           includewinners: true,
