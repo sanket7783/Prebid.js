@@ -656,6 +656,11 @@ const OPEN_RTB_PROTOCOL = {
         mediaTypes['banner'] = {format};
 
         if (bannerParams.pos) mediaTypes['banner'].pos = bannerParams.pos;
+
+        // when profile is for banner delete macros from extPrebid object.
+        if (s2sConfig.extPrebid && s2sConfig.extPrebid.macros) {
+          delete s2sConfig.extPrebid.macros;
+        }
       }
 
       if (!isEmpty(videoParams)) {
@@ -677,6 +682,11 @@ const OPEN_RTB_PROTOCOL = {
               }
               return result;
             }, {});
+        }
+        // adding [UNIX_TIMESTAMP] & [WRAPPER_IMPRESSION_ID] in macros as it is required for tracking events.
+        if (s2sConfig.extPrebid && s2sConfig.extPrebid.macros) {
+          s2sConfig.extPrebid.macros['[UNIX_TIMESTAMP]'] = timestamp().toString();
+          s2sConfig.extPrebid.macros['[WRAPPER_IMPRESSION_ID]'] = iidValue.toString();
         }
       }
 
@@ -1082,8 +1092,8 @@ const OPEN_RTB_PROTOCOL = {
             }
           }
 
-          bidObject.width = bid.w;
-          bidObject.height = bid.h;
+          bidObject.width = bid.w || 0;
+          bidObject.height = bid.h || 0;
           if (bid.dealid) { bidObject.dealId = bid.dealid; }
           bidObject.requestId = bidRequest.bidId || bidRequest.bid_Id;
           bidObject.creative_id = bid.crid;

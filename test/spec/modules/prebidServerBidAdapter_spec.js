@@ -2435,11 +2435,39 @@ describe('S2S Adapter', function () {
       expect(response).to.have.property('ttl', 30);
     });
 
-    it('handles OpenRTB video responses', function () {
+    it('Set default height and width to zero when we dont get width and height in response ', function () {
+      let RES_VIDEO_WO_H_W = utils.deepClone(RESPONSE_OPENRTB_VIDEO);
+	  delete RES_VIDEO_WO_H_W.seatbid[0].bid[0].w;
+	  delete RES_VIDEO_WO_H_W.seatbid[0].bid[0].h;
       const s2sConfig = Object.assign({}, CONFIG, {
         endpoint: {
           p1Consent: 'https://prebidserverurl/openrtb2/auction?querystring=param'
         }
+      });
+      config.setConfig({ s2sConfig });
+
+      const s2sVidRequest = utils.deepClone(VIDEO_REQUEST);
+      s2sVidRequest.s2sConfig = s2sConfig;
+
+      adapter.callBids(s2sVidRequest, BID_REQUESTS, addBidResponse, done, ajax);
+
+      server.requests[0].respond(200, {}, JSON.stringify(RES_VIDEO_WO_H_W));
+
+      sinon.assert.calledOnce(addBidResponse);
+      const response = addBidResponse.firstCall.args[1];
+      expect(response).to.have.property('statusMessage', 'Bid available');
+      expect(response).to.have.property('vastXml', RES_VIDEO_WO_H_W.seatbid[0].bid[0].adm);
+	  expect(response).to.have.property('width');
+	  expect(response).to.have.property('height');
+	  expect(response.width).to.equal(0);
+	  expect(response.height).to.equal(0);
+    });
+
+    it('handles OpenRTB video responses', function () {
+      const s2sConfig = Object.assign({}, CONFIG, {
+		  endpoint: {
+          p1Consent: 'https://prebidserverurl/openrtb2/auction?querystring=param'
+		  }
       });
       config.setConfig({ s2sConfig });
 
