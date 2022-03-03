@@ -515,16 +515,16 @@ const OPEN_RTB_PROTOCOL = {
     let aliases = {};
     let owAliases;
 
-	// Check if sonobi partner is present in requestedbidders array.
+    // Check if sonobi partner is present in requestedbidders array.
     let isSonobiPresent = requestedBidders.includes('sonobi');
     window.pbsLatency = window.pbsLatency || {};
     const firstBidRequest = bidRequests[0];
     // check if isPrebidPubMaticAnalyticsEnabled in s2sConfig and if it is then get auctionId from adUnit
     let isAnalyticsEnabled = s2sConfig.extPrebid && s2sConfig.extPrebid.isPrebidPubMaticAnalyticsEnabled;
     const iidValue = isAnalyticsEnabled ? firstBidRequest.auctionId : firstBidRequest.bids[0].params.wiid;
-	if (typeof s2sConfig.extPrebid === 'object') {
-		owAliases = s2sConfig.extPrebid.aliases;
-	}
+    if (typeof s2sConfig.extPrebid === 'object') {
+      owAliases = s2sConfig.extPrebid.aliases;
+    }
 
     // transform ad unit into array of OpenRTB impression objects
     let impIds = new Set();
@@ -838,14 +838,14 @@ const OPEN_RTB_PROTOCOL = {
 
     if (!isEmpty(aliases)) {
       request.ext.prebid.aliases = {...request.ext.prebid.aliases, ...aliases};
-      for (var bidder in request.ext.prebid.aliases) {
-        var defaultAlias = defaultAliases[request.ext.prebid.aliases[bidder]];
-        if (defaultAlias) {
-          request.ext.prebid.aliases[bidder] = defaultAlias;
-        }
+    }
+    // Replace aliases with parent alias e.g. pubmatic2 should replace with pubmatic
+    for (var bidder in request.ext.prebid.aliases) {
+      var defaultAlias = defaultAliases[request.ext.prebid.aliases[bidder]];
+      if (defaultAlias) {
+        request.ext.prebid.aliases[bidder] = defaultAlias;
       }
     }
-
     // Updating request.ext.prebid.bidderparams wiid if present
     if (s2sConfig.extPrebid && typeof s2sConfig.extPrebid.bidderparams === 'object') {
       var listOfPubMaticBidders = Object.keys(s2sConfig.extPrebid.bidderparams);
