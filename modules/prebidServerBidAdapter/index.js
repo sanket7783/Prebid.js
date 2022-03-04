@@ -658,7 +658,7 @@ const OPEN_RTB_PROTOCOL = {
         if (bannerParams.pos) mediaTypes['banner'].pos = bannerParams.pos;
 
         // when profile is for banner delete macros from extPrebid object.
-        if (s2sConfig.extPrebid && s2sConfig.extPrebid.macros) {
+		if (s2sConfig.extPrebid && s2sConfig.extPrebid.macros && !videoParams) {
           delete s2sConfig.extPrebid.macros;
         }
       }
