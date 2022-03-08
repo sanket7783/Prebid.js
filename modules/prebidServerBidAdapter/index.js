@@ -944,16 +944,16 @@ const OPEN_RTB_PROTOCOL = {
     // Also get responsetimemillis value to calculate serverSideResponseTime.
     const miObj = (response.ext && response.ext.matchedimpression) || {};
     const partnerResponseTimeObj = (response.ext && response.ext.responsetimemillis) || {};
-    // const listofPartnersWithmi = Object.keys(miObj);
-    // window.partnersWithoutErrorAndBids = listofPartnersWithmi;
-    // let erroredPartners = response.ext && response.ext.errors && Object.keys(response.ext.errors);
-    // if (erroredPartners) {
-    //   window.partnersWithoutErrorAndBids = listofPartnersWithmi.filter(partner => !erroredPartners.includes(partner));
-    // }
+    const listofPartnersWithmi = Object.keys(miObj);
+    window.partnersWithoutErrorAndBids = listofPartnersWithmi;
+    let erroredPartners = response.ext && response.ext.errors && Object.keys(response.ext.errors);
+    if (erroredPartners) {
+      window.partnersWithoutErrorAndBids = listofPartnersWithmi.filter(partner => !erroredPartners.includes(partner));
+    }
     if (response.seatbid) {
       // a seatbid object contains a `bid` array and a `seat` string
       response.seatbid.forEach(seatbid => {
-        // window.partnersWithoutErrorAndBids = window.partnersWithoutErrorAndBids.filter(partner => partner !== seatbid.seat);
+        window.partnersWithoutErrorAndBids = window.partnersWithoutErrorAndBids.filter(partner => partner !== seatbid.seat);
         (seatbid.bid || []).forEach(bid => {
           let bidRequest;
           let key = `${bid.impid}${seatbid.seat}`;
