@@ -1128,6 +1128,9 @@ const OPEN_RTB_PROTOCOL = {
           // Add bid.id to sspID & partnerImpId as these are used in tracker and logger call
           if (seatbid.seat == 'pubmatic') {
             bidObject.partnerImpId = bidObject.sspID = bid.id || '';
+            if (bid.dealid) {
+              bidObject.dealChannel = 'PMP';
+            }
           }
 
           // check if bid ext contains deal_channel if present get value from dealChannelValues object
