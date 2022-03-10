@@ -191,7 +191,7 @@ export let syncDelay;
 export let auctionDelay;
 
 /** @type {(Object|undefined)} */
-let userIdentity;
+let userIdentity = {};
 /** @param {Submodule[]} submodules */
 export function setSubmoduleRegistry(submodules) {
   submoduleRegistry = submodules;
@@ -657,8 +657,59 @@ function refreshUserIds(options, callback, moduleUpdated) {
 }
 
 function setUserIdentities(userIdentityData) {
-  userIdentity = userIdentityData;
+  var pubProvidedEmailHash = {};
+  if (userIdentityData.pubProvidedEmail) {
+    generateEmailHash(userIdentityData.pubProvidedEmail, pubProvidedEmailHash);
+    userIdentityData.pubProvidedEmailHash = pubProvidedEmailHash;
+    delete userIdentityData.pubProvidedEmail;
+  }
+  Object.assign(userIdentity, userIdentityData);
+  if (window.PWT && window.PWT.loginEvent) {
+    reTriggerPartnerCallsWithEmailHashes();
+    window.PWT.loginEvent = false;
+  }
 };
+
+function reTriggerPartnerCallsWithEmailHashes() {
+  var modulesToRefresh = [], scriptBasedModulesToRefresh = [];
+  var primaryModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.PRIMARY_MODULES;
+  var scriptBasedModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.SCRIPT_BASED_MODULES;
+  for(var index in submoduleRegistry) {
+    var moduleName = submoduleRegistry[index].name;
+    if (primaryModulesList.indexOf(moduleName) >= 0) {
+      modulesToRefresh.push(moduleName);
+    } else if(scriptBasedModulesList.indexOf(moduleName) >= 0) {
+      scriptBasedModulesToRefresh.push(moduleName);
+    }
+  }
+  getValidSubmoduleConfigs(configRegistry, submoduleRegistry, validStorageTypes);
+  getGlobal().refreshUserIds({'suboduleNames': modulesToRefresh});
+  reTriggerScriptBasedAPICalls(scriptBasedModulesToRefresh);
+}
+
+function reTriggerScriptBasedAPICalls(modulesToRefresh) {
+  var i=0;
+  var userIdentity = getUserIdentities() || {};
+  for(i in modulesToRefresh) {
+    switch(modulesToRefresh[i]) {
+      case 'zeotapIdPlus':
+        if (window.zeotap && isFn(window.zeotap.callMethod)) {
+          var  userIdentityObject = {
+            email: userIdentity.emailHash['MD5']
+          };
+          window.zeotap.callMethod("setUserIdentities",userIdentityObject, true);
+        }
+        break;
+      case 'identityLink':
+        if (window.ats && isFn(window.ats.start)) {
+            var atsObject = window.ats.outputCurrentConfiguration();
+            atsObject.emailHashes = userIdentity.emailHash ? [userIdentity.emailHash['MD5'], userIdentity.emailHash['SHA1'], userIdentity.emailHash['SHA256']] : undefined;
+            window.ats.start(atsObject);
+        }
+        break;
+    }
+  }
+}
 
 function getUserIdentities() {
   return userIdentity;
@@ -679,7 +730,7 @@ function onSSOLogin(data) {
   switch (data.provider) {
     case undefined:
     case 'facebook':
-      var timeout = data.provider === 'facebook' ? 0 : 2000;
+      var timeout = 0;
       setTimeout(function() {
         window.FB && window.FB.getLoginStatus(function (response) {
           if (response.status === 'connected') {
