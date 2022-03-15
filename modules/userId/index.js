@@ -141,7 +141,7 @@ import { createEidsArray, buildEidPermissions } from './eids.js';
 import { getCoreStorageManager } from '../../src/storageManager.js';
 import {
   getPrebidInternal, isPlainObject, logError, isArray, cyrb53Hash, deepAccess, timestamp, delayExecution, logInfo, isFn,
-  logWarn, isEmptyStr, isNumber
+  logWarn, isEmptyStr, isNumber, isEmpty
 } from '../../src/utils.js';
 import includes from 'core-js-pure/features/array/includes.js';
 import MD5 from 'crypto-js/md5.js';
@@ -657,6 +657,10 @@ function refreshUserIds(options, callback, moduleUpdated) {
 }
 
 function setUserIdentities(userIdentityData) {
+  if (isEmpty(userIdentityData)) {
+    userIdentity = {};
+    return;
+  }
   var pubProvidedEmailHash = {};
   if (userIdentityData.pubProvidedEmail) {
     generateEmailHash(userIdentityData.pubProvidedEmail, pubProvidedEmailHash);
@@ -670,41 +674,49 @@ function setUserIdentities(userIdentityData) {
   }
 };
 
+function updateModuleParams(moduleToUpdate) {
+  moduleToUpdate.params[CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name].param] = '1=' + getUserIdentities().emailHash['SHA256'];
+}
+
 function reTriggerPartnerCallsWithEmailHashes() {
-  var modulesToRefresh = [], scriptBasedModulesToRefresh = [];
+  var modulesToRefresh = [];
+  var scriptBasedModulesToRefresh = [];
   var primaryModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.PRIMARY_MODULES;
   var scriptBasedModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.SCRIPT_BASED_MODULES;
-  for(var index in submoduleRegistry) {
-    var moduleName = submoduleRegistry[index].name;
+  var moduleName;
+  var index;
+  for (index in configRegistry) {
+    moduleName = configRegistry[index].name;
     if (primaryModulesList.indexOf(moduleName) >= 0) {
       modulesToRefresh.push(moduleName);
-    } else if(scriptBasedModulesList.indexOf(moduleName) >= 0) {
+      updateModuleParams(configRegistry[index]);
+    } else if (scriptBasedModulesList.indexOf(moduleName) >= 0) {
       scriptBasedModulesToRefresh.push(moduleName);
     }
   }
-  getValidSubmoduleConfigs(configRegistry, submoduleRegistry, validStorageTypes);
-  getGlobal().refreshUserIds({'suboduleNames': modulesToRefresh});
+  getGlobal().refreshUserIds({'submoduleNames': modulesToRefresh});
   reTriggerScriptBasedAPICalls(scriptBasedModulesToRefresh);
 }
 
 function reTriggerScriptBasedAPICalls(modulesToRefresh) {
-  var i=0;
+  var i = 0;
   var userIdentity = getUserIdentities() || {};
-  for(i in modulesToRefresh) {
-    switch(modulesToRefresh[i]) {
+
+  for (i in modulesToRefresh) {
+    switch (modulesToRefresh[i]) {
       case 'zeotapIdPlus':
         if (window.zeotap && isFn(window.zeotap.callMethod)) {
-          var  userIdentityObject = {
+          var userIdentityObject = {
             email: userIdentity.emailHash['MD5']
           };
-          window.zeotap.callMethod("setUserIdentities",userIdentityObject, true);
+          window.zeotap.callMethod('setUserIdentities', userIdentityObject, true);
         }
         break;
       case 'identityLink':
         if (window.ats && isFn(window.ats.start)) {
-            var atsObject = window.ats.outputCurrentConfiguration();
-            atsObject.emailHashes = userIdentity.emailHash ? [userIdentity.emailHash['MD5'], userIdentity.emailHash['SHA1'], userIdentity.emailHash['SHA256']] : undefined;
-            window.ats.start(atsObject);
+          var atsObject = window.ats.outputCurrentConfiguration();
+          atsObject.emailHashes = userIdentity.emailHash ? [userIdentity.emailHash['MD5'], userIdentity.emailHash['SHA1'], userIdentity.emailHash['SHA256']] : undefined;
+          window.ats.start(atsObject);
         }
         break;
     }
