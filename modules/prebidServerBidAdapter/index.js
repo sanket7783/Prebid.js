@@ -509,6 +509,33 @@ export function resetWurlMap() {
   wurlMap = {};
 }
 
+// Get matchedimpressions object
+function getMiValues(responseExt) {
+  if (responseExt && responseExt.matchedimpression) {
+    return responseExt.matchedimpression;
+  }
+}
+// Get partners response time
+function getPartnerResponseTime(responseExt) {
+  if (responseExt && responseExt.responsetimemillis) {
+    return responseExt.responsetimemillis;
+  }
+}
+// Get list of all errored partners
+function getErroredPartners(responseExt) {
+  if (responseExt && responseExt.errors) {
+    return Object.keys(responseExt.errors);
+  }
+}
+
+function findPartnersWithoutErrorsAndBids(erroredPartners, listofPartnersWithmi, responseExt) {
+  window.partnersWithoutErrorAndBids = listofPartnersWithmi.filter(partner => !erroredPartners.includes(partner));
+  const isPubMaticReturnedError = erroredPartners.indexOf('pubmatic');
+  if (isPubMaticReturnedError > -1 && responseExt.errors[erroredPartners[isPubMaticReturnedError]][0].code == 1) {
+    window.partnersWithoutErrorAndBids.push(erroredPartners[isPubMaticReturnedError]);
+  }
+}
+
 const OPEN_RTB_PROTOCOL = {
   buildRequest(s2sBidRequest, bidRequests, adUnits, s2sConfig, requestedBidders) {
     let imps = [];
@@ -940,16 +967,14 @@ const OPEN_RTB_PROTOCOL = {
     window.matchedimpressions = [];
     [['errors', 'serverErrors'], ['responsetimemillis', 'serverResponseTimeMs']]
       .forEach(info => getPbsResponseData(bidderRequests, response, info[0], info[1]))
-    // Get matchedimpression from ext.matchedimpression and store in object to get mi values.
-    // Also get responsetimemillis value to calculate serverSideResponseTime.
-    const miObj = (response.ext && response.ext.matchedimpression) || {};
-    const partnerResponseTimeObj = (response.ext && response.ext.responsetimemillis) || {};
-    const listofPartnersWithmi = Object.keys(miObj);
-    window.partnersWithoutErrorAndBids = listofPartnersWithmi;
-    let erroredPartners = response.ext && response.ext.errors && Object.keys(response.ext.errors);
+    const miObj = getMiValues(response.ext) || {};
+    const partnerResponseTimeObj = getPartnerResponseTime(response.ext) || {};
+    const listofPartnersWithmi = window.partnersWithoutErrorAndBids = Object.keys(miObj);
+    const erroredPartners = getErroredPartners(response.ext);
     if (erroredPartners) {
-      window.partnersWithoutErrorAndBids = listofPartnersWithmi.filter(partner => !erroredPartners.includes(partner));
+      findPartnersWithoutErrorsAndBids(erroredPartners, listofPartnersWithmi, response.ext);
     }
+
     if (response.seatbid) {
       // a seatbid object contains a `bid` array and a `seat` string
       response.seatbid.forEach(seatbid => {
