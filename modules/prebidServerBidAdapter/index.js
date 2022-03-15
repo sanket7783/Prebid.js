@@ -530,10 +530,11 @@ function getErroredPartners(responseExt) {
 
 function findPartnersWithoutErrorsAndBids(erroredPartners, listofPartnersWithmi, responseExt) {
   window.partnersWithoutErrorAndBids = listofPartnersWithmi.filter(partner => !erroredPartners.includes(partner));
-  const isPubMaticReturnedError = erroredPartners.indexOf('pubmatic');
-  if (isPubMaticReturnedError > -1 && responseExt.errors[erroredPartners[isPubMaticReturnedError]][0].code == 1) {
-    window.partnersWithoutErrorAndBids.push(erroredPartners[isPubMaticReturnedError]);
-  }
+  erroredPartners.forEach(partner => {
+    if (responseExt.errors[partner] && responseExt.errors[partner][0].code == 1) {
+      window.partnersWithoutErrorAndBids.push(partner);
+    }
+  })
 }
 
 const OPEN_RTB_PROTOCOL = {
