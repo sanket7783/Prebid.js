@@ -41,7 +41,7 @@ let defaultAliases = {
   districtmDMX: 'dmx',
   pubmatic2: 'pubmatic'
 }
-
+let isPrebidKeys = false;
 /**
  * @typedef {Object} AdapterOptions
  * @summary s2sConfig parameter that adds arguments to resulting OpenRTB payload that goes to Prebid Server
@@ -541,7 +541,7 @@ const OPEN_RTB_PROTOCOL = {
     let imps = [];
     let aliases = {};
     let owAliases;
-
+    isPrebidKeys = s2sConfig.extPrebid && s2sConfig.extPrebid.isUsePrebidKeysEnabled;
     // Check if sonobi partner is present in requestedbidders array.
     let isSonobiPresent = requestedBidders.includes('sonobi');
     window.pbsLatency = window.pbsLatency || {};
@@ -953,6 +953,7 @@ const OPEN_RTB_PROTOCOL = {
     // delete isPrebidPubMaticAnalyticsEnabled from extPrebid object as it not required in request.
     // it is only used to decide impressionId for wiid parameter in logger and tracker calls.
     delete request.ext.prebid.isPrebidPubMaticAnalyticsEnabled;
+    delete request.ext.prebid.isUsePrebidKeysEnabled;
     addBidderFirstPartyDataToRequest(request);
     return request;
   },
@@ -1031,7 +1032,8 @@ const OPEN_RTB_PROTOCOL = {
             // adding to pwtbuyid_pubmatic
             bidObject.adserverTargeting = {};
             if (extPrebidTargeting.hasOwnProperty('hb_buyid_pubmatic')) {
-              bidObject.adserverTargeting['pwtbuyid_pubmatic'] = extPrebidTargeting['hb_buyid_pubmatic'];
+              isPrebidKeys ? bidObject.adserverTargeting['hb_buyid_pubmatic'] = extPrebidTargeting['hb_buyid_pubmatic']
+                : bidObject.adserverTargeting['pwtbuyid_pubmatic'] = extPrebidTargeting['hb_buyid_pubmatic'];
             }
             // We will not copy all ext.prebid.targeting keys to bidObject.adserverTargeting so commenting below line
             // bidObject.adserverTargeting = extPrebidTargeting;
