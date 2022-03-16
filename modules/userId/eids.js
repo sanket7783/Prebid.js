@@ -336,3 +336,8 @@ export function buildEidPermissions(submodules) {
     });
   return eidPermissions;
 }
+
+// this function will return USER_IDS_CONFIG
+export function getUserIdsConfig() {
+  return USER_IDS_CONFIG;
+}
