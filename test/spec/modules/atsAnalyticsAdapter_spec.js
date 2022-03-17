@@ -186,6 +186,7 @@ describe('ats analytics adapter', function () {
       let requests = server.requests.filter(req => {
         return req.url.indexOf(analyticsUrl) > -1;
       });
+
       expect(requests.length).to.equal(1);
 
       let realAfterBid = JSON.parse(requests[0].requestBody);
@@ -195,8 +196,6 @@ describe('ats analytics adapter', function () {
 
       // check that the publisher ID is configured via options
       expect(atsAnalyticsAdapter.context.pid).to.equal(initOptions.pid);
-
-      atsAnalyticsAdapter.shouldFireRequest.restore();
     })
     it('check browser is safari', function () {
       sinon.stub(atsAnalyticsAdapter, 'getUserAgent').returns('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/536.25 (KHTML, like Gecko) Version/6.0 Safari/536.25');

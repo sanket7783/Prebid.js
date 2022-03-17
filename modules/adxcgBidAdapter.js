@@ -14,7 +14,7 @@ import {
   isArray,
   isPlainObject,
   parseUrl,
-  replaceAuctionPrice, triggerPixel
+  replaceAuctionPrice, triggerPixel, logMessage
 } from '../src/utils.js';
 import {config} from '../src/config.js';
 

@@ -144,6 +144,9 @@ import {
   logWarn, isEmptyStr, isNumber
 } from '../../src/utils.js';
 import includes from 'core-js-pure/features/array/includes.js';
+import MD5 from 'crypto-js/md5.js';
+import SHA1 from 'crypto-js/sha1.js';
+import SHA256 from 'crypto-js/sha256.js';
 
 const MODULE_NAME = 'User ID';
 const COOKIE = 'cookie';

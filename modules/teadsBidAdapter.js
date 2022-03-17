@@ -211,6 +211,7 @@ function buildRequestObject(bid) {
   reqObj.bidderRequestId = getBidIdParameter('bidderRequestId', bid);
   reqObj.placementId = parseInt(placementId, 10);
   reqObj.pageId = parseInt(pageId, 10);
+  reqObj.adUnitCode = removePartnerNameFromAdUnitCode(getBidIdParameter('adUnitCode', bid));
   reqObj.adUnitCode = getBidIdParameter('adUnitCode', bid);
   reqObj.auctionId = getBidIdParameter('auctionId', bid);
   reqObj.transactionId = getBidIdParameter('transactionId', bid);

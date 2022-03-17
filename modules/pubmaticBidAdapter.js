@@ -176,12 +176,6 @@ const BB_RENDERER = {
   }
 };
 
-const MEDIATYPE = [
-  BANNER,
-  VIDEO,
-  NATIVE
-]
-
 let publisherId = 0;
 let isInvalidNativeRequest = false;
 let NATIVE_ASSET_ID_TO_KEY_MAP = {};
