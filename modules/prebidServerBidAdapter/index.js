@@ -373,6 +373,18 @@ function _appendSiteAppDevice(request, pageUrl, accountId) {
   if (!request.device.h) {
     request.device.h = window.innerHeight;
   }
+  if (!request.device.ua) {
+    request.device.ua = navigator.userAgent;
+  }
+  if (!request.device.js) {
+    request.device.js = 1;
+  }
+  if (!request.device.dnt) {
+    request.device.dnt = (navigator.doNotTrack == 'yes' || navigator.doNotTrack == '1' || navigator.msDoNotTrack == '1') ? 1 : 0;
+  }
+  if (!request.device.language) {
+    request.device.language = navigator.language;
+  }
 }
 
 function addBidderFirstPartyDataToRequest(request) {

@@ -1045,7 +1045,11 @@ describe('S2S Adapter', function () {
       expect(requestBid.device).to.deep.equal({
         ifa: '6D92078A-8246-4BA4-AE5B-76104861E7DC',
         w: window.innerWidth,
-        h: window.innerHeight
+        h: window.innerHeight,
+        ua: navigator.userAgent,
+        js: 1,
+        dnt: (navigator.doNotTrack == 'yes' || navigator.doNotTrack == '1' || navigator.msDoNotTrack == '1') ? 1 : 0,
+        language: navigator.language
       });
       expect(requestBid.app).to.deep.equal({
         bundle: 'com.test.app',
@@ -1072,7 +1076,11 @@ describe('S2S Adapter', function () {
       expect(requestBid.device).to.deep.equal({
         ifa: '6D92078A-8246-4BA4-AE5B-76104861E7DC',
         w: window.innerWidth,
-        h: window.innerHeight
+        h: window.innerHeight,
+        ua: navigator.userAgent,
+        js: 1,
+        dnt: (navigator.doNotTrack == 'yes' || navigator.doNotTrack == '1' || navigator.msDoNotTrack == '1') ? 1 : 0,
+        language: navigator.language
       });
       expect(requestBid.app).to.deep.equal({
         bundle: 'com.test.app',
@@ -1193,7 +1201,7 @@ describe('S2S Adapter', function () {
       });
     });
 
-    it('adds device.w and device.h even if the config lacks a device object', function () {
+    it('adds device w,h,ua,js,dnt,language  even if the config lacks a device object', function () {
       const _config = {
         s2sConfig: CONFIG,
         app: { bundle: 'com.test.app' },
@@ -1204,7 +1212,11 @@ describe('S2S Adapter', function () {
       const requestBid = JSON.parse(server.requests[0].requestBody);
       expect(requestBid.device).to.deep.equal({
         w: window.innerWidth,
-        h: window.innerHeight
+        h: window.innerHeight,
+        ua: navigator.userAgent,
+        js: 1,
+        dnt: (navigator.doNotTrack == 'yes' || navigator.doNotTrack == '1' || navigator.msDoNotTrack == '1') ? 1 : 0,
+        language: navigator.language
       });
       expect(requestBid.app).to.deep.equal({
         bundle: 'com.test.app',
