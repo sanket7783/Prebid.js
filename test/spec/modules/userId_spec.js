@@ -1560,7 +1560,7 @@ describe('User ID', function () {
         }, {adUnits});
       });
 
-      xit('test hook from intentIqId cookies', function (done) {
+      it('test hook from intentIqId cookies', function (done) {
         // simulate existing browser local storage values
         coreStorage.setCookie('intentIqId', 'abcdefghijk', (new Date(Date.now() + 5000).toUTCString()));
 
@@ -1634,7 +1634,7 @@ describe('User ID', function () {
         }, {adUnits});
       });
 
-      xit('test hook from zeotapIdPlus cookies', function (done) {
+      it('test hook from zeotapIdPlus cookies', function (done) {
         // simulate existing browser local storage values
         coreStorage.setCookie('IDP', btoa(JSON.stringify('abcdefghijk')), (new Date(Date.now() + 5000).toUTCString()));
 
@@ -1871,7 +1871,7 @@ describe('User ID', function () {
               expect(bid).to.have.deep.nested.property('userId.kpuid');
               expect(bid.userId.kpuid).to.equal('KINESSO_ID');
 
-              expect(bid.userIdAsEids.length).to.equal(15);
+              expect(bid.userIdAsEids.length).to.equal(17);
             });
           });
           coreStorage.setCookie('pubcid', '', EXPIRED_COOKIE_DATE);
@@ -2012,7 +2012,7 @@ describe('User ID', function () {
               expect(bid).to.have.deep.nested.property('userId.kpuid');
               expect(bid.userId.kpuid).to.equal('KINESSO_ID');
 
-              expect(bid.userIdAsEids.length).to.equal(14);
+              expect(bid.userIdAsEids.length).to.equal(16);
             });
           });
           coreStorage.setCookie('pubcid', '', EXPIRED_COOKIE_DATE);
@@ -2191,7 +2191,7 @@ describe('User ID', function () {
 
               expect(bid).to.have.deep.nested.property('userId.kpuid');
               expect(bid.userId.kpuid).to.equal('KINESSO_ID');
-              expect(bid.userIdAsEids.length).to.equal(13);
+              expect(bid.userIdAsEids.length).to.equal(15);
             });
           });
           coreStorage.setCookie('pubcid', '', EXPIRED_COOKIE_DATE);
@@ -2235,7 +2235,7 @@ describe('User ID', function () {
         delete window.__tcfapi;
       });
 
-      xit('pubcid callback with url', function () {
+      it('pubcid callback with url', function () {
         let adUnits = [getAdUnitMock()];
         let innerAdUnits;
         let customCfg = getConfigMock(['pubCommonId', 'pubcid', 'cookie']);
@@ -2253,7 +2253,7 @@ describe('User ID', function () {
         expect(utils.triggerPixel.getCall(0).args[0]).to.include('/any/pubcid/url');
       });
 
-      xit('unifiedid callback with url', function () {
+      it('unifiedid callback with url', function () {
         let adUnits = [getAdUnitMock()];
         let innerAdUnits;
         let customCfg = getConfigMock(['unifiedId', 'unifiedid', 'cookie']);
@@ -2271,7 +2271,7 @@ describe('User ID', function () {
         expect(server.requests[0].url).to.equal('/any/unifiedid/url');
       });
 
-      xit('unifiedid callback with partner', function () {
+      it('unifiedid callback with partner', function () {
         let adUnits = [getAdUnitMock()];
         let innerAdUnits;
         let customCfg = getConfigMock(['unifiedId', 'unifiedid', 'cookie']);
@@ -2553,41 +2553,5 @@ describe('User ID', function () {
         });
       });
     });
-  });
-
-  describe('Handle SSO Login', function() {
-    beforeEach(function () {
-      (getGlobal()).setUserIdentities({});
-    });
-
-    xit('Email hashes are stored in userIdentities Object on SSO login if ssoEnabled is true', function () {
-      function getEmail() {
-        return 'abc@def.com';
-      }
-      function getBasicProfile() {
-        return { 'getEmail': getEmail }
-      }
-      var dummyGoogleUserObject = { 'getBasicProfile': getBasicProfile }
-      window.PWT = window.PWT || {};
-      window.PWT.ssoEnabled = true;
-      expect(typeof (getGlobal()).onSSOLogin).to.equal('function');
-      getGlobal().onSSOLogin({'provider': 'google', 'googleUserObject': dummyGoogleUserObject});
-      expect((getGlobal()).getUserIdentities().emailHash).to.exist;
-    });
-
-    xit('Email hashes are not stored in userIdentities Object on SSO login if ssoEnabled is false', function () {
-      function getEmail() {
-        return 'abc@def.com';
-      }
-      function getBasicProfile() {
-        return { 'getEmail': getEmail }
-      }
-      var dummyGoogleUserObject = { 'getBasicProfile': getBasicProfile }
-      window.PWT.ssoEnabled = false;
-
-      expect(typeof (getGlobal()).onSSOLogin).to.equal('function');
-      getGlobal().onSSOLogin({'provider': 'google', 'googleUserObject': dummyGoogleUserObject});
-      expect((getGlobal()).getUserIdentities().emailHash).to.not.exist;
-    });
-  });
+  })
 });

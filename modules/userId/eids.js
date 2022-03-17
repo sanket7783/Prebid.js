@@ -20,6 +20,12 @@ const USER_IDS_CONFIG = {
     atype: 1
   },
 
+  // naveggId
+  'naveggId': {
+    source: 'navegg.com',
+    atype: 1
+  },
+
   // pubCommonId
   'pubcid': {
     source: 'pubcid.org',

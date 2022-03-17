@@ -466,6 +466,33 @@ describe('IndexexchangeAdapter', function () {
           ver: DEFAULT_USERID_BID_DATA.flocId.version
         }
       }]
+    }, {
+      source: 'uidapi.com',
+      uids: [{
+        // when calling createEidsArray, UID2's getValue func returns .id, which is then set in uids
+        id: DEFAULT_USERID_DATA.uid2.id,
+        ext: {
+          rtiPartner: 'UID2'
+        }
+      }]
+    }
+  ];
+
+  const DEFAULT_USERID_BID_DATA = {
+    lotamePanoramaId: 'bd738d136bdaa841117fe9b331bb4',
+    flocId: { id: '1234', version: 'chrome.1.2' }
+  };
+
+  const DEFAULT_FLOC_USERID_PAYLOAD = [
+    {
+      source: 'chrome.com',
+      uids: [{
+        id: DEFAULT_USERID_BID_DATA.flocId.id,
+        ext: {
+          rtiPartner: 'flocId',
+          ver: DEFAULT_USERID_BID_DATA.flocId.version
+        }
+      }]
     }
   ];
 
@@ -714,7 +741,7 @@ describe('IndexexchangeAdapter', function () {
         const payload = JSON.parse(request[0].data.r);
         expect(request).to.be.an('array');
         expect(request).to.have.lengthOf.above(0); // should be 1 or more
-        expect(payload.user.eids).to.have.lengthOf(4);
+        expect(payload.user.eids).to.have.lengthOf(5);
         expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[0]);
       });
     });
@@ -913,11 +940,102 @@ describe('IndexexchangeAdapter', function () {
       const request = spec.buildRequests(cloneValidBid, DEFAULT_OPTION)[0];
       const payload = JSON.parse(request.data.r);
 
-      expect(payload.user.eids).to.have.lengthOf(4);
+      expect(payload.user.eids).to.have.lengthOf(5);
       expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[0]);
       expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[1]);
       expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[2]);
       expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[3]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[4]);
+    });
+
+    it('IX adapter reads floc id from prebid userId and adds it to eids when there is not other eids', function () {
+      const cloneValidBid = utils.deepClone(DEFAULT_BANNER_VALID_BID);
+      cloneValidBid[0].userId = utils.deepClone(DEFAULT_USERID_BID_DATA);
+      const request = spec.buildRequests(cloneValidBid, DEFAULT_OPTION)[0];
+      const payload = JSON.parse(request.data.r);
+
+      expect(payload.user.eids).to.have.lengthOf(1);
+      expect(payload.user.eids).to.deep.include(DEFAULT_FLOC_USERID_PAYLOAD[0]);
+    });
+
+    it('IX adapter reads floc id from prebid userId and appends it to eids', function () {
+      const cloneValidBid = utils.deepClone(DEFAULT_BANNER_VALID_BID);
+      cloneValidBid[0].userIdAsEids = utils.deepClone(DEFAULT_USERIDASEIDS_DATA);
+      cloneValidBid[0].userId = utils.deepClone(DEFAULT_USERID_BID_DATA);
+      const request = spec.buildRequests(cloneValidBid, DEFAULT_OPTION)[0];
+      const payload = JSON.parse(request.data.r);
+
+      expect(payload.user.eids).to.have.lengthOf(6);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[0]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[1]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[2]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[3]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[4]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_FLOC_USERID_PAYLOAD[0]);
+    });
+
+    it('IX adapter reads empty floc obj from prebid userId it, floc is not added to eids', function () {
+      const cloneValidBid = utils.deepClone(DEFAULT_BANNER_VALID_BID);
+      cloneValidBid[0].userIdAsEids = utils.deepClone(DEFAULT_USERIDASEIDS_DATA);
+      cloneValidBid[0].userId = { 'flocId': {} }
+      const request = spec.buildRequests(cloneValidBid, DEFAULT_OPTION)[0];
+      const payload = JSON.parse(request.data.r);
+
+      expect(payload.user.eids).to.have.lengthOf(5);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[0]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[1]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[2]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[3]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[4]);
+      expect(payload.user.eids).should.not.include(DEFAULT_FLOC_USERID_PAYLOAD[0]);
+    });
+
+    it('IX adapter reads floc obj from prebid userId it version is missing, floc is not added to eids', function () {
+      const cloneValidBid = utils.deepClone(DEFAULT_BANNER_VALID_BID);
+      cloneValidBid[0].userIdAsEids = utils.deepClone(DEFAULT_USERIDASEIDS_DATA);
+      cloneValidBid[0].userId = { 'flocId': { 'id': 'abcd' } }
+      const request = spec.buildRequests(cloneValidBid, DEFAULT_OPTION)[0];
+      const payload = JSON.parse(request.data.r);
+
+      expect(payload.user.eids).to.have.lengthOf(5);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[0]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[1]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[2]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[3]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[4]);
+      expect(payload.user.eids).should.not.include(DEFAULT_FLOC_USERID_PAYLOAD[0]);
+    });
+
+    it('IX adapter reads floc obj from prebid userId it ID is missing, floc is not added to eids', function () {
+      const cloneValidBid = utils.deepClone(DEFAULT_BANNER_VALID_BID);
+      cloneValidBid[0].userIdAsEids = utils.deepClone(DEFAULT_USERIDASEIDS_DATA);
+      cloneValidBid[0].userId = { 'flocId': { 'version': 'chrome.a.b.c' } }
+      const request = spec.buildRequests(cloneValidBid, DEFAULT_OPTION)[0];
+      const payload = JSON.parse(request.data.r);
+
+      expect(payload.user.eids).to.have.lengthOf(5);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[0]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[1]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[2]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[3]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[4]);
+      expect(payload.user.eids).should.not.include(DEFAULT_FLOC_USERID_PAYLOAD[0]);
+    });
+
+    it('IX adapter reads floc id with empty id from prebid userId and it does not added to eids', function () {
+      const cloneValidBid = utils.deepClone(DEFAULT_BANNER_VALID_BID);
+      cloneValidBid[0].userIdAsEids = utils.deepClone(DEFAULT_USERIDASEIDS_DATA);
+      cloneValidBid[0].userId = { flocID: { id: '', ver: 'chrome.1.2.3' } };
+      const request = spec.buildRequests(cloneValidBid, DEFAULT_OPTION)[0];
+      const payload = JSON.parse(request.data.r);
+
+      expect(payload.user.eids).to.have.lengthOf(5);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[0]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[1]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[2]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[3]);
+      expect(payload.user.eids).to.deep.include(DEFAULT_USERID_PAYLOAD[4]);
+      expect(payload.user.eids).should.not.include(DEFAULT_FLOC_USERID_PAYLOAD[0]);
     });
 
     it('IX adapter reads floc id from prebid userId and adds it to eids when there is not other eids', function () {
@@ -1123,7 +1241,7 @@ describe('IndexexchangeAdapter', function () {
       })
 
       expect(payload.user).to.exist;
-      expect(payload.user.eids).to.have.lengthOf(6);
+      expect(payload.user.eids).to.have.lengthOf(7);
 
       expect(payload.user.eids).to.deep.include(validUserIdPayload[0]);
       expect(payload.user.eids).to.deep.include(validUserIdPayload[1]);
@@ -1131,6 +1249,7 @@ describe('IndexexchangeAdapter', function () {
       expect(payload.user.eids).to.deep.include(validUserIdPayload[3]);
       expect(payload.user.eids).to.deep.include(validUserIdPayload[4]);
       expect(payload.user.eids).to.deep.include(validUserIdPayload[5]);
+      expect(payload.user.eids).to.deep.include(validUserIdPayload[6]);
     });
 
     it('IXL and Prebid are mutually exclusive', function () {
@@ -1170,12 +1289,168 @@ describe('IndexexchangeAdapter', function () {
       });
 
       const payload = JSON.parse(request.data.r);
-      expect(payload.user.eids).to.have.lengthOf(5);
+      expect(payload.user.eids).to.have.lengthOf(6);
       expect(payload.user.eids).to.deep.include(validUserIdPayload[0]);
       expect(payload.user.eids).to.deep.include(validUserIdPayload[1]);
       expect(payload.user.eids).to.deep.include(validUserIdPayload[2]);
       expect(payload.user.eids).to.deep.include(validUserIdPayload[3]);
       expect(payload.user.eids).to.deep.include(validUserIdPayload[4]);
+      expect(payload.user.eids).to.deep.include(validUserIdPayload[5]);
+    });
+  });
+
+  describe('getUserIds', function () {
+    it('request should contain userId information if configured and within bid request', function () {
+      config.setConfig({
+        userSync: {
+          syncDelay: 0,
+          userIds: [
+            { name: 'lotamePanoramaId' },
+            { name: 'merkleId' },
+            { name: 'parrableId' },
+          ]
+        }
+      });
+
+      const bid = utils.deepClone(DEFAULT_BANNER_VALID_BID[0]);
+      bid.userId = DEFAULT_USERID_BID_DATA;
+
+      const request = spec.buildRequests([bid], DEFAULT_OPTION)[0];
+      const r = JSON.parse(request.data.r);
+
+      expect(r.ext.ixdiag.userIds).to.be.an('array');
+      expect(r.ext.ixdiag.userIds.should.include('lotamePanoramaId'));
+      expect(r.ext.ixdiag.userIds.should.not.include('merkleId'));
+      expect(r.ext.ixdiag.userIds.should.not.include('parrableId'));
+    });
+  });
+
+  describe('First party data', function () {
+    afterEach(function () {
+      config.setConfig({
+        ortb2: {}
+      })
+    });
+
+    it('should not set ixdiag.fpd value if not defined', function () {
+      config.setConfig({
+        ortb2: {}
+      });
+
+      const request = spec.buildRequests(DEFAULT_BANNER_VALID_BID)[0];
+      const r = JSON.parse(request.data.r);
+
+      expect(r.ext.ixdiag.fpd).to.be.undefined;
+    });
+
+    it('should set ixdiag.fpd value if it exists using fpd', function () {
+      config.setConfig({
+        fpd: {
+          site: {
+            data: {
+              pageType: 'article'
+            }
+          }
+        }
+      });
+
+      const request = spec.buildRequests(DEFAULT_BANNER_VALID_BID)[0];
+      const r = JSON.parse(request.data.r);
+
+      expect(r.ext.ixdiag.fpd).to.exist;
+    });
+
+    it('should set ixdiag.fpd value if it exists using ortb2', function () {
+      config.setConfig({
+        ortb2: {
+          site: {
+            ext: {
+              data: {
+                pageType: 'article'
+              }
+            }
+          }
+        }
+      });
+
+      const request = spec.buildRequests(DEFAULT_BANNER_VALID_BID)[0];
+      const r = JSON.parse(request.data.r);
+
+      expect(r.ext.ixdiag.fpd).to.exist;
+    });
+
+    it('should not send information that is not part of openRTB spec v2.5 using fpd', function () {
+      config.setConfig({
+        fpd: {
+          site: {
+            keywords: 'power tools, drills',
+            search: 'drill',
+            testProperty: 'test_string'
+          },
+          user: {
+            keywords: ['a'],
+            testProperty: 'test_string'
+          }
+        }
+      });
+
+      const request = spec.buildRequests(DEFAULT_BANNER_VALID_BID)[0];
+      const r = JSON.parse(request.data.r);
+
+      expect(r.site.keywords).to.exist;
+      expect(r.site.search).to.exist;
+      expect(r.site.testProperty).to.be.undefined;
+      expect(r.user.keywords).to.exist;
+      expect(r.user.testProperty).to.be.undefined;
+    });
+
+    it('should not send information that is not part of openRTB spec v2.5 using ortb2', function () {
+      config.setConfig({
+        ortb2: {
+          site: {
+            keywords: 'power tools, drills',
+            search: 'drill',
+            testProperty: 'test_string'
+          },
+          user: {
+            keywords: ['a'],
+            testProperty: 'test_string'
+          }
+        }
+      });
+
+      const request = spec.buildRequests(DEFAULT_BANNER_VALID_BID)[0];
+      const r = JSON.parse(request.data.r);
+
+      expect(r.site.keywords).to.exist;
+      expect(r.site.search).to.exist;
+      expect(r.site.testProperty).to.be.undefined;
+      expect(r.user.keywords).to.exist;
+      expect(r.user.testProperty).to.be.undefined;
+    });
+
+    it('should not add fpd data to r object if it exceeds maximum request', function () {
+      config.setConfig({
+        ortb2: {
+          site: {
+            keywords: 'power tools, drills',
+            search: 'drill',
+          },
+          user: {
+            keywords: Array(1000).join('#'),
+          }
+        }
+      });
+
+      const bid = utils.deepClone(DEFAULT_BANNER_VALID_BID[0]);
+      bid.mediaTypes.banner.sizes = LARGE_SET_OF_SIZES;
+
+      const request = spec.buildRequests([bid])[0];
+      const r = JSON.parse(request.data.r);
+
+      expect(r.site.ref).to.exist;
+      expect(r.site.keywords).to.be.undefined;
+      expect(r.user).to.be.undefined;
     });
   });
 
@@ -1378,16 +1653,16 @@ describe('IndexexchangeAdapter', function () {
         }
       };
       const requests = spec.buildRequests(validBids, DEFAULT_OPTION);
-      const { dfp_ad_unit_code } = JSON.parse(requests[0].data.r).imp[0].banner.format[0].ext;
+      const { ext: { dfp_ad_unit_code } } = JSON.parse(requests[0].data.r).imp[0];
       expect(dfp_ad_unit_code).to.equal(AD_UNIT_CODE);
     });
 
     it('should not send dfp_adunit_code in request if ortb2Imp.ext.data.adserver.adslot does not exists', function () {
       const validBids = utils.deepClone(DEFAULT_BANNER_VALID_BID);
       const requests = spec.buildRequests(validBids, DEFAULT_OPTION);
-      const { dfp_ad_unit_code } = JSON.parse(requests[0].data.r).imp[0].banner.format[0].ext;
+      const { ext } = JSON.parse(requests[0].data.r).imp[0];
 
-      expect(dfp_ad_unit_code).to.not.exist;
+      expect(ext).to.not.exist;
     });
 
     it('payload should have correct format and value', function () {
@@ -1429,19 +1704,6 @@ describe('IndexexchangeAdapter', function () {
     it('payload should have correct format and value for r.id when bidderRequestId is a number ', function () {
       const bidWithIntId = utils.deepClone(DEFAULT_BANNER_VALID_BID);
       bidWithIntId[0].bidderRequestId = 123456;
-
-      request = spec.buildRequests(bidWithIntId, DEFAULT_OPTION)[0];
-
-      const payload = JSON.parse(request.data.r);
-      expect(bidWithIntId[0].bidderRequestId).to.be.a('number');
-      expect(payload.id).to.equal(bidWithIntId[0].bidderRequestId.toString());
-      expect(payload.id).to.be.a('string');
-    });
-
-    it('payload should not include schain when not provided', function () {
-      const payload = JSON.parse(queryWithoutSchain.r);
-      expect(payload.source).to.not.exist; // source object currently only written for schain
-    });
 
     it('impression should have correct format and value', function () {
       const impression = JSON.parse(query.r).imp[0];
