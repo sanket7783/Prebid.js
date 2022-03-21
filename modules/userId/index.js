@@ -741,8 +741,6 @@ function onSSOLogin(data) {
   switch (data.provider) {
     case undefined:
     case 'facebook':
-      var timeout = 0;
-      setTimeout(function() {
         window.FB && window.FB.getLoginStatus(function (response) {
           if (response.status === 'connected') {
             window.PWT = window.PWT || {};
@@ -766,7 +764,6 @@ function onSSOLogin(data) {
             logInfo('SSO - Error fetching login information from facebook');
           }
         }, true);
-      }, timeout);
       break;
     case 'google':
       var profile = data.googleUserObject.getBasicProfile();
