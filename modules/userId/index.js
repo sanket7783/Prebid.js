@@ -675,6 +675,7 @@ function setUserIdentities(userIdentityData) {
 };
 
 function updateModuleParams(moduleToUpdate) {
+  //this is specific to id5id partner. needs to be revisited when we integrate additional partners for email hashes.
   moduleToUpdate.params[CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name].param] = '1=' + getUserIdentities().emailHash['SHA256'];
 }
 
@@ -756,6 +757,7 @@ function onSSOLogin(data) {
               email = response.email || undefined;
               logInfo('SSO - Information successfully retrieved by Facebook API.');
               generateEmailHash(email, emailHash);
+              window.PWT.loginEvent = true;
               refThis.setUserIdentities({
                 emailHash: emailHash
               });
@@ -770,6 +772,7 @@ function onSSOLogin(data) {
       email = profile.getEmail() || undefined;
       logInfo('SSO - Information successfully retrieved by Google API');
       generateEmailHash(email, emailHash);
+      window.PWT.loginEvent = true;
       refThis.setUserIdentities({
         emailHash: emailHash
       });
