@@ -678,7 +678,7 @@ function updateModuleParams(moduleToUpdate) {
   moduleToUpdate.params[CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name].param] = '1=' + getUserIdentities().emailHash['SHA256'];
 }
 
-function reTriggerPartnerCallsWithEmailHashes() {
+export function reTriggerPartnerCallsWithEmailHashes() {
   var modulesToRefresh = [];
   var scriptBasedModulesToRefresh = [];
   var primaryModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.PRIMARY_MODULES;
@@ -698,10 +698,9 @@ function reTriggerPartnerCallsWithEmailHashes() {
   reTriggerScriptBasedAPICalls(scriptBasedModulesToRefresh);
 }
 
-function reTriggerScriptBasedAPICalls(modulesToRefresh) {
+export function reTriggerScriptBasedAPICalls(modulesToRefresh) {
   var i = 0;
   var userIdentity = getUserIdentities() || {};
-
   for (i in modulesToRefresh) {
     switch (modulesToRefresh[i]) {
       case 'zeotapIdPlus':
