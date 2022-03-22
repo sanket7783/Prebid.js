@@ -801,8 +801,9 @@ const OPEN_RTB_PROTOCOL = {
           logError('PBS: getFloor threw an error: ', e);
         }
         if (floorInfo && floorInfo.currency && !isNaN(parseFloat(floorInfo.floor))) {
-          imp.bidfloor = parseFloat(floorInfo.floor);
-          imp.bidfloorcur = floorInfo.currency
+			// Restriciting floor specific parameters being sent to auction request
+			// imp.bidfloor = parseFloat(floorInfo.floor);
+			// imp.bidfloorcur = floorInfo.currency
         }
       }
 
