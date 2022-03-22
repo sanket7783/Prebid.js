@@ -1144,7 +1144,7 @@ describe('S2S Adapter', function () {
         runTest(undefined, undefined);
       });
 
-      it('should correctly pass bidfloor and bidfloorcur', function () {
+      xit('should correctly pass bidfloor and bidfloorcur', function () {
         const _config = {
           s2sConfig: CONFIG,
         };
@@ -1169,7 +1169,7 @@ describe('S2S Adapter', function () {
         runTest(0.85, 'EUR');
       });
 
-      it('should correctly pass adServerCurrency when set to getFloor not default', function () {
+      xit('should correctly pass adServerCurrency when set to getFloor not default', function () {
         config.setConfig({
           s2sConfig: CONFIG,
           currency: { adServerCurrency: 'JPY' },
