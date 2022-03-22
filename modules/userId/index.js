@@ -727,52 +727,57 @@ function getUserIdentities() {
   return userIdentity;
 }
 
+function processFBLoginData(refThis, response) {
+  var emailHash = {};
+  if (response.status === 'connected') {
+    window.PWT = window.PWT || {};
+    window.PWT.fbAt = response.authResponse.accessToken;
+    window.FB && window.FB.api('/me?fields=email&access_token=' + window.PWT.fbAt, function (response) {
+      logInfo('SSO - Data received from FB API');
+      if (response.error) {
+        logInfo('SSO - User information could not be retrieved by facebook api [', response.error.message, ']');
+        return;
+      }
+      logInfo('SSO - Information successfully retrieved by Facebook API.');
+      generateEmailHash(response.email || undefined, emailHash);
+      refThis.setUserIdentities({
+        emailHash: emailHash
+      });
+    });
+  } else {
+    logInfo('SSO - Error fetching login information from facebook');
+  }
+}
+
 /**
  * This function is used to read sso information from facebook and google apis.
  * @param {String} provider SSO provider for which the api call is to be made
  * @param {Object} userObject Google's user object, passed from google's callback function
  */
-function onSSOLogin(data) {
+ function onSSOLogin(data) {
   var refThis = this;
   var email;
   var emailHash = {};
-
   if (!window.PWT || !window.PWT.ssoEnabled) return;
 
   switch (data.provider) {
     case undefined:
     case 'facebook':
+      if (data.provider === 'facebook') {
         window.FB && window.FB.getLoginStatus(function (response) {
-          if (response.status === 'connected') {
-            window.PWT = window.PWT || {};
-            window.PWT.fbAt = response.authResponse.accessToken;
-            window.FB && window.FB.api('/me?fields=email&access_token=' + window.PWT.fbAt, function (response) {
-              logInfo('SSO - Data received from FB API');
-
-              if (response.error) {
-                logInfo('SSO - User information could not be retrieved by facebook api [', response.error.message, ']');
-                return;
-              }
-
-              email = response.email || undefined;
-              logInfo('SSO - Information successfully retrieved by Facebook API.');
-              generateEmailHash(email, emailHash);
-              window.PWT.loginEvent = true;
-              refThis.setUserIdentities({
-                emailHash: emailHash
-              });
-            });
-          } else {
-            logInfo('SSO - Error fetching login information from facebook');
-          }
+          processFBLoginData(refThis, response);
         }, true);
+      } else {
+        window.FB && window.FB.Event.subscribe('auth.statusChange', function (response) {
+          processFBLoginData(refThis, response);
+        });
+      }
       break;
     case 'google':
       var profile = data.googleUserObject.getBasicProfile();
       email = profile.getEmail() || undefined;
       logInfo('SSO - Information successfully retrieved by Google API');
       generateEmailHash(email, emailHash);
-      window.PWT.loginEvent = true;
       refThis.setUserIdentities({
         emailHash: emailHash
       });
