@@ -30,6 +30,7 @@ let _s2sConfigs;
 
 let eidPermissions;
 let impressionReqIdMap = {};
+window.partnersWithoutErrorAndBids = {};
 let dealChannelValues = {
   1: 'PMP',
   5: 'PREF',
@@ -528,11 +529,11 @@ function getErroredPartners(responseExt) {
   }
 }
 
-function findPartnersWithoutErrorsAndBids(erroredPartners, listofPartnersWithmi, responseExt) {
-  window.partnersWithoutErrorAndBids = listofPartnersWithmi.filter(partner => !erroredPartners.includes(partner));
+function findPartnersWithoutErrorsAndBids(erroredPartners, listofPartnersWithmi, responseExt, impValue) {
+  window.partnersWithoutErrorAndBids[impValue] = listofPartnersWithmi.filter(partner => !erroredPartners.includes(partner));
   erroredPartners.forEach(partner => {
     if (responseExt.errors[partner] && responseExt.errors[partner][0].code == 1) {
-      window.partnersWithoutErrorAndBids.push(partner);
+      window.partnersWithoutErrorAndBids[impValue].push(partner);
     }
   })
 }
@@ -801,9 +802,9 @@ const OPEN_RTB_PROTOCOL = {
           logError('PBS: getFloor threw an error: ', e);
         }
         if (floorInfo && floorInfo.currency && !isNaN(parseFloat(floorInfo.floor))) {
-			// Restriciting floor specific parameters being sent to auction request
-			// imp.bidfloor = parseFloat(floorInfo.floor);
-			// imp.bidfloorcur = floorInfo.currency
+          // Restriciting floor specific parameters being sent to auction request
+          // imp.bidfloor = parseFloat(floorInfo.floor);
+          // imp.bidfloorcur = floorInfo.currency
         }
       }
 
@@ -972,16 +973,16 @@ const OPEN_RTB_PROTOCOL = {
       .forEach(info => getPbsResponseData(bidderRequests, response, info[0], info[1]))
     const miObj = getMiValues(response.ext) || {};
     const partnerResponseTimeObj = getPartnerResponseTime(response.ext) || {};
-    const listofPartnersWithmi = window.partnersWithoutErrorAndBids = Object.keys(miObj);
+    const listofPartnersWithmi = window.partnersWithoutErrorAndBids[impValue] = Object.keys(miObj);
     const erroredPartners = getErroredPartners(response.ext);
     if (erroredPartners) {
-      findPartnersWithoutErrorsAndBids(erroredPartners, listofPartnersWithmi, response.ext);
+      findPartnersWithoutErrorsAndBids(erroredPartners, listofPartnersWithmi, response.ext, impValue);
     }
 
     if (response.seatbid) {
       // a seatbid object contains a `bid` array and a `seat` string
       response.seatbid.forEach(seatbid => {
-        window.partnersWithoutErrorAndBids = window.partnersWithoutErrorAndBids.filter(partner => partner !== seatbid.seat);
+        window.partnersWithoutErrorAndBids[impValue] = window.partnersWithoutErrorAndBids[impValue].filter(partner => partner !== seatbid.seat);
         (seatbid.bid || []).forEach(bid => {
           let bidRequest;
           let key = `${bid.impid}${seatbid.seat}`;
