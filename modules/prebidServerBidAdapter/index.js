@@ -860,10 +860,10 @@ const OPEN_RTB_PROTOCOL = {
     const adServerCur = config.getConfig('currency.adServerCurrency');
     if (adServerCur && typeof adServerCur === 'string') {
       // if the value is a string, wrap it with an array
-      request.cur = [adServerCur];
+      // request.cur = [adServerCur];
     } else if (Array.isArray(adServerCur) && adServerCur.length) {
       // if it's an array, get the first element
-      request.cur = [adServerCur[0]];
+      // request.cur = [adServerCur[0]];
     }
 
     _appendSiteAppDevice(request, bidRequests[0].refererInfo.referer, s2sConfig.accountId);
