@@ -10,7 +10,7 @@ import CONSTANTS from '../../src/constants.json';
 import adapterManager from '../../src/adapterManager.js';
 import { config } from '../../src/config.js';
 import { VIDEO, NATIVE } from '../../src/mediaTypes.js';
-import { processNativeAdUnitParams } from '../../src/native.js';
+// import { processNativeAdUnitParams } from '../../src/native.js';
 import { isValid } from '../../src/adapters/bidderFactory.js';
 import events from '../../src/events.js';
 import includes from 'core-js-pure/features/array/includes.js';
@@ -569,8 +569,10 @@ const OPEN_RTB_PROTOCOL = {
       }
       impIds.add(impressionId);
 
-      const nativeParams = processNativeAdUnitParams(deepAccess(adUnit, 'mediaTypes.native'));
-      let nativeAssets;
+      // Commenting mediaTypes,native as s2s dose not support native
+      // will consider native support in hybrid phase 2
+      // const nativeParams = processNativeAdUnitParams(deepAccess(adUnit, 'mediaTypes.native'));
+      let nativeParams, nativeAssets;
       if (nativeParams) {
         try {
           nativeAssets = nativeAssetCache[impressionId] = Object.keys(nativeParams).reduce((assets, type) => {
