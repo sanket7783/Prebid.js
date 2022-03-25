@@ -859,14 +859,16 @@ const OPEN_RTB_PROTOCOL = {
     /**
      * @type {(string[]|string|undefined)} - OpenRTB property 'cur', currencies available for bids
      */
-    const adServerCur = config.getConfig('currency.adServerCurrency');
-    if (adServerCur && typeof adServerCur === 'string') {
-      // if the value is a string, wrap it with an array
-      // request.cur = [adServerCur];
-    } else if (Array.isArray(adServerCur) && adServerCur.length) {
-      // if it's an array, get the first element
-      // request.cur = [adServerCur[0]];
-    }
+    // Commenting adServerCurrency code as earlier with OW 2.5 endpoint we used to send USD only and in OW logger and tracker calls
+    // we log values only in USD as of now. We will consider sending currency selected by publisher in upcoming tasks.
+    // const adServerCur = config.getConfig('currency.adServerCurrency');
+    // if (adServerCur && typeof adServerCur === 'string') {
+    //   // if the value is a string, wrap it with an array
+    //   request.cur = [adServerCur];
+    // } else if (Array.isArray(adServerCur) && adServerCur.length) {
+    //   // if it's an array, get the first element
+    //   request.cur = [adServerCur[0]];
+    // }
 
     _appendSiteAppDevice(request, bidRequests[0].refererInfo.referer, s2sConfig.accountId);
 
