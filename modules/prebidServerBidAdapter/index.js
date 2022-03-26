@@ -984,9 +984,18 @@ const OPEN_RTB_PROTOCOL = {
     }
 
     if (response.seatbid) {
+      let impForSlots, partnerBidsForslots;
+      if (bidderRequests[0].hasOwnProperty('adUnitsS2SCopy')) {
+        impForSlots = bidderRequests[0].adUnitsS2SCopy.length;
+      }
       // a seatbid object contains a `bid` array and a `seat` string
       response.seatbid.forEach(seatbid => {
-        window.partnersWithoutErrorAndBids[impValue] = window.partnersWithoutErrorAndBids[impValue].filter(partner => partner !== seatbid.seat);
+        if (seatbid.hasOwnProperty('bid')) {
+          partnerBidsForslots = seatbid.bid.length;
+        }
+        window.partnersWithoutErrorAndBids[impValue] = window.partnersWithoutErrorAndBids[impValue].filter((partner) => {
+          return ((partner !== seatbid.seat) || (impForSlots !== partnerBidsForslots));
+        });
         (seatbid.bid || []).forEach(bid => {
           let bidRequest;
           let key = `${bid.impid}${seatbid.seat}`;
