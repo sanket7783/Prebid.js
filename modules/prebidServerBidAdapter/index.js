@@ -10,7 +10,7 @@ import CONSTANTS from '../../src/constants.json';
 import adapterManager from '../../src/adapterManager.js';
 import { config } from '../../src/config.js';
 import { VIDEO, NATIVE } from '../../src/mediaTypes.js';
-// import { processNativeAdUnitParams } from '../../src/native.js';
+import { processNativeAdUnitParams } from '../../src/native.js';
 import { isValid } from '../../src/adapters/bidderFactory.js';
 import events from '../../src/events.js';
 import includes from 'core-js-pure/features/array/includes.js';
@@ -557,6 +557,7 @@ const OPEN_RTB_PROTOCOL = {
 
     // transform ad unit into array of OpenRTB impression objects
     let impIds = new Set();
+    let nativeParams, nativeAssets;
     adUnits.forEach(adUnit => {
       // in case there is a duplicate imp.id, add '-2' suffix to the second imp.id.
       // e.g. if there are 2 adUnits (case of twin adUnit codes) with code 'test',
@@ -572,7 +573,6 @@ const OPEN_RTB_PROTOCOL = {
       // Commenting mediaTypes,native as s2s dose not support native
       // will consider native support in hybrid phase 2
       // const nativeParams = processNativeAdUnitParams(deepAccess(adUnit, 'mediaTypes.native'));
-      let nativeParams, nativeAssets;
       if (nativeParams) {
         try {
           nativeAssets = nativeAssetCache[impressionId] = Object.keys(nativeParams).reduce((assets, type) => {
@@ -639,6 +639,7 @@ const OPEN_RTB_PROTOCOL = {
       }
       const videoParams = deepAccess(adUnit, 'mediaTypes.video');
       const bannerParams = deepAccess(adUnit, 'mediaTypes.banner');
+      nativeParams = processNativeAdUnitParams(deepAccess(adUnit, 'mediaTypes.native'));
 
       adUnit.bids.forEach(bid => {
         // If bid params contains kgpv then delete it as we do not want to pass it in request.
@@ -816,6 +817,9 @@ const OPEN_RTB_PROTOCOL = {
     });
 
     if (!imps.length) {
+      if (nativeParams) {
+        logWarn('OW server side implemenation dose not support adunits of type native');
+      }
       logError('Request to Prebid Server rejected due to invalid media type(s) in adUnit.');
       return;
     }
