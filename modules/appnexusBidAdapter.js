@@ -79,6 +79,8 @@ export const spec = {
     { code: 'adasta' },
     { code: 'beintoo', gvlid: 618 },
     { code: 'targetVideo' },
+    { code: 'dg' },
+    { code: 'gps' }
   ],
   supportedMediaTypes: [BANNER, VIDEO, NATIVE],
 
