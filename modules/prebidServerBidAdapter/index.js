@@ -557,7 +557,6 @@ const OPEN_RTB_PROTOCOL = {
 
     // transform ad unit into array of OpenRTB impression objects
     let impIds = new Set();
-    let nativeParams, nativeAssets;
     adUnits.forEach(adUnit => {
       // in case there is a duplicate imp.id, add '-2' suffix to the second imp.id.
       // e.g. if there are 2 adUnits (case of twin adUnit codes) with code 'test',
@@ -570,76 +569,79 @@ const OPEN_RTB_PROTOCOL = {
       }
       impIds.add(impressionId);
 
+      const nativeParams = processNativeAdUnitParams(deepAccess(adUnit, 'mediaTypes.native'));
+      if (nativeParams) {
+        logWarn('OW server side dose not support native media types');
+      }
+      let nativeAssets;
       // Commenting mediaTypes,native as s2s dose not support native
       // will consider native support in hybrid phase 2
-      // const nativeParams = processNativeAdUnitParams(deepAccess(adUnit, 'mediaTypes.native'));
-      if (nativeParams) {
-        try {
-          nativeAssets = nativeAssetCache[impressionId] = Object.keys(nativeParams).reduce((assets, type) => {
-            let params = nativeParams[type];
+      //   if (nativeParams) {
+      //     try {
+      //       nativeAssets = nativeAssetCache[impressionId] = Object.keys(nativeParams).reduce((assets, type) => {
+      //         let params = nativeParams[type];
 
-            function newAsset(obj) {
-              return Object.assign({
-                required: params.required ? 1 : 0
-              }, obj ? cleanObj(obj) : {});
-            }
+      //         function newAsset(obj) {
+      //           return Object.assign({
+      //             required: params.required ? 1 : 0
+      //           }, obj ? cleanObj(obj) : {});
+      //         }
 
-            switch (type) {
-              case 'image':
-              case 'icon':
-                let imgTypeId = nativeImgIdMap[type];
-                let asset = cleanObj({
-                  type: imgTypeId,
-                  w: deepAccess(params, 'sizes.0'),
-                  h: deepAccess(params, 'sizes.1'),
-                  wmin: deepAccess(params, 'aspect_ratios.0.min_width'),
-                  hmin: deepAccess(params, 'aspect_ratios.0.min_height')
-                });
-                if (!((asset.w && asset.h) || (asset.hmin && asset.wmin))) {
-                  throw 'invalid img sizes (must provide sizes or min_height & min_width if using aspect_ratios)';
-                }
-                if (Array.isArray(params.aspect_ratios)) {
-                  // pass aspect_ratios as ext data I guess?
-                  asset.ext = {
-                    aspectratios: params.aspect_ratios.map(
-                      ratio => `${ratio.ratio_width}:${ratio.ratio_height}`
-                    )
-                  }
-                }
-                assets.push(newAsset({
-                  img: asset
-                }));
-                break;
-              case 'title':
-                if (!params.len) {
-                  throw 'invalid title.len';
-                }
-                assets.push(newAsset({
-                  title: {
-                    len: params.len
-                  }
-                }));
-                break;
-              default:
-                let dataAssetTypeId = nativeDataIdMap[type];
-                if (dataAssetTypeId) {
-                  assets.push(newAsset({
-                    data: {
-                      type: dataAssetTypeId,
-                      len: params.len
-                    }
-                  }))
-                }
-            }
-            return assets;
-          }, []);
-        } catch (e) {
-          logError('error creating native request: ' + String(e))
-        }
-      }
+      //         switch (type) {
+      //           case 'image':
+      //           case 'icon':
+      //             let imgTypeId = nativeImgIdMap[type];
+      //             let asset = cleanObj({
+      //               type: imgTypeId,
+      //               w: deepAccess(params, 'sizes.0'),
+      //               h: deepAccess(params, 'sizes.1'),
+      //               wmin: deepAccess(params, 'aspect_ratios.0.min_width'),
+      //               hmin: deepAccess(params, 'aspect_ratios.0.min_height')
+      //             });
+      //             if (!((asset.w && asset.h) || (asset.hmin && asset.wmin))) {
+      //               throw 'invalid img sizes (must provide sizes or min_height & min_width if using aspect_ratios)';
+      //             }
+      //             if (Array.isArray(params.aspect_ratios)) {
+      //               // pass aspect_ratios as ext data I guess?
+      //               asset.ext = {
+      //                 aspectratios: params.aspect_ratios.map(
+      //                   ratio => `${ratio.ratio_width}:${ratio.ratio_height}`
+      //                 )
+      //               }
+      //             }
+      //             assets.push(newAsset({
+      //               img: asset
+      //             }));
+      //             break;
+      //           case 'title':
+      //             if (!params.len) {
+      //               throw 'invalid title.len';
+      //             }
+      //             assets.push(newAsset({
+      //               title: {
+      //                 len: params.len
+      //               }
+      //             }));
+      //             break;
+      //           default:
+      //             let dataAssetTypeId = nativeDataIdMap[type];
+      //             if (dataAssetTypeId) {
+      //               assets.push(newAsset({
+      //                 data: {
+      //                   type: dataAssetTypeId,
+      //                   len: params.len
+      //                 }
+      //               }))
+      //             }
+      //         }
+      //         return assets;
+      //       }, []);
+      //     } catch (e) {
+      //       logError('error creating native request: ' + String(e))
+      //     }
+      //   }
       const videoParams = deepAccess(adUnit, 'mediaTypes.video');
       const bannerParams = deepAccess(adUnit, 'mediaTypes.banner');
-      nativeParams = processNativeAdUnitParams(deepAccess(adUnit, 'mediaTypes.native'));
 
       adUnit.bids.forEach(bid => {
         // If bid params contains kgpv then delete it as we do not want to pass it in request.
@@ -817,9 +819,6 @@ const OPEN_RTB_PROTOCOL = {
     });
 
     if (!imps.length) {
-      if (nativeParams) {
-        logWarn('OW server side implemenation dose not support adunits of type native');
-      }
       logError('Request to Prebid Server rejected due to invalid media type(s) in adUnit.');
       return;
     }

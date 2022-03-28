@@ -2217,6 +2217,7 @@ describe('S2S Adapter', function () {
       sinon.stub(utils, 'triggerPixel');
       sinon.stub(utils, 'insertUserSyncIframe');
       sinon.stub(utils, 'logError');
+	  sinon.stub(utils, 'logWarn');
       sinon.stub(events, 'emit');
     });
 
@@ -2224,6 +2225,7 @@ describe('S2S Adapter', function () {
       utils.triggerPixel.restore();
       utils.insertUserSyncIframe.restore();
       utils.logError.restore();
+	  utils.logWarn.restore();
       events.emit.restore();
     });
 
@@ -2713,6 +2715,7 @@ describe('S2S Adapter', function () {
       resetWurlMap();
       sinon.stub(utils, 'insertUserSyncIframe');
       sinon.stub(utils, 'logError');
+	  sinon.stub(utils, 'logWarn');
       sinon.stub(utils, 'getUniqueIdentifierStr').callsFake(() => {
         uniqueIdCount++;
         return staticUniqueIds[uniqueIdCount - 1];
@@ -2732,6 +2735,7 @@ describe('S2S Adapter', function () {
       utils.triggerPixel.resetHistory();
       utils.insertUserSyncIframe.restore();
       utils.logError.restore();
+	  utils.logWarn.restore();
       utils.getUniqueIdentifierStr.restore();
       uniqueIdCount = 0;
     });
