@@ -31,6 +31,7 @@ let _s2sConfigs;
 let eidPermissions;
 let impressionReqIdMap = {};
 window.partnersWithoutErrorAndBids = {};
+window.matchedimpressions = {};
 let dealChannelValues = {
   1: 'PMP',
   5: 'PREF',
@@ -979,7 +980,7 @@ const OPEN_RTB_PROTOCOL = {
     [['errors', 'serverErrors'], ['responsetimemillis', 'serverResponseTimeMs']]
       .forEach(info => getPbsResponseData(bidderRequests, response, info[0], info[1]))
     const miObj = getMiValues(response.ext) || {};
-    window.matchedimpressions = miObj;
+    window.matchedimpressions = {...window.matchedimpressions, ...miObj};
     const partnerResponseTimeObj = getPartnerResponseTime(response.ext) || {};
     const listofPartnersWithmi = window.partnersWithoutErrorAndBids[impValue] = Object.keys(miObj);
     const erroredPartners = getErroredPartners(response.ext);
@@ -1187,11 +1188,6 @@ const OPEN_RTB_PROTOCOL = {
           bids.push({ adUnit: bidRequest.adUnitCode, bid: bidObject });
         });
       });
-    }
-
-    // If we don't get bids from each partner we need to pass matchedimperssion to window object.
-    if (response.seatbid == undefined || (response.seatbid && response.seatbid.length !== Object.keys(miObj).length)) {
-      window.matchedimpressions = miObj;
     }
     return bids;
   }
