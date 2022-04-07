@@ -88,12 +88,16 @@
     "BID_REJECTED": "bidRejected"
   },
   "REFRESH_IDMODULES_LIST": {
-    "PRIMARY_MODULES": ["id5Id"],
+    "PRIMARY_MODULES": ["id5Id","publinkId"],
     "SCRIPT_BASED_MODULES": ["zeotapIdPlus", "identityLink"]
   },
   "MODULE_PARAM_TO_UPDATE_FOR_SSO": {
-    "id5Id": {
-      "param": "pd"
-    }
+    "id5Id": [{
+      "key": "pd"
+    }],
+    "publinkId": [{
+      "key": "e",
+      "hashType": "MD5"
+    }]
   }
 }

@@ -141,7 +141,7 @@ import { createEidsArray, buildEidPermissions } from './eids.js';
 import { getCoreStorageManager } from '../../src/storageManager.js';
 import {
   getPrebidInternal, isPlainObject, logError, isArray, cyrb53Hash, deepAccess, timestamp, delayExecution, logInfo, isFn,
-  logWarn, isEmptyStr, isNumber, isEmpty
+  logWarn, isEmptyStr, isNumber, isEmpty, skipUndefinedValues
 } from '../../src/utils.js';
 import includes from 'core-js-pure/features/array/includes.js';
 import MD5 from 'crypto-js/md5.js';
@@ -674,9 +674,25 @@ function setUserIdentities(userIdentityData) {
   }
 };
 
+function getRawPDString(emailHashes, userID) {
+  var params = {
+		1: emailHashes && emailHashes['SHA256'] || undefined, // Email
+		5: userID ? btoa(userID): undefined  // UserID
+	};
+	var pdString = Object.keys(skipUndefinedValues(params)).map((function(key) {
+		return params[key] && key + '=' + params[key]
+	})).join('&');
+  return btoa(pdString);
+};
+
 function updateModuleParams(moduleToUpdate) {
-  //this is specific to id5id partner. needs to be revisited when we integrate additional partners for email hashes.
-  moduleToUpdate.params[CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name].param] = '1=' + getUserIdentities().emailHash['SHA256'];
+  var params = CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name];
+  var userIdentity = getUserIdentities() || {};
+	var enableSSO = window.PWT.ssoEnabled || false;
+	var emailHashes = enableSSO && userIdentity.emailHash ? userIdentity.emailHash : userIdentity.pubProvidedEmailHash ? userIdentity.pubProvidedEmailHash : undefined;
+  params && params.forEach(function(param){
+    moduleToUpdate.params[param.key] = (moduleToUpdate.name === 'id5Id' ? getRawPDString(emailHashes, userIdentity.userID) : emailHashes ? emailHashes[param.hashType] : undefined);
+  });
 }
 
 export function reTriggerPartnerCallsWithEmailHashes() {
