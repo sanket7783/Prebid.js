@@ -2602,31 +2602,5 @@ describe('User ID', function () {
       getGlobal().setUserIdentities({'pubProvidedEmail': 'abc@xyz.com'});
       expect(getGlobal().getUserIdentities().pubProvidedEmailHash).to.exist;
     });
-
-    it('should call zeotap api if zeotap module is configured', function() {
-      var scriptBasedModulesToRefresh = ['zeotapIdPlus'];
-      console.log('calling reTriggerScriptBasedAPICalls');
-      window.zeotap = {};
-      window.zeotap.callMethod = function() { console.log('in call method') };
-      getGlobal().onSSOLogin({'provider': 'google', 'googleUserObject': dummyGoogleUserObject});
-
-      setSubmoduleRegistry([zeotapIdPlusSubmodule]);
-      init(config);
-      config.setConfig({
-        userSync: {
-          userIds: [{
-            name: 'zeotapIdPlus',
-            'storage.type': 'cookie',
-            'storage.expires': '30',
-            'storage.name': 'IDP',
-            'partnerId': 'b13e43f5-9846-4349-ae87-23ea3c3c25de',
-            'params.loadIDP': 'true'
-          }]
-        }
-      });
-      requestBidsHook(auctionSpy, {adUnits});
-
-      getGlobal().refreshUserIds.calledOnce.should.equal(true);
-    })
   });
 });
