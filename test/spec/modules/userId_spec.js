@@ -10,7 +10,8 @@ import {
   syncDelay,
   PBJS_USER_ID_OPTOUT_NAME,
   findRootDomain,
-  reTriggerScriptBasedAPICalls
+  getRawPDString,
+  updateModuleParams
 } from 'modules/userId/index.js';
 import {createEidsArray} from 'modules/userId/eids.js';
 import {config} from 'src/config.js';
@@ -2603,30 +2604,57 @@ describe('User ID', function () {
       expect(getGlobal().getUserIdentities().pubProvidedEmailHash).to.exist;
     });
 
-    it('should call zeotap api if zeotap module is configured', function() {
-      var scriptBasedModulesToRefresh = ['zeotapIdPlus'];
-      console.log('calling reTriggerScriptBasedAPICalls');
-      window.zeotap = {};
-      window.zeotap.callMethod = function() { console.log('in call method') };
-      getGlobal().onSSOLogin({'provider': 'google', 'googleUserObject': dummyGoogleUserObject});
+    it('should return encoded string with email hash and userid in id5 format', function() {
+      var emailHashes = {
+        'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
+        'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
+        'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
+      };
+      var outputString = 'MT03MjJiOGMxMmU3OTkxZjBlYmJjYzJkN2NhZWJlOGUxMjQ3OWQyNmQ1ZGQ5Y2IzN2Y0NDJhNTVkZGMxOTA4MTdhJjU9WVdKalpERXlNelE9';
+      var encodedString = getRawPDString(emailHashes, 'abcd1234');
+      expect(encodedString).to.equal(outputString);
+    });
 
-      setSubmoduleRegistry([zeotapIdPlusSubmodule]);
-      init(config);
-      config.setConfig({
-        userSync: {
-          userIds: [{
-            name: 'zeotapIdPlus',
-            'storage.type': 'cookie',
-            'storage.expires': '30',
-            'storage.name': 'IDP',
-            'partnerId': 'b13e43f5-9846-4349-ae87-23ea3c3c25de',
-            'params.loadIDP': 'true'
-          }]
+    it('should return encoded string with only email hash if userID is not available', function() {
+      var emailHashes = {
+        'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
+        'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
+        'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
+      };
+      var outputString = 'MT03MjJiOGMxMmU3OTkxZjBlYmJjYzJkN2NhZWJlOGUxMjQ3OWQyNmQ1ZGQ5Y2IzN2Y0NDJhNTVkZGMxOTA4MTdh';
+      var encodedString = getRawPDString(emailHashes, undefined);
+      expect(encodedString).to.equal(outputString);
+    });
+
+    it('should set the pd param for id5id if id5id module is configured and pd string is available', function() {
+      var pdString = 'MT03MjJiOGMxMmU3OTkxZjBlYmJjYzJkN2NhZWJlOGUxMjQ3OWQyNmQ1ZGQ5Y2IzN2Y0NDJhNTVkZGMxOTA4MTdh';
+      var moduleToUpdate = {
+        'name': 'id5Id',
+        'params':
+        {
+          'partner': 173,
+          'provider': 'pubmatic-identity-hub'
+        },
+        'storage':
+        {
+          'type': 'cookie',
+          'name': '_myUnifiedId',
+          'expires': '1825'
         }
-      });
-      requestBidsHook(auctionSpy, {adUnits});
-
-      getGlobal().refreshUserIds.calledOnce.should.equal(true);
-    })
+      };
+      getGlobal().setUserIdentities(
+        {
+          'emailHash': {
+            'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
+            'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
+            'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
+          }
+        }
+      );
+      updateModuleParams(moduleToUpdate);
+      expect(moduleToUpdate.params.pd).to.exist;
+      console.log(moduleToUpdate);
+      expect(moduleToUpdate.params.pd).to.equal(pdString);
+    });
   });
 });

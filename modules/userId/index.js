@@ -674,34 +674,36 @@ function setUserIdentities(userIdentityData) {
   }
 };
 
-function getRawPDString(emailHashes, userID) {
-  var params = {
-		1: emailHashes && emailHashes['SHA256'] || undefined, // Email
-		5: userID ? btoa(userID): undefined  // UserID
-	};
-	var pdString = Object.keys(skipUndefinedValues(params)).map((function(key) {
-		return params[key] && key + '=' + params[key]
-	})).join('&');
+export function getRawPDString(emailHashes, userID) {
+  let params = {
+    1: (emailHashes && emailHashes['SHA256']) || undefined, // Email
+    5: userID ? btoa(userID) : undefined // UserID
+  };
+  let pdString = Object.keys(skipUndefinedValues(params)).map(function(key) {
+    return params[key] && key + '=' + params[key]
+  }).join('&');
   return btoa(pdString);
 };
 
-function updateModuleParams(moduleToUpdate) {
-  var params = CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name];
-  var userIdentity = getUserIdentities() || {};
-	var enableSSO = window.PWT.ssoEnabled || false;
-	var emailHashes = enableSSO && userIdentity.emailHash ? userIdentity.emailHash : userIdentity.pubProvidedEmailHash ? userIdentity.pubProvidedEmailHash : undefined;
-  params && params.forEach(function(param){
-    moduleToUpdate.params[param.key] = (moduleToUpdate.name === 'id5Id' ? getRawPDString(emailHashes, userIdentity.userID) : emailHashes ? emailHashes[param.hashType] : undefined);
-  });
+export function updateModuleParams(moduleToUpdate) {
+  let params = CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name];
+  let userIdentity = getUserIdentities() || {};
+  let enableSSO = window.PWT.ssoEnabled || false;
+  let emailHashes = enableSSO && userIdentity.emailHash ? userIdentity.emailHash : userIdentity.pubProvidedEmailHash ? userIdentity.pubProvidedEmailHash : undefined;
+  if (enableSSO) {
+    params && params.forEach(function(param) {
+      moduleToUpdate.params[param.key] = (moduleToUpdate.name === 'id5Id' ? getRawPDString(emailHashes, userIdentity.userID) : emailHashes ? emailHashes[param.hashType] : undefined);
+    });
+  }
 }
 
 export function reTriggerPartnerCallsWithEmailHashes() {
-  var modulesToRefresh = [];
-  var scriptBasedModulesToRefresh = [];
-  var primaryModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.PRIMARY_MODULES;
-  var scriptBasedModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.SCRIPT_BASED_MODULES;
-  var moduleName;
-  var index;
+  let modulesToRefresh = [];
+  let scriptBasedModulesToRefresh = [];
+  let primaryModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.PRIMARY_MODULES;
+  let scriptBasedModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.SCRIPT_BASED_MODULES;
+  let moduleName;
+  let index;
   for (index in configRegistry) {
     moduleName = configRegistry[index].name;
     if (primaryModulesList.indexOf(moduleName) >= 0) {
@@ -716,8 +718,8 @@ export function reTriggerPartnerCallsWithEmailHashes() {
 }
 
 export function reTriggerScriptBasedAPICalls(modulesToRefresh) {
-  var i = 0;
-  var userIdentity = getUserIdentities() || {};
+  let i = 0;
+  let userIdentity = getUserIdentities() || {};
   for (i in modulesToRefresh) {
     switch (modulesToRefresh[i]) {
       case 'zeotapIdPlus':
@@ -744,7 +746,7 @@ function getUserIdentities() {
 }
 
 function processFBLoginData(refThis, response) {
-  var emailHash = {};
+  let emailHash = {};
   if (response.status === 'connected') {
     window.PWT = window.PWT || {};
     window.PWT.fbAt = response.authResponse.accessToken;
@@ -770,10 +772,10 @@ function processFBLoginData(refThis, response) {
  * @param {String} provider SSO provider for which the api call is to be made
  * @param {Object} userObject Google's user object, passed from google's callback function
  */
- function onSSOLogin(data) {
-  var refThis = this;
-  var email;
-  var emailHash = {};
+function onSSOLogin(data) {
+  let refThis = this;
+  let email;
+  let emailHash = {};
   if (!window.PWT || !window.PWT.ssoEnabled) return;
 
   switch (data.provider) {
@@ -810,7 +812,7 @@ function onSSOLogout() {
 
 function generateEmailHash(email, emailHash) {
   email = email !== undefined ? email.trim().toLowerCase() : '';
-  var regex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+  let regex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
   if (regex.test(email)) {
     emailHash.MD5 = MD5(email).toString();
     emailHash.SHA1 = SHA1(email).toString();

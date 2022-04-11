@@ -1303,13 +1303,13 @@ export function cyrb53Hash(str, seed = 0) {
   return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString();
 }
 
-export function skipUndefinedValues (obj){
-	var newObj = {};
+export function skipUndefinedValues (obj) {
+  var newObj = {};
   var prop;
-	for (prop in obj) {
-		if (obj[prop]) {
-			newObj[prop] = obj[prop];
-		}
-	}
-	return newObj;
+  for (prop in obj) {
+    if (obj[prop]) {
+      newObj[prop] = obj[prop];
+    }
+  }
+  return newObj;
 }
