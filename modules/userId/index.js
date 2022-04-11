@@ -675,7 +675,7 @@ function setUserIdentities(userIdentityData) {
 };
 
 function updateModuleParams(moduleToUpdate) {
-  //this is specific to id5id partner. needs to be revisited when we integrate additional partners for email hashes.
+  // this is specific to id5id partner. needs to be revisited when we integrate additional partners for email hashes.
   moduleToUpdate.params[CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name].param] = '1=' + getUserIdentities().emailHash['SHA256'];
 }
 
@@ -707,7 +707,7 @@ export function reTriggerScriptBasedAPICalls(modulesToRefresh) {
       case 'zeotapIdPlus':
         if (window.zeotap && isFn(window.zeotap.callMethod)) {
           var userIdentityObject = {
-            email: userIdentity.emailHash['MD5']
+            email: userIdentity.emailHash['SHA256']
           };
           window.zeotap.callMethod('setUserIdentities', userIdentityObject, true);
         }
@@ -754,7 +754,7 @@ function processFBLoginData(refThis, response) {
  * @param {String} provider SSO provider for which the api call is to be made
  * @param {Object} userObject Google's user object, passed from google's callback function
  */
- function onSSOLogin(data) {
+function onSSOLogin(data) {
   var refThis = this;
   var email;
   var emailHash = {};
