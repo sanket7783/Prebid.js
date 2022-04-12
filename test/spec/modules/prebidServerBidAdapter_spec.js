@@ -743,16 +743,6 @@ describe('S2S Adapter', function () {
       expect(requestBid.imp[0].video).to.exist;
     });
 
-    it('should add TagID parameter to adunits bid property for Sonobi partner', function () {
-      config.setConfig({ s2sConfig: CONFIG_SONOBI });
-
-      adapter.callBids(REQUEST_SONOBI, BID_REQUESTS, addBidResponse, done, ajax);
-
-      const requestBid = JSON.parse(server.requests[0].requestBody);
-      expect(requestBid.imp[0].ext.sonobi.TagID).to.exist;
-      expect(requestBid.imp[0].ext.sonobi.TagID).to.equal('/43743431/DMDemo');
-    });
-
     it('should default video placement if not defined and instream', function () {
       let ortb2Config = utils.deepClone(CONFIG);
       ortb2Config.endpoint.p1Consent = 'https://prebid.adnxs.com/pbs/v1/openrtb2/auction';
