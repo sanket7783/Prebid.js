@@ -654,14 +654,6 @@ const OPEN_RTB_PROTOCOL = {
             bid.params.wiid = iidValue;
           }
         }
-        // If sonobi is present then add key TagID to params object and value as ad_unit's value
-        if (isSonobiPresent) {
-          adUnit.bids.map(bid => {
-            if (bid.bidder == 'sonobi') {
-              bid.params['TagID'] = bid.params['ad_unit'];
-            }
-          });
-        }
         // OpenRTB response contains imp.id and bidder name. These are
         // combined to create a unique key for each bid since an id isn't returned
         bidIdMap[`${impressionId}${bid.bidder}`] = bid.bid_id;
