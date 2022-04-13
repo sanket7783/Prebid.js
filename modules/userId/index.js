@@ -723,7 +723,7 @@ export function reTriggerScriptBasedAPICalls(modulesToRefresh) {
       case 'zeotapIdPlus':
         if (window.zeotap && isFn(window.zeotap.callMethod)) {
           var userIdentityObject = {
-            email: userIdentity.emailHash['MD5']
+            email: userIdentity.emailHash['SHA256']
           };
           window.zeotap.callMethod('setUserIdentities', userIdentityObject, true);
         }
