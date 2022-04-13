@@ -94,10 +94,6 @@
   "MODULE_PARAM_TO_UPDATE_FOR_SSO": {
     "id5Id": [{
       "key": "pd"
-    }],
-    "publinkId": [{
-      "key": "e",
-      "hashType": "MD5"
     }]
   }
 }
