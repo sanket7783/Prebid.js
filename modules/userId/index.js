@@ -690,11 +690,9 @@ export function updateModuleParams(moduleToUpdate) {
   let userIdentity = getUserIdentities() || {};
   let enableSSO = window.PWT.ssoEnabled || false;
   let emailHashes = enableSSO && userIdentity.emailHash ? userIdentity.emailHash : userIdentity.pubProvidedEmailHash ? userIdentity.pubProvidedEmailHash : undefined;
-  if (enableSSO) {
-    params && params.forEach(function(param) {
-      moduleToUpdate.params[param.key] = (moduleToUpdate.name === 'id5Id' ? getRawPDString(emailHashes, userIdentity.userID) : emailHashes ? emailHashes[param.hashType] : undefined);
-    });
-  }
+  params && params.forEach(function(param) {
+    moduleToUpdate.params[param.key] = (moduleToUpdate.name === 'id5Id' ? getRawPDString(emailHashes, userIdentity.userID) : emailHashes ? emailHashes[param.hashType] : undefined);
+  });
 }
 
 export function reTriggerPartnerCallsWithEmailHashes() {
