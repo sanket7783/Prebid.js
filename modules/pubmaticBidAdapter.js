@@ -11,7 +11,8 @@ const USER_SYNC_URL_IFRAME = 'https://ads.pubmatic.com/AdServer/js/user_sync.htm
 const USER_SYNC_URL_IMAGE = 'https://image8.pubmatic.com/AdServer/ImgSync?p=';
 const DEFAULT_CURRENCY = 'USD';
 const AUCTION_TYPE = 1;
-const PUBMATIC_ALIAS = 'pubmatic2';
+const GROUPM_ALIAS = {code: 'groupm', gvlid: 98};
+const MARKETPLACE_PARTNERS = ['groupm']
 const UNDEFINED = undefined;
 const DEFAULT_WIDTH = 0;
 const DEFAULT_HEIGHT = 0;
@@ -1017,7 +1018,7 @@ export const spec = {
   code: BIDDER_CODE,
   gvlid: 76,
   supportedMediaTypes: [BANNER, VIDEO, NATIVE],
-  aliases: [PUBMATIC_ALIAS],
+  aliases: [GROUPM_ALIAS],
   /**
   * Determines whether or not the given bid request is valid. Valid bid request must have placementId and hbid
   *
@@ -1076,6 +1077,12 @@ export const spec = {
    * @return ServerRequest Info describing the request to the server.
    */
   buildRequests: (validBidRequests, bidderRequest) => {
+    if (bidderRequest && MARKETPLACE_PARTNERS.includes(bidderRequest.bidderCode)) {
+      // We have got the buildRequests function call for Marketplace Partners
+      logInfo('For all publishers using ' + bidderRequest.bidderCode + ' bidder, the PubMatic bidder will also be enabled so PubMatic server will respond back with the bids that needs to be submitted for PubMatic and ' + bidderRequest.bidderCode + ' in the network call sent by PubMatic bidder. Hence we do not want to create a network call for ' + bidderRequest.bidderCode + '. This way we are trying to save a network call from browser.');
+      return;
+    }
+
     var refererInfo;
     if (bidderRequest && bidderRequest.refererInfo) {
       refererInfo = bidderRequest.refererInfo;
