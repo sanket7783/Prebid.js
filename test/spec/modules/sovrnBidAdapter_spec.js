@@ -379,7 +379,6 @@ describe('sovrnBidAdapter', function() {
       })
     })
   });
-
   describe('interpretResponse', function () {
     let response;
     const baseResponse = {

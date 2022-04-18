@@ -55,7 +55,7 @@ const NATIVE_DATA = {
 export const spec = {
   code: BIDDER_CODE,
   gvlid: 253,
-  aliases: ['id'],
+  aliases: ['id', 'weborama'],
   supportedMediaTypes: [BANNER, NATIVE, VIDEO],
 
   /**
