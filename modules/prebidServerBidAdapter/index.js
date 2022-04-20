@@ -559,8 +559,6 @@ function ORTB2(s2sBidRequest, bidderRequests, adUnits, requestedBidders) {
 Object.assign(ORTB2.prototype, {
   buildRequest() {
     const {s2sBidRequest, bidderRequests: bidRequests, adUnits, s2sConfig, requestedBidders} = this;
-    /* eslint-disable no-console */
-    console.log('123 top', s2sBidRequest.ad_units[0].bids, bidRequests);
     let imps = [];
     let aliases = {};
     let owAliases;
@@ -888,9 +886,6 @@ Object.assign(ORTB2.prototype, {
       request.ext.prebid = mergeDeep(request.ext.prebid, s2sConfig.extPrebid);
     }
 
-    /* eslint-disable no-console */
-    console.log('just after 123 request', request.ext.prebid);
-
     /**
      * @type {(string[]|string|undefined)} - OpenRTB property 'cur', currencies available for bids
      */
@@ -918,8 +913,6 @@ Object.assign(ORTB2.prototype, {
     if (!isEmpty(aliases)) {
       request.ext.prebid.aliases = {...request.ext.prebid.aliases, ...aliases};
     }
-    /* eslint-disable no-console */
-    console.log('123 in index before', request.ext.prebid.aliases);
     // Replace aliases with parent alias e.g. pubmatic2 should replace with pubmatic
     for (var bidder in request.ext.prebid.aliases) {
       var defaultAlias = defaultAliases[request.ext.prebid.aliases[bidder]];
@@ -927,8 +920,6 @@ Object.assign(ORTB2.prototype, {
         request.ext.prebid.aliases[bidder] = defaultAlias;
       }
     }
-    /* eslint-disable no-console */
-    console.log('123 in index after', request.ext.prebid.aliases);
     // Updating request.ext.prebid.bidderparams wiid if present
     if (s2sConfig.extPrebid && typeof s2sConfig.extPrebid.bidderparams === 'object') {
       var listOfPubMaticBidders = Object.keys(s2sConfig.extPrebid.bidderparams);
