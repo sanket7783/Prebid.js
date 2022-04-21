@@ -165,6 +165,7 @@ function parseBidResponse(bid) {
     'mi',
     'regexPattern', () => bid.regexPattern || undefined,
     'partnerImpId', // partner impression ID
+    'prebidBidId',
     'dimensions', () => pick(bid, [
       'width',
       'height'
@@ -256,7 +257,8 @@ function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
     partnerBids.push({
       'pn': getAdapterNameForAlias(bid.bidder),
       'bc': bid.bidder,
-      'bidid': bid.bidId,
+      'bidid': highestBid && highestBid.prebidBidId ? highestBid.prebidBidId : bid.bidId,
+      'origbidid': bid.bidId,
       'db': bid.bidResponse ? 0 : 1,
       'kgpv': getValueForKgpv(bid, adUnitId),
       'kgpsv': bid.params.kgpv ? getUpdatedKGPVForVideo(bid.params.kgpv, bid.bidResponse) : adUnitId,
@@ -394,6 +396,8 @@ function executeBidWonLoggerCall(auctionId, adUnitId) {
   pixelURL += '&purl=' + enc(config.getConfig('pageUrl') || cache.auctions[auctionId].referer || '');
   pixelURL += '&tst=' + Math.round((new window.Date()).getTime() / 1000);
   pixelURL += '&iid=' + enc(auctionId);
+  pixelURL += '&bidid=' + ((winningBid.bidResponse && winningBid.bidResponse.prebidBidId) ? enc(winningBid.bidResponse.prebidBidId) : enc(winningBid.bidId));
+  pixelURL += '&orig_bidid=' + enc(winningBid.bidId);
   pixelURL += '&bidid=' + enc(winningBid.bidId);
   pixelURL += '&pid=' + enc(profileId);
   pixelURL += '&pdvid=' + enc(profileVersionId);
