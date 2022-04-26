@@ -707,7 +707,8 @@ export function reTriggerPartnerCallsWithEmailHashes() {
     if (primaryModulesList.indexOf(moduleName) >= 0) {
       modulesToRefresh.push(moduleName);
       updateModuleParams(configRegistry[index]);
-    } else if (scriptBasedModulesList.indexOf(moduleName) >= 0) {
+    }
+    if (scriptBasedModulesList.indexOf(moduleName) >= 0) {
       scriptBasedModulesToRefresh.push(moduleName);
     }
   }
@@ -733,6 +734,13 @@ export function reTriggerScriptBasedAPICalls(modulesToRefresh) {
           var atsObject = window.ats.outputCurrentConfiguration();
           atsObject.emailHashes = userIdentity.emailHash ? [userIdentity.emailHash['MD5'], userIdentity.emailHash['SHA1'], userIdentity.emailHash['SHA256']] : undefined;
           window.ats.start(atsObject);
+        }
+        break;
+      case 'publinkId':
+        if (window.conversant && isFn(window.conversant.launch)) {
+          let launchObject = window.conversant.getLauncherObject();
+          launchObject.emailHashes = userIdentity.emailHash ? [userIdentity.emailHash['MD5'], userIdentity.emailHash['SHA256']] : undefined;
+          window.conversant.launch('publink', 'start', launchObject);
         }
         break;
     }
