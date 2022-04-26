@@ -849,7 +849,7 @@ Object.assign(ORTB2.prototype, {
       logError('Request to Prebid Server rejected due to invalid media type(s) in adUnit.');
       return;
     }
-    createLatencyMap(iidValue, s2sBidRequest.tid);
+    createLatencyMap(iidValue, firstBidRequest.auctionId);
 
     const request = {
       id: firstBidRequest.auctionId,
