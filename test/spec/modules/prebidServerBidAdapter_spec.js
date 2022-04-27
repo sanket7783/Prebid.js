@@ -396,7 +396,8 @@ const RESPONSE_OPENRTB = {
               },
               'meta': {
                 'dchain': { 'ver': '1.0', 'complete': 0, 'nodes': [ { 'asi': 'magnite.com', 'bsid': '123456789', } ] }
-              }
+              },
+			  'bidid': '792d8d2135d28b',
             },
             'bidder': {
               'appnexus': {
@@ -2311,6 +2312,17 @@ describe('S2S Adapter', function () {
       expect(response.originalCpm).to.equal(0.5);
       expect(response.originalCurrency).to.equal('EUR');
     });
+
+    it('Add new parameteras prebidBidId to bidobject if present in response', function () {
+      config.setConfig({ s2sConfig: CONFIG });
+      adapter.callBids(REQUEST, BID_REQUESTS, addBidResponse, done, ajax);
+      server.requests[0].respond(200, {}, JSON.stringify(RESPONSE_OPENRTB));
+
+      sinon.assert.calledOnce(addBidResponse);
+      sinon.assert.calledOnce(done);
+      const response = addBidResponse.firstCall.args[1];
+      expect(response).to.have.property('prebidBidId', '792d8d2135d28b');
+	  });
 
     it('should have dealId in bidObject', function () {
       config.setConfig({ s2sConfig: CONFIG });
