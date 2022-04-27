@@ -1387,7 +1387,7 @@ describe('S2S Adapter', function () {
         },
         auctiontimestamp: 1510852447530,
         targeting: {
-          includebidderkeys: false,
+          includebidderkeys: true,
           includewinners: true
         }
       });
@@ -1414,7 +1414,7 @@ describe('S2S Adapter', function () {
         },
         auctiontimestamp: 1510852447530,
         targeting: {
-          includebidderkeys: false,
+          includebidderkeys: true,
           includewinners: true
         }
       });
@@ -1444,7 +1444,7 @@ describe('S2S Adapter', function () {
         },
         auctiontimestamp: 1510852447530,
         targeting: {
-          includebidderkeys: false,
+          includebidderkeys: true,
           includewinners: true
         }
       });
@@ -1474,7 +1474,7 @@ describe('S2S Adapter', function () {
         prebid: {
           auctiontimestamp: 1510852447530,
           targeting: {
-            includebidderkeys: false,
+            includebidderkeys: true,
             includewinners: true
           },
           channel: {
@@ -1512,7 +1512,7 @@ describe('S2S Adapter', function () {
         prebid: {
           auctiontimestamp: 1510852447530,
           targeting: {
-            includebidderkeys: false,
+            includebidderkeys: true,
             includewinners: true
           },
           channel: {
@@ -1768,7 +1768,7 @@ describe('S2S Adapter', function () {
       expect(typeof parsedRequestBody.cur).to.equal('undefined');
     });
 
-    it('always add ext.prebid.targeting.includebidderkeys: false for ORTB', function () {
+    it('always add ext.prebid.targeting.includebidderkeys: true for ORTB', function () {
       const s2sConfig = Object.assign({}, CONFIG, {
         adapterOptions: {
           appnexus: {
@@ -1791,7 +1791,7 @@ describe('S2S Adapter', function () {
       const requestBid = JSON.parse(server.requests[0].requestBody);
 
       expect(requestBid.ext.prebid.targeting).to.haveOwnProperty('includebidderkeys');
-      expect(requestBid.ext.prebid.targeting.includebidderkeys).to.equal(false);
+      expect(requestBid.ext.prebid.targeting.includebidderkeys).to.equal(true);
     });
 
     it('always add ext.prebid.targeting.includewinners: true for ORTB', function () {
@@ -1845,7 +1845,7 @@ describe('S2S Adapter', function () {
         foo: 'bar',
         targeting: {
           includewinners: true,
-          includebidderkeys: false
+          includebidderkeys: true
         }
       });
     });
@@ -1880,7 +1880,7 @@ describe('S2S Adapter', function () {
         },
         targeting: {
           includewinners: true,
-          includebidderkeys: false
+          includebidderkeys: true
         }
       });
     });
