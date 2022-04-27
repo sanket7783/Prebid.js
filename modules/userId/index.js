@@ -193,6 +193,10 @@ export let auctionDelay;
 /** @type {(Object|undefined)} */
 let userIdentity = {};
 /** @param {Submodule[]} submodules */
+
+let modulesToRefresh = [];
+let scriptBasedModulesToRefresh = [];
+
 export function setSubmoduleRegistry(submodules) {
   submoduleRegistry = submodules;
 }
@@ -687,23 +691,22 @@ export function getRawPDString(emailHashes, userID) {
 
 export function updateModuleParams(moduleToUpdate) {
   let params = CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name];
+  if (!params) return;
+  
   let userIdentity = getUserIdentities() || {};
   let enableSSO = window.PWT.ssoEnabled || false;
   let emailHashes = enableSSO && userIdentity.emailHash ? userIdentity.emailHash : userIdentity.pubProvidedEmailHash ? userIdentity.pubProvidedEmailHash : undefined;
-  params && params.forEach(function(param) {
+  params.forEach(function(param) {
     moduleToUpdate.params[param.key] = (moduleToUpdate.name === 'id5Id' ? getRawPDString(emailHashes, userIdentity.userID) : emailHashes ? emailHashes[param.hashType] : undefined);
   });
 }
 
-export function reTriggerPartnerCallsWithEmailHashes() {
-  let modulesToRefresh = [];
-  let scriptBasedModulesToRefresh = [];
+function generateModuleLists() {
   let primaryModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.PRIMARY_MODULES;
   let scriptBasedModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.SCRIPT_BASED_MODULES;
-  let moduleName;
-  let index;
-  for (index in configRegistry) {
-    moduleName = configRegistry[index].name;
+  
+  for (let index in configRegistry) {
+    let moduleName = configRegistry[index].name;
     if (primaryModulesList.indexOf(moduleName) >= 0) {
       modulesToRefresh.push(moduleName);
       updateModuleParams(configRegistry[index]);
@@ -712,6 +715,10 @@ export function reTriggerPartnerCallsWithEmailHashes() {
       scriptBasedModulesToRefresh.push(moduleName);
     }
   }
+}
+
+export function reTriggerPartnerCallsWithEmailHashes(updateModulesOnly) {
+  generateModuleLists();
   getGlobal().refreshUserIds({'submoduleNames': modulesToRefresh});
   reTriggerScriptBasedAPICalls(scriptBasedModulesToRefresh);
 }
@@ -724,7 +731,7 @@ export function reTriggerScriptBasedAPICalls(modulesToRefresh) {
       case 'zeotapIdPlus':
         if (window.zeotap && isFn(window.zeotap.callMethod)) {
           var userIdentityObject = {
-            email: userIdentity.emailHash['MD5']
+            email: userIdentity.emailHash['SHA256']
           };
           window.zeotap.callMethod('setUserIdentities', userIdentityObject, true);
         }
@@ -964,6 +971,8 @@ function updateSubmodules() {
   if (!configs.length) {
     return;
   }
+  generateModuleLists(); //this is to generate the list of modules to be updated wit sso/publisher provided email data
+
   // do this to avoid reprocessing submodules
   const addedSubmodules = submoduleRegistry.filter(i => !find(submodules, j => j.name === i.name));
 
