@@ -867,7 +867,7 @@ Object.assign(ORTB2.prototype, {
             // includewinners is always true for openrtb
             includewinners: true,
             // includebidderkeys always false for openrtb
-            includebidderkeys: false
+            includebidderkeys: true
           }
         }
       }
