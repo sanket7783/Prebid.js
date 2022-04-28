@@ -254,10 +254,11 @@ function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
   highestBid = (highestBid && highestBid.length > 0) ? highestBid[0] : null;
   return Object.keys(adUnit.bids).reduce(function (partnerBids, bidId) {
     let bid = adUnit.bids[bidId];
+    const prebidBidId = bid.bidResponse && bid.bidResponse.prebidBidId;
     partnerBids.push({
       'pn': getAdapterNameForAlias(bid.bidder),
       'bc': bid.bidder,
-      'bidid': highestBid && highestBid.prebidBidId ? highestBid.prebidBidId : bid.bidId,
+      'bidid': prebidBidId || bid.bidId,
       'origbidid': bid.bidId,
       'db': bid.bidResponse ? 0 : 1,
       'kgpv': getValueForKgpv(bid, adUnitId),
