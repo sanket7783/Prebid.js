@@ -49,7 +49,8 @@ export const internal = {
   logInfo,
   parseQS,
   formatQS,
-  deepEqual
+  deepEqual,
+  isEmpty
 };
 
 let prebidInternal = {}
