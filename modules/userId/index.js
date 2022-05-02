@@ -141,7 +141,7 @@ import { createEidsArray, buildEidPermissions } from './eids.js';
 import { getCoreStorageManager } from '../../src/storageManager.js';
 import {
   getPrebidInternal, isPlainObject, logError, isArray, cyrb53Hash, deepAccess, timestamp, delayExecution, logInfo, isFn,
-  logWarn, isEmptyStr, isNumber, isEmpty
+  logWarn, isEmptyStr, isNumber, isEmpty, skipUndefinedValues
 } from '../../src/utils.js';
 import includes from 'core-js-pure/features/array/includes.js';
 import MD5 from 'crypto-js/md5.js';
@@ -193,6 +193,10 @@ export let auctionDelay;
 /** @type {(Object|undefined)} */
 let userIdentity = {};
 /** @param {Submodule[]} submodules */
+
+let modulesToRefresh = [];
+let scriptBasedModulesToRefresh = [];
+
 export function setSubmoduleRegistry(submodules) {
   submoduleRegistry = submodules;
 }
@@ -674,20 +678,35 @@ function setUserIdentities(userIdentityData) {
   }
 };
 
-function updateModuleParams(moduleToUpdate) {
-  // this is specific to id5id partner. needs to be revisited when we integrate additional partners for email hashes.
-  moduleToUpdate.params[CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name].param] = '1=' + getUserIdentities().emailHash['SHA256'];
+export function getRawPDString(emailHashes, userID) {
+  let params = {
+    1: (emailHashes && emailHashes['SHA256']) || undefined, // Email
+    5: userID ? btoa(userID) : undefined // UserID
+  };
+  let pdString = Object.keys(skipUndefinedValues(params)).map(function(key) {
+    return params[key] && key + '=' + params[key]
+  }).join('&');
+  return btoa(pdString);
+};
+
+export function updateModuleParams(moduleToUpdate) {
+  let params = CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name];
+  if (!params) return;
+
+  let userIdentity = getUserIdentities() || {};
+  let enableSSO = (window.PWT && window.PWT.ssoEnabled) || false;
+  let emailHashes = enableSSO && userIdentity.emailHash ? userIdentity.emailHash : userIdentity.pubProvidedEmailHash ? userIdentity.pubProvidedEmailHash : undefined;
+  params.forEach(function(param) {
+    moduleToUpdate.params[param.key] = (moduleToUpdate.name === 'id5Id' ? getRawPDString(emailHashes, userIdentity.userID) : emailHashes ? emailHashes[param.hashType] : undefined);
+  });
 }
 
-export function reTriggerPartnerCallsWithEmailHashes() {
-  var modulesToRefresh = [];
-  var scriptBasedModulesToRefresh = [];
-  var primaryModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.PRIMARY_MODULES;
-  var scriptBasedModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.SCRIPT_BASED_MODULES;
-  var moduleName;
-  var index;
-  for (index in configRegistry) {
-    moduleName = configRegistry[index].name;
+function generateModuleLists() {
+  let primaryModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.PRIMARY_MODULES;
+  let scriptBasedModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.SCRIPT_BASED_MODULES;
+
+  for (let index in configRegistry) {
+    let moduleName = configRegistry[index].name;
     if (primaryModulesList.indexOf(moduleName) >= 0) {
       modulesToRefresh.push(moduleName);
       updateModuleParams(configRegistry[index]);
@@ -695,13 +714,17 @@ export function reTriggerPartnerCallsWithEmailHashes() {
       scriptBasedModulesToRefresh.push(moduleName);
     }
   }
+}
+
+export function reTriggerPartnerCallsWithEmailHashes(updateModulesOnly) {
+  generateModuleLists();
   getGlobal().refreshUserIds({'submoduleNames': modulesToRefresh});
   reTriggerScriptBasedAPICalls(scriptBasedModulesToRefresh);
 }
 
 export function reTriggerScriptBasedAPICalls(modulesToRefresh) {
-  var i = 0;
-  var userIdentity = getUserIdentities() || {};
+  let i = 0;
+  let userIdentity = getUserIdentities() || {};
   for (i in modulesToRefresh) {
     switch (modulesToRefresh[i]) {
       case 'zeotapIdPlus':
@@ -728,7 +751,7 @@ function getUserIdentities() {
 }
 
 function processFBLoginData(refThis, response) {
-  var emailHash = {};
+  let emailHash = {};
   if (response.status === 'connected') {
     window.PWT = window.PWT || {};
     window.PWT.fbAt = response.authResponse.accessToken;
@@ -755,9 +778,9 @@ function processFBLoginData(refThis, response) {
  * @param {Object} userObject Google's user object, passed from google's callback function
  */
 function onSSOLogin(data) {
-  var refThis = this;
-  var email;
-  var emailHash = {};
+  let refThis = this;
+  let email;
+  let emailHash = {};
   if (!window.PWT || !window.PWT.ssoEnabled) return;
 
   switch (data.provider) {
@@ -794,7 +817,7 @@ function onSSOLogout() {
 
 function generateEmailHash(email, emailHash) {
   email = email !== undefined ? email.trim().toLowerCase() : '';
-  var regex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+  let regex = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
   if (regex.test(email)) {
     emailHash.MD5 = MD5(email).toString();
     emailHash.SHA1 = SHA1(email).toString();
@@ -940,6 +963,8 @@ function updateSubmodules() {
   if (!configs.length) {
     return;
   }
+  generateModuleLists(); // this is to generate the list of modules to be updated wit sso/publisher provided email data
+
   // do this to avoid reprocessing submodules
   const addedSubmodules = submoduleRegistry.filter(i => !find(submodules, j => j.name === i.name));
 
