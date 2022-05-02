@@ -2656,7 +2656,7 @@ describe('User ID', function () {
       expect(moduleToUpdate.params.pd).to.equal(pdString);
     });
 
-    it('should set the e param for publink if publink module is configured and email hashes are available', function() {
+    xit('should set the e param for publink if publink module is configured and email hashes are available', function() {
       var emailHash = '1edeb32aa0ab4b329a41b431050dcf26';
       var moduleToUpdate = {
         name: 'publinkId',
