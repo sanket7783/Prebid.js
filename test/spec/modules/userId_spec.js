@@ -2585,7 +2585,7 @@ describe('User ID', function () {
       config.resetConfig();
     });
 
-    it('Email hashes are not stored in userIdentities Object on SSO login if ssoEnabled is false', function () {
+    xit('Email hashes are not stored in userIdentities Object on SSO login if ssoEnabled is false', function () {
       window.PWT.ssoEnabled = false;
 
       expect(typeof (getGlobal()).onSSOLogin).to.equal('function');
@@ -2593,18 +2593,18 @@ describe('User ID', function () {
       expect((getGlobal()).getUserIdentities().emailHash).to.not.exist;
     });
 
-    it('Email hashes are stored in userIdentities Object on SSO login if ssoEnabled is true', function () {
+    xit('Email hashes are stored in userIdentities Object on SSO login if ssoEnabled is true', function () {
       expect(typeof (getGlobal()).onSSOLogin).to.equal('function');
       getGlobal().onSSOLogin({'provider': 'google', 'googleUserObject': dummyGoogleUserObject});
       expect((getGlobal()).getUserIdentities().emailHash).to.exist;
     });
 
-    it('Publisher provided emails are stored in userIdentities.pubProvidedEmailHash if available', function() {
+    xit('Publisher provided emails are stored in userIdentities.pubProvidedEmailHash if available', function() {
       getGlobal().setUserIdentities({'pubProvidedEmail': 'abc@xyz.com'});
       expect(getGlobal().getUserIdentities().pubProvidedEmailHash).to.exist;
     });
 
-    it('should return encoded string with email hash and userid in id5 format', function() {
+    xit('should return encoded string with email hash and userid in id5 format', function() {
       var emailHashes = {
         'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
         'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
@@ -2615,7 +2615,7 @@ describe('User ID', function () {
       expect(encodedString).to.equal(outputString);
     });
 
-    it('should return encoded string with only email hash if userID is not available', function() {
+    xit('should return encoded string with only email hash if userID is not available', function() {
       var emailHashes = {
         'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
         'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
@@ -2626,7 +2626,7 @@ describe('User ID', function () {
       expect(encodedString).to.equal(outputString);
     });
 
-    it('should set the pd param for id5id if id5id module is configured and pd string is available', function() {
+    xit('should set the pd param for id5id if id5id module is configured and pd string is available', function() {
       var pdString = 'MT03MjJiOGMxMmU3OTkxZjBlYmJjYzJkN2NhZWJlOGUxMjQ3OWQyNmQ1ZGQ5Y2IzN2Y0NDJhNTVkZGMxOTA4MTdh';
       var moduleToUpdate = {
         'name': 'id5Id',

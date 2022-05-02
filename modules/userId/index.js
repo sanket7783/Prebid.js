@@ -692,9 +692,9 @@ export function getRawPDString(emailHashes, userID) {
 export function updateModuleParams(moduleToUpdate) {
   let params = CONSTANTS.MODULE_PARAM_TO_UPDATE_FOR_SSO[moduleToUpdate.name];
   if (!params) return;
-  
+
   let userIdentity = getUserIdentities() || {};
-  let enableSSO = window.PWT.ssoEnabled || false;
+  let enableSSO = (window.PWT && window.PWT.ssoEnabled) || false;
   let emailHashes = enableSSO && userIdentity.emailHash ? userIdentity.emailHash : userIdentity.pubProvidedEmailHash ? userIdentity.pubProvidedEmailHash : undefined;
   params.forEach(function(param) {
     moduleToUpdate.params[param.key] = (moduleToUpdate.name === 'id5Id' ? getRawPDString(emailHashes, userIdentity.userID) : emailHashes ? emailHashes[param.hashType] : undefined);
@@ -704,7 +704,6 @@ export function updateModuleParams(moduleToUpdate) {
 function generateModuleLists() {
   let primaryModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.PRIMARY_MODULES;
   let scriptBasedModulesList = CONSTANTS.REFRESH_IDMODULES_LIST.SCRIPT_BASED_MODULES;
-  
   for (let index in configRegistry) {
     let moduleName = configRegistry[index].name;
     if (primaryModulesList.indexOf(moduleName) >= 0) {
@@ -971,7 +970,7 @@ function updateSubmodules() {
   if (!configs.length) {
     return;
   }
-  generateModuleLists(); //this is to generate the list of modules to be updated wit sso/publisher provided email data
+  generateModuleLists(); // this is to generate the list of modules to be updated wit sso/publisher provided email data
 
   // do this to avoid reprocessing submodules
   const addedSubmodules = submoduleRegistry.filter(i => !find(submodules, j => j.name === i.name));
