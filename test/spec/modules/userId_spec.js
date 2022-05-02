@@ -2655,5 +2655,33 @@ describe('User ID', function () {
       expect(moduleToUpdate.params.pd).to.exist;
       expect(moduleToUpdate.params.pd).to.equal(pdString);
     });
+
+    it('should set the e param for publink if publink module is configured and email hashes are available', function() {
+      var emailHash = '1edeb32aa0ab4b329a41b431050dcf26';
+      var moduleToUpdate = {
+        name: 'publinkId',
+        storage: {
+          name: 'pbjs_publink',
+          type: 'cookie',
+          expires: 30
+        },
+        params: {
+          site_id: '214393',
+          api_key: '061065f4-4835-40f4-936e-74e0f3af59b5'
+        }
+      };
+
+      getGlobal().setUserIdentities(
+        {
+          'emailHash': {
+            'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
+            'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
+          }
+        }
+      );
+      updateModuleParams(moduleToUpdate);
+      expect(moduleToUpdate.params.e).to.exist;
+      expect(moduleToUpdate.params.e).to.equal(emailHash);
+    });
   });
 });
