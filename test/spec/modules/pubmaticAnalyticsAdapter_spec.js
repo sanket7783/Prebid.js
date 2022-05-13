@@ -54,6 +54,7 @@ const BID = {
   'requestTimestamp': 1519149628471,
   'adUnitCode': '/19968336/header-bid-tag-0',
   'timeToRespond': 944,
+  'prebidBidId': '792d8d2135d28b',
   'pbLg': '1.00',
   'pbMg': '1.20',
   'pbHg': '1.22',
@@ -409,7 +410,8 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[0].ps.length).to.equal(1);
       expect(data.s[0].ps[0].pn).to.equal('pubmatic');
       expect(data.s[0].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[0].ps[0].bidid).to.equal('2ecff0db240712');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
+	  expect(data.s[1].ps[0].origbidid).to.equal('3bd4ebb1c900e2');
       expect(data.s[0].ps[0].piid).to.equal('partnerImpressionID-1');
       expect(data.s[0].ps[0].db).to.equal(0);
       expect(data.s[0].ps[0].kgpv).to.equal('/19968336/header-bid-tag-0');
@@ -440,7 +442,8 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].fskp).to.equal(0);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
+	  expect(data.s[1].ps[0].origbidid).to.equal('3bd4ebb1c900e2');
       expect(data.s[1].ps[0].piid).to.equal('partnerImpressionID-2');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('this-is-a-kgpv');
@@ -471,7 +474,8 @@ describe('pubmatic analytics adapter', function () {
       expect(decodeURIComponent(data.purl)).to.equal('http://www.test.com/page.html');
       expect(data.tst).to.equal('1519767014');
       expect(data.iid).to.equal('25c6d7f5-699a-4bfc-87c9-996f915341fa');
-      expect(data.bidid).to.equal('2ecff0db240712');
+      expect(data.bidid).to.equal('792d8d2135d28b');
+	  expect(data.orig_bidid).to.equal('2ecff0db240712');
       expect(data.pid).to.equal('1111');
       expect(data.pdvid).to.equal('20');
       expect(decodeURIComponent(data.slot)).to.equal('/19968336/header-bid-tag-0');
@@ -526,7 +530,8 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[0].ps.length).to.equal(1);
       expect(data.s[0].ps[0].pn).to.equal('pubmatic');
       expect(data.s[0].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[0].ps[0].bidid).to.equal('2ecff0db240712');
+      expect(data.s[0].ps[0].bidid).to.equal('792d8d2135d28b');
+	  expect(data.s[0].ps[0].origbidid).to.equal('2ecff0db240712');
       expect(data.s[0].ps[0].kgpv).to.equal('/19968336/header-bid-tag-0');
       expect(data.s[0].ps[0].eg).to.equal(1.23);
       expect(data.s[0].ps[0].en).to.equal(2.46);
@@ -599,7 +604,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[0].ps.length).to.equal(1);
       expect(data.s[0].ps[0].pn).to.equal('pubmatic');
       expect(data.s[0].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[0].ps[0].bidid).to.equal('2ecff0db240712');
+      expect(data.s[0].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[0].ps[0].kgpv).to.equal('/19968336/header-bid-tag-0');
       expect(data.s[0].ps[0].eg).to.equal(1);
       expect(data.s[0].ps[0].en).to.equal(200);
@@ -739,7 +744,8 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].origbidid).to.equal('3bd4ebb1c900e2');
+	  expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('this-is-a-kgpv');
       expect(data.s[1].ps[0].kgpsv).to.equal('this-is-a-kgpv');
@@ -802,7 +808,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('this-is-a-kgpv');
       expect(data.s[1].ps[0].kgpsv).to.equal('this-is-a-kgpv');
@@ -854,7 +860,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('*');
       expect(data.s[1].ps[0].kgpsv).to.equal('this-is-a-kgpv');
@@ -915,7 +921,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('*');
       expect(data.s[1].ps[0].kgpsv).to.equal('this-is-a-kgpv');
@@ -974,7 +980,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('*');
       expect(data.s[1].ps[0].kgpsv).to.equal('this-is-a-kgpv');
@@ -1037,7 +1043,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('*');
       expect(data.s[1].ps[0].kgpsv).to.equal('this-is-a-kgpv');
@@ -1097,7 +1103,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('*');
       expect(data.s[1].ps[0].kgpsv).to.equal('this-is-a-kgpv');
@@ -1160,7 +1166,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('*');
       expect(data.s[1].ps[0].kgpsv).to.equal('this-is-a-kgpv');
@@ -1219,7 +1225,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('*');
       expect(data.s[1].ps[0].kgpsv).to.equal('this-is-a-kgpv');
@@ -1281,7 +1287,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('*');
       expect(data.s[1].ps[0].kgpsv).to.equal('this-is-a-kgpv');
@@ -1362,7 +1368,8 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[0].ps.length).to.equal(1);
       expect(data.s[0].ps[0].pn).to.equal('pubmatic');
       expect(data.s[0].ps[0].bc).to.equal('pubmatic_alias');
-      expect(data.s[0].ps[0].bidid).to.equal('2ecff0db240712');
+      expect(data.s[0].ps[0].bidid).to.equal('792d8d2135d28b');
+	  expect(data.s[0].ps[0].origbidid).to.equal('2ecff0db240712');
       expect(data.s[0].ps[0].piid).to.equal('partnerImpressionID-1');
       expect(data.s[0].ps[0].db).to.equal(0);
       expect(data.s[0].ps[0].kgpv).to.equal('/19968336/header-bid-tag-0');
@@ -1394,7 +1401,8 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[1].ps.length).to.equal(1);
       expect(data.s[1].ps[0].pn).to.equal('pubmatic');
       expect(data.s[1].ps[0].bc).to.equal('pubmatic');
-      expect(data.s[1].ps[0].bidid).to.equal('3bd4ebb1c900e2');
+      expect(data.s[1].ps[0].bidid).to.equal('792d8d2135d28b');
+	  expect(data.s[1].ps[0].origbidid).to.equal('3bd4ebb1c900e2');
       expect(data.s[1].ps[0].piid).to.equal('partnerImpressionID-2');
       expect(data.s[1].ps[0].db).to.equal(0);
       expect(data.s[1].ps[0].kgpv).to.equal('this-is-a-kgpv');
@@ -1425,7 +1433,8 @@ describe('pubmatic analytics adapter', function () {
       expect(decodeURIComponent(data.purl)).to.equal('http://www.test.com/page.html');
       expect(data.tst).to.equal('1519767014');
       expect(data.iid).to.equal('25c6d7f5-699a-4bfc-87c9-996f915341fa');
-      expect(data.bidid).to.equal('2ecff0db240712');
+      expect(data.bidid).to.equal('792d8d2135d28b');
+	  expect(data.orig_bidid).to.equal('2ecff0db240712');
       expect(data.pid).to.equal('1111');
       expect(data.pdvid).to.equal('20');
       expect(decodeURIComponent(data.slot)).to.equal('/19968336/header-bid-tag-0');
@@ -1493,7 +1502,8 @@ describe('pubmatic analytics adapter', function () {
       expect(data.s[0].ps.length).to.equal(1);
       expect(data.s[0].ps[0].pn).to.equal('pubmatic2');
       expect(data.s[0].ps[0].bc).to.equal('pubmatic2');
-      expect(data.s[0].ps[0].bidid).to.equal('2ecff0db240712');
+      expect(data.s[0].ps[0].bidid).to.equal('792d8d2135d28b');
+	  expect(data.s[0].ps[0].origbidid).to.equal('2ecff0db240712');
       expect(data.s[0].ps[0].piid).to.equal('partnerImpressionID-1');
       expect(data.s[0].ps[0].db).to.equal(0);
       expect(data.s[0].ps[0].kgpv).to.equal('/19968336/header-bid-tag-0');
@@ -1522,7 +1532,8 @@ describe('pubmatic analytics adapter', function () {
       expect(decodeURIComponent(data.purl)).to.equal('http://www.test.com/page.html');
       expect(data.tst).to.equal('1519767014');
       expect(data.iid).to.equal('25c6d7f5-699a-4bfc-87c9-996f915341fa');
-      expect(data.bidid).to.equal('2ecff0db240712');
+      expect(data.bidid).to.equal('792d8d2135d28b');
+	  expect(data.orig_bidid).to.equal('2ecff0db240712');
       expect(data.pid).to.equal('1111');
       expect(data.pdvid).to.equal('20');
       expect(decodeURIComponent(data.slot)).to.equal('/19968336/header-bid-tag-0');

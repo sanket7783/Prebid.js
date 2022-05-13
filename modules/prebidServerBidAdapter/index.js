@@ -1223,6 +1223,10 @@ Object.assign(ORTB2.prototype, {
             bidObject.dealChannel = dealChannelValues[bid.ext.deal_channel];
           }
 
+          // check if bid contains ext prebid bidid and add it to bidObject for logger and tracker purpose
+          if (bid.ext && bid.ext.prebid && bid.ext.prebid.bidid) {
+            bidObject.prebidBidId = bid.ext.prebid.bidid;
+          }
           bids.push({ adUnit: this.adUnitsByImp[bid.impid].code, bid: bidObject });
         });
       });

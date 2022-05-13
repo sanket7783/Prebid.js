@@ -165,6 +165,7 @@ function parseBidResponse(bid) {
     'mi',
     'regexPattern', () => bid.regexPattern || undefined,
     'partnerImpId', // partner impression ID
+    'prebidBidId',
     'dimensions', () => pick(bid, [
       'width',
       'height'
@@ -253,10 +254,12 @@ function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
   highestBid = (highestBid && highestBid.length > 0) ? highestBid[0] : null;
   return Object.keys(adUnit.bids).reduce(function (partnerBids, bidId) {
     let bid = adUnit.bids[bidId];
+    const prebidBidId = bid.bidResponse && bid.bidResponse.prebidBidId;
     partnerBids.push({
       'pn': getAdapterNameForAlias(bid.bidder),
       'bc': bid.bidder,
-      'bidid': bid.bidId,
+      'bidid': prebidBidId || bid.bidId,
+      'origbidid': bid.bidId,
       'db': bid.bidResponse ? 0 : 1,
       'kgpv': getValueForKgpv(bid, adUnitId),
       'kgpsv': bid.params.kgpv ? getUpdatedKGPVForVideo(bid.params.kgpv, bid.bidResponse) : adUnitId,
@@ -388,13 +391,15 @@ function executeBidWonLoggerCall(auctionId, adUnitId) {
   const winningBidId = cache.auctions[auctionId].adUnitCodes[adUnitId].bidWon;
   const winningBid = cache.auctions[auctionId].adUnitCodes[adUnitId].bids[winningBidId];
   const adapterName = getAdapterNameForAlias(winningBid.bidder);
+  const generatedBidId = winningBid.bidResponse && winningBid.bidResponse.prebidBidId;
   var origAdUnit = getAdUnit(cache.auctions[auctionId].origAdUnits, adUnitId).adUnitId || adUnitId;
   let pixelURL = END_POINT_WIN_BID_LOGGER;
   pixelURL += 'pubid=' + publisherId;
   pixelURL += '&purl=' + enc(config.getConfig('pageUrl') || cache.auctions[auctionId].referer || '');
   pixelURL += '&tst=' + Math.round((new window.Date()).getTime() / 1000);
   pixelURL += '&iid=' + enc(auctionId);
-  pixelURL += '&bidid=' + enc(winningBid.bidId);
+  pixelURL += '&bidid=' + (generatedBidId ? enc(generatedBidId) : enc(winningBid.bidId));
+  pixelURL += '&orig_bidid=' + enc(winningBid.bidId);
   pixelURL += '&pid=' + enc(profileId);
   pixelURL += '&pdvid=' + enc(profileVersionId);
   pixelURL += '&slot=' + enc(adUnitId);
