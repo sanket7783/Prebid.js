@@ -475,7 +475,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.tst).to.equal('1519767014');
       expect(data.iid).to.equal('25c6d7f5-699a-4bfc-87c9-996f915341fa');
       expect(data.bidid).to.equal('792d8d2135d28b');
-	  expect(data.orig_bidid).to.equal('2ecff0db240712');
+	  expect(data.origbidid).to.equal('2ecff0db240712');
       expect(data.pid).to.equal('1111');
       expect(data.pdvid).to.equal('20');
       expect(decodeURIComponent(data.slot)).to.equal('/19968336/header-bid-tag-0');
@@ -1434,7 +1434,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.tst).to.equal('1519767014');
       expect(data.iid).to.equal('25c6d7f5-699a-4bfc-87c9-996f915341fa');
       expect(data.bidid).to.equal('792d8d2135d28b');
-	  expect(data.orig_bidid).to.equal('2ecff0db240712');
+	  expect(data.origbidid).to.equal('2ecff0db240712');
       expect(data.pid).to.equal('1111');
       expect(data.pdvid).to.equal('20');
       expect(decodeURIComponent(data.slot)).to.equal('/19968336/header-bid-tag-0');
@@ -1533,7 +1533,7 @@ describe('pubmatic analytics adapter', function () {
       expect(data.tst).to.equal('1519767014');
       expect(data.iid).to.equal('25c6d7f5-699a-4bfc-87c9-996f915341fa');
       expect(data.bidid).to.equal('792d8d2135d28b');
-	  expect(data.orig_bidid).to.equal('2ecff0db240712');
+	  expect(data.origbidid).to.equal('2ecff0db240712');
       expect(data.pid).to.equal('1111');
       expect(data.pdvid).to.equal('20');
       expect(decodeURIComponent(data.slot)).to.equal('/19968336/header-bid-tag-0');

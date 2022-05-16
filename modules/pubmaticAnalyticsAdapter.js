@@ -399,7 +399,7 @@ function executeBidWonLoggerCall(auctionId, adUnitId) {
   pixelURL += '&tst=' + Math.round((new window.Date()).getTime() / 1000);
   pixelURL += '&iid=' + enc(auctionId);
   pixelURL += '&bidid=' + (generatedBidId ? enc(generatedBidId) : enc(winningBid.bidId));
-  pixelURL += '&orig_bidid=' + enc(winningBid.bidId);
+  pixelURL += '&origbidid=' + enc(winningBid.bidId);
   pixelURL += '&pid=' + enc(profileId);
   pixelURL += '&pdvid=' + enc(profileVersionId);
   pixelURL += '&slot=' + enc(adUnitId);
