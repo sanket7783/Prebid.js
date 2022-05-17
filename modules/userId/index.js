@@ -130,20 +130,35 @@
   * @property {(string[]|undefined)} submoduleNames - submodules to refresh
   */
 
-import find from 'core-js-pure/features/array/find.js';
-import { config } from '../../src/config.js';
-import events from '../../src/events.js';
-import { getGlobal } from '../../src/prebidGlobal.js';
-import { gdprDataHandler } from '../../src/adapterManager.js';
+// import find from 'core-js-pure/features/array/find.js';
+import {find, includes} from '../../src/polyfill.js';
+import {config} from '../../src/config.js';
+import * as events from '../../src/events.js';
+import {getGlobal} from '../../src/prebidGlobal.js';
+import {gdprDataHandler} from '../../src/adapterManager.js';
 import CONSTANTS from '../../src/constants.json';
-import { module, hook } from '../../src/hook.js';
-import { createEidsArray, buildEidPermissions } from './eids.js';
-import { getCoreStorageManager } from '../../src/storageManager.js';
+import {hook, module} from '../../src/hook.js';
+import {buildEidPermissions, createEidsArray, USER_IDS_CONFIG} from './eids.js';
+import {getCoreStorageManager} from '../../src/storageManager.js';
 import {
-  getPrebidInternal, isPlainObject, logError, isArray, cyrb53Hash, deepAccess, timestamp, delayExecution, logInfo, isFn,
-  logWarn, isEmptyStr, isNumber, isEmpty, skipUndefinedValues
+  cyrb53Hash,
+  deepAccess,
+  delayExecution,
+  getPrebidInternal,
+  isArray,
+  isEmptyStr,
+  isFn,
+  isGptPubadsDefined,
+  isNumber,
+  isPlainObject,
+  logError,
+  logInfo,
+  logWarn,
+  timestamp,
+  isEmpty,
+  skipUndefinedValues
 } from '../../src/utils.js';
-import includes from 'core-js-pure/features/array/includes.js';
+// import includes from 'core-js-pure/features/array/includes.js';
 import MD5 from 'crypto-js/md5.js';
 import SHA1 from 'crypto-js/sha1.js';
 import SHA256 from 'crypto-js/sha256.js';
@@ -192,6 +207,10 @@ export let auctionDelay;
 
 /** @type {(Object|undefined)} */
 let userIdentity = {};
+
+/** @type {(string|undefined)} */
+let ppidSource;
+
 /** @param {Submodule[]} submodules */
 
 let modulesToRefresh = [];
@@ -461,6 +480,20 @@ function getCombinedSubmoduleIds(submodules) {
 }
 
 /**
+ * This function will return a submodule ID object for particular source name
+ * @param {SubmoduleContainer[]} submodules
+ * @param {string} sourceName
+ */
+function getSubmoduleId(submodules, sourceName) {
+  if (!Array.isArray(submodules) || !submodules.length) {
+    return {};
+  }
+  const submodule = submodules.filter(sub => isPlainObject(sub.idObj) &&
+  Object.keys(sub.idObj).length && USER_IDS_CONFIG[Object.keys(sub.idObj)[0]].source === sourceName)
+  return !isEmpty(submodule) ? submodule[0].idObj : []
+}
+
+/**
  * This function will create a combined object for bidder with allowed subModule Ids
  * @param {SubmoduleContainer[]} submodules
  * @param {string} bidder
@@ -577,6 +610,26 @@ export function requestBidsHook(fn, reqBidsConfigObj) {
   initializeSubmodulesAndExecuteCallbacks(function () {
     // pass available user id data to bid adapters
     addIdDataToAdUnitBids(reqBidsConfigObj.adUnits || getGlobal().adUnits, initializedSubmodules);
+
+    // userSync.ppid should be one of the 'source' values in getUserIdsAsEids() eg pubcid.org or id5-sync.com
+    const matchingUserId = ppidSource && (getUserIdsAsEids() || []).find(userID => userID.source === ppidSource);
+    if (matchingUserId && typeof deepAccess(matchingUserId, 'uids.0.id') === 'string') {
+      const ppidValue = matchingUserId.uids[0].id.replace(/[\W_]/g, '');
+      if (ppidValue.length >= 32 && ppidValue.length <= 150) {
+        if (isGptPubadsDefined()) {
+          window.googletag.pubads().setPublisherProvidedId(ppidValue);
+        } else {
+          window.googletag = window.googletag || {};
+          window.googletag.cmd = window.googletag.cmd || [];
+          window.googletag.cmd.push(function() {
+            window.googletag.pubads().setPublisherProvidedId(ppidValue);
+          });
+        }
+      } else {
+        logWarn(`User ID - Googletag Publisher Provided ID for ${ppidSource} is not between 32 and 150 characters - ${ppidValue}`);
+      }
+    }
+
     // calling fn allows prebid to continue processing
     fn.call(this, reqBidsConfigObj);
   });
@@ -600,6 +653,80 @@ function getUserIdsAsEids() {
   // initialize submodules only when undefined
   initializeSubmodulesAndExecuteCallbacks();
   return createEidsArray(getCombinedSubmoduleIds(initializedSubmodules));
+}
+
+/**
+ * This function will be exposed in global-name-space so that userIds stored by Prebid UserId module can be used by external codes as well.
+ * Simple use case will be passing these UserIds to A9 wrapper solution
+ */
+
+function getUserIdsAsEidBySource(sourceName) {
+  initializeSubmodulesAndExecuteCallbacks();
+  return createEidsArray(getSubmoduleId(initializedSubmodules, sourceName))[0];
+};
+
+/**
+ * This function will be exposed in global-name-space so that userIds for a source can be exposed
+ * Sample use case is exposing this function to ESP
+ */
+function getEncryptedEidsForSource(source, encrypt, customFunction) {
+  let eidsSignals = {};
+
+  if (isFn(customFunction)) {
+    logInfo(`${MODULE_NAME} - Getting encrypted signal from custom function : ${customFunction.name} & source : ${source} `);
+    // Publishers are expected to define a common function which will be proxy for signal function.
+    const customSignals = customFunction(source);
+    eidsSignals[source] = customSignals ? encryptSignals(customSignals) : null; // by default encrypt using base64 to avoid JSON errors
+  } else {
+    // initialize signal with eids by default
+    const eid = getUserIdsAsEidBySource(source);
+    logInfo(`${MODULE_NAME} - Getting encrypted signal for eids :${JSON.stringify(eid)}`);
+    if (!isEmpty(eid)) {
+      eidsSignals[eid.source] = encrypt === true ? encryptSignals(eid) : eid.uids[0].id; // If encryption is enabled append version (1||) and encrypt entire object
+    }
+  }
+  const promise = Promise.resolve(eidsSignals[source]);
+  logInfo(`${MODULE_NAME} - Fetching encrypted eids: ${eidsSignals[source]}`);
+  return promise;
+}
+
+function encryptSignals(signals, version = 1) {
+  let encryptedSig = '';
+  switch (version) {
+    case 1: // Base64 Encryption
+      encryptedSig = typeof signals === 'object' ? window.btoa(JSON.stringify(signals)) : window.btoa(signals); // Test encryption. To be replaced with better algo
+      break;
+    default:
+      break;
+  }
+  return `${version}||${encryptedSig}`;
+}
+
+/**
+* This function will be exposed in the global-name-space so that publisher can register the signals-ESP.
+*/
+function registerSignalSources() {
+  //Need to keep below change always instead of using isGptPubadsDefined()
+  if (!window.googletag) {
+    return;
+  }
+  window.googletag.encryptedSignalProviders = window.googletag.encryptedSignalProviders || [];
+  const encryptedSignalSources = config.getConfig('userSync.encryptedSignalSources');
+  if (encryptedSignalSources) {
+    const registerDelay = encryptedSignalSources.registerDelay || 0;
+    setTimeout(() => {
+      encryptedSignalSources['sources'] && encryptedSignalSources['sources'].forEach(({ source, encrypt, customFunc }) => {
+        source.forEach((src) => {
+          window.googletag.encryptedSignalProviders.push({
+            id: src,
+            collectorFunction: () => getEncryptedEidsForSource(src, encrypt, customFunc)
+          });
+        });
+      })
+    }, registerDelay)
+  } else {
+    logWarn(`${MODULE_NAME} - ESP : encryptedSignalSources config not defined under userSync Object`);
+  }
 }
 
 /**
@@ -1014,6 +1141,7 @@ export function attachIdSystem(submodule) {
  * @param {{getConfig:function}} config
  */
 export function init(config) {
+  ppidSource = undefined;
   submodules = [];
   configRegistry = [];
   addedUserIdHook = false;
@@ -1036,9 +1164,10 @@ export function init(config) {
   }
 
   // listen for config userSyncs to be set
-  config.getConfig(conf => {
+  config.getConfig('userSync', conf => {
     // Note: support for 'usersync' was dropped as part of Prebid.js 4.0
     const userSync = conf.userSync;
+    ppidSource = userSync.ppid;
     if (userSync && userSync.userIds) {
       configRegistry = userSync.userIds;
       syncDelay = isNumber(userSync.syncDelay) ? userSync.syncDelay : DEFAULT_SYNC_DELAY;
@@ -1050,11 +1179,14 @@ export function init(config) {
   // exposing getUserIds function in global-name-space so that userIds stored in Prebid can be used by external codes.
   (getGlobal()).getUserIds = getUserIds;
   (getGlobal()).getUserIdsAsEids = getUserIdsAsEids;
+  (getGlobal()).getEncryptedEidsForSource = getEncryptedEidsForSource;
+  (getGlobal()).registerSignalSources = registerSignalSources;
   (getGlobal()).refreshUserIds = refreshUserIds;
   (getGlobal()).setUserIdentities = setUserIdentities;
   (getGlobal()).getUserIdentities = getUserIdentities;
   (getGlobal()).onSSOLogin = onSSOLogin;
   (getGlobal()).onSSOLogout = onSSOLogout;
+  (getGlobal()).getUserIdsAsEidBySource = getUserIdsAsEidBySource;
 }
 
 // init config update listener to start the application

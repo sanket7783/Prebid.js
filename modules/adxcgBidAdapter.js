@@ -14,7 +14,7 @@ import {
   isArray,
   isPlainObject,
   parseUrl,
-  replaceAuctionPrice, triggerPixel, logMessage
+  replaceAuctionPrice, triggerPixel
 } from '../src/utils.js';
 import {config} from '../src/config.js';
 
@@ -225,7 +225,6 @@ export const spec = {
       deepSetValue(request, 'source.ext.schain', schain);
     }
 
-    logMessage(`calling adi adxcg`);
     return {
       method: 'POST',
       url: SECURE_BID_URL,
