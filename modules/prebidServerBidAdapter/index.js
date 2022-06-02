@@ -376,14 +376,14 @@ function _appendSiteAppDevice(request, pageUrl, accountId) {
     request.device.h = window.innerHeight;
   }
 
-  // update navigator.language to ISO-639-1-alpha-2 (2 character language)
-  // request.device.language = getDeviceLanguage();
+  // update device.language to ISO-639-1-alpha-2 (2 character language)
+  request.device.language = getDeviceLanguage(request);
 }
 
-// function getDeviceLanguage(request) {
-//   let lang = request.device.language;
-//   return lang ? lang.split('-')[0] : navigator.language.split('-')[0];
-// }
+function getDeviceLanguage(request) {
+  let lang = request.device.language;
+  return lang ? lang.split('-')[0] : navigator.language.split('-')[0];
+}
 
 function addBidderFirstPartyDataToRequest(request) {
   const bidderConfig = config.getBidderConfig();
