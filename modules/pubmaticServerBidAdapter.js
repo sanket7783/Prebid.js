@@ -599,7 +599,7 @@ export const spec = {
     }
 
     // update device.language to ISO-639-1-alpha-2 (2 character language)
-    payload.device.language = payload.device.language.split('-')[0];
+    payload.device.language = payload.device.language && payload.device.language.split('-')[0];
 
     _handleEids(payload, validBidRequests);
     return {
