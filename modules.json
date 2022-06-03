@@ -1,5 +1,1 @@
-<<<<<<< HEAD
 ["appnexusBidAdapter","consentManagement","pulsepointBidAdapter","openxBidAdapter","rubiconBidAdapter","sovrnBidAdapter","pubmaticBidAdapter","adgenerationBidAdapter","ixBidAdapter","criteoBidAdapter"]
-=======
-["appnexusBidAdapter","consentManagement","sekindoUMBidAdapter","pulsepointBidAdapter","audienceNetworkBidAdapter","openxBidAdapter","rubiconBidAdapter","sovrnBidAdapter","pubmaticBidAdapter","adgenerationBidAdapter","pubmaticServerBidAdapter","ixBidAdapter","criteoBidAdapter"]
->>>>>>> prebid_upgrade_6_27_0_20220601154841
