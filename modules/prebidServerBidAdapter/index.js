@@ -17,6 +17,7 @@ import { S2S_VENDORS } from './config.js';
 import { ajax } from '../../src/ajax.js';
 import {hook} from '../../src/hook.js';
 import { processNativeAdUnitParams } from '../../src/native.js';
+import {getGlobal} from '../../src/prebidGlobal.js';
 
 const getConfig = config.getConfig;
 
@@ -822,7 +823,60 @@ Object.assign(ORTB2.prototype, {
         deepSetValue(imp, 'ext.prebid.storedauctionresponse.id', storedAuctionResponseBid.storedAuctionResponse.toString());
       }
 
-      const getFloorBid = find(firstBidRequest.bids, bid => bid.adUnitCode === adUnit.code && typeof bid.getFloor === 'function');
+      const floor = (() => {
+        // we have to pick a floor for the imp - here we attempt to find the minimum floor
+        // across all bids for this adUnit
+
+        const convertCurrency = typeof getGlobal().convertCurrency !== 'function'
+          ? (amount) => amount
+          : (amount, from, to) => {
+            if (from === to) return amount;
+            let result = null;
+            try {
+              result = getGlobal().convertCurrency(amount, from, to);
+            } catch (e) {
+            }
+            return result;
+          }
+        const s2sCurrency = config.getConfig('currency.adServerCurrency') || DEFAULT_S2S_CURRENCY;
+
+        return adUnit.bids
+          .map((bid) => this.getBidRequest(imp.id, bid.bidder))
+          .map((bid) => {
+            if (!bid || typeof bid.getFloor !== 'function') return;
+            try {
+              const {currency, floor} = bid.getFloor({
+                currency: s2sCurrency
+              });
+              return {
+                currency,
+                floor: parseFloat(floor)
+              }
+            } catch (e) {
+              logError('PBS: getFloor threw an error: ', e);
+            }
+          })
+          .reduce((min, floor) => {
+            // if any bid does not have a valid floor, do not attempt to send any to PBS
+            if (floor == null || floor.currency == null || floor.floor == null || isNaN(floor.floor)) {
+              min.min = null;
+            }
+            if (min.min === null) {
+              return min;
+            }
+            // otherwise, pick the minimum one (or, in some strange confluence of circumstances, the one in the best currency)
+            if (min.ref == null) {
+              min.ref = min.min = floor;
+            } else {
+              const value = convertCurrency(floor.floor, floor.currency, min.ref.currency);
+              if (value != null && value < min.ref.floor) {
+                min.ref.floor = value;
+                min.min = floor;
+              }
+            }
+            return min;
+          }, {}).min
+      })();
 
       if (getFloorBid) {
         let floorInfo;
@@ -877,6 +931,11 @@ Object.assign(ORTB2.prototype, {
         }
       }
     };
+
+    // If the price floors module is active, then we need to signal to PBS! If floorData obj is present is best way to check
+    if (typeof deepAccess(firstBidRequest, 'bids.0.floorData') === 'object') {
+      request.ext.prebid.floors = { enabled: false };
+    }
 
     // This is no longer overwritten unless name and version explicitly overwritten by extPrebid (mergeDeep)
     request.ext.prebid = Object.assign(request.ext.prebid, {channel: {name: 'pbjs', version: $$PREBID_GLOBAL$$.version}})
@@ -1344,18 +1403,13 @@ export const processPBSRequest = hook('sync', function (s2sBidRequest, bidReques
   let { gdprConsent } = getConsentData(bidRequests);
   const adUnits = deepClone(s2sBidRequest.ad_units);
 
-  // at this point ad units should have a size array either directly or mapped so filter for that
-  const validAdUnits = adUnits.filter(unit =>
-    unit.mediaTypes && (unit.mediaTypes.native || (unit.mediaTypes.banner && unit.mediaTypes.banner.sizes) || (unit.mediaTypes.video && unit.mediaTypes.video.playerSize))
-  );
-
   // in case config.bidders contains invalid bidders, we only process those we sent requests for
-  const requestedBidders = validAdUnits
+  const requestedBidders = adUnits
     .map(adUnit => adUnit.bids.map(bid => bid.bidder).filter(uniques))
-    .reduce(flatten)
+    .reduce(flatten, [])
     .filter(uniques);
 
-  const ortb2 = new ORTB2(s2sBidRequest, bidRequests, validAdUnits, requestedBidders);
+  const ortb2 = new ORTB2(s2sBidRequest, bidRequests, adUnits, requestedBidders);
   const request = ortb2.buildRequest();
   const requestJson = request && JSON.stringify(request);
   logInfo('BidRequest: ' + requestJson);

@@ -8,7 +8,11 @@ let server;
 let configMock = {
   name: 'ftrack',
   params: {
-    url: 'https://d9.flashtalking.com/d9core'
+    url: 'https://d9.flashtalking.com/d9core',
+    ids: {
+      'device id': true,
+      'single device id': true
+    }
   },
   storage: {
     name: 'ftrackId',
@@ -91,15 +95,7 @@ describe('FTRACK ID System', () => {
       delete configMock1.params.url;
 
       ftrackIdSubmodule.isConfigOk(configMock1);
-      expect(logWarnStub.args[0][0]).to.equal(`FTRACK - config.params.url is required for ftrack to run. Url should be "https://d9.flashtalking.com/d9core".`);
-    });
-
-    it(`should be rejected if 'storage.param.url' does not exist or is not 'https://d9.flashtalking.com/d9core'`, () => {
-      let configMock1 = JSON.parse(JSON.stringify(configMock));
-      configMock1.params.url = 'https://d9.NOT.flashtalking.com/d9core';
-
-      ftrackIdSubmodule.isConfigOk(configMock1);
-      expect(logWarnStub.args[0][0]).to.equal(`FTRACK - config.params.url is required for ftrack to run. Url should be "https://d9.flashtalking.com/d9core".`);
+      expect(logWarnStub.args[0][0]).to.equal(`FTRACK - config.params.url is required for ftrack to run.`);
     });
   });
 
@@ -170,6 +166,76 @@ describe('FTRACK ID System', () => {
 
       appendChildStub.restore();
     });
+
+    describe(`should use the "ids" setting in the config:`, () => {
+      it(`should use default IDs if config.params.id is not populated`, () => {
+        let configMock1 = JSON.parse(JSON.stringify(configMock));
+        delete configMock1.params.ids;
+        ftrackIdSubmodule.getId(configMock1, null, null).callback();
+
+        expect(window.D9r).to.have.property('DeviceID', true);
+        expect(window.D9r).to.have.property('SingleDeviceID', true);
+        expect(window.D9r).to.not.have.property('HHID');
+      });
+
+      describe(`should use correct ID settings if config.params.id is populated`, () => {
+        it(`- any ID set as strings should not be added to window.D9r`, () => {
+          let configMock1 = JSON.parse(JSON.stringify(configMock));
+          configMock1.params.ids['device id'] = 'test device ID';
+          configMock1.params.ids['single device id'] = 'test single device ID';
+          configMock1.params.ids['household id'] = 'test household ID';
+          ftrackIdSubmodule.getId(configMock1, null, null).callback();
+
+          expect(window.D9r).to.not.have.property('DeviceID');
+          expect(window.D9r).to.not.have.property('SingleDeviceID');
+          expect(window.D9r).to.not.have.property('HHID');
+        })
+
+        it(`- any ID set to false should not be added to window.D9r`, () => {
+          let configMock1 = JSON.parse(JSON.stringify(configMock));
+          configMock1.params.ids['device id'] = false;
+          configMock1.params.ids['single device id'] = false;
+          configMock1.params.ids['household id'] = false;
+          ftrackIdSubmodule.getId(configMock1, null, null).callback();
+
+          expect(window.D9r).to.not.have.property('DeviceID');
+          expect(window.D9r).to.not.have.property('SingleDeviceID');
+          expect(window.D9r).to.not.have.property('HHID');
+        });
+
+        it(`- only device id`, () => {
+          let configMock1 = JSON.parse(JSON.stringify(configMock));
+          delete configMock1.params.ids['single device id'];
+          ftrackIdSubmodule.getId(configMock1, null, null).callback();
+
+          expect(window.D9r).to.have.property('DeviceID', true);
+          expect(window.D9r).to.not.have.property('SingleDeviceID');
+          expect(window.D9r).to.not.have.property('HHID');
+        });
+
+        it(`- only single device id`, () => {
+          let configMock1 = JSON.parse(JSON.stringify(configMock));
+          delete configMock1.params.ids['device id'];
+          ftrackIdSubmodule.getId(configMock1, null, null).callback();
+
+          expect(window.D9r).to.not.have.property('DeviceID');
+          expect(window.D9r).to.have.property('SingleDeviceID', true);
+          expect(window.D9r).to.not.have.property('HHID');
+        });
+
+        it(`- only household ID`, () => {
+          let configMock1 = JSON.parse(JSON.stringify(configMock));
+          delete configMock1.params.ids['device id'];
+          delete configMock1.params.ids['single device id'];
+          configMock1.params.ids['household id'] = true;
+          ftrackIdSubmodule.getId(configMock1, null, null).callback();
+
+          expect(window.D9r).to.not.have.property('DeviceID');
+          expect(window.D9r).to.not.have.property('SingleDeviceID');
+          expect(window.D9r).to.have.property('HHID', true);
+        });
+      });
+    })
 
     it(`should populate localstorage and return the IDS (end-to-end test)`, () => {
       let ftrackId,

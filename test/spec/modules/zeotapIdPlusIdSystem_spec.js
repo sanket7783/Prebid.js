@@ -154,19 +154,19 @@ describe('Zeotap ID System', function () {
       });
     });
 
-    describe('requestBids hook', function () {
-      let adUnits;
+  describe('requestBids hook', function() {
+    let adUnits;
 
-      beforeEach(function () {
-        adUnits = [getAdUnitMock()];
-        storage.setCookie(
-          ZEOTAP_COOKIE_NAME,
-          ENCODED_ZEOTAP_COOKIE
-        );
-        setSubmoduleRegistry([zeotapIdPlusSubmodule]);
-        init(config);
-        config.setConfig(getConfigMock());
-      });
+    beforeEach(function() {
+      adUnits = [getAdUnitMock()];
+      storage.setCookie(
+        ZEOTAP_COOKIE_NAME,
+        ENCODED_ZEOTAP_COOKIE
+      );
+      init(config);
+      setSubmoduleRegistry([zeotapIdPlusSubmodule]);
+      config.setConfig(getConfigMock());
+    });
 
       afterEach(function () {
         unsetCookie();
