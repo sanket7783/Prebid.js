@@ -2680,82 +2680,84 @@ describe('User ID', function () {
         }).catch(done);
       });
 
-      describe('pbjs.getEncryptedEidsForSource', () => {
+      describe('pbjs.getEncryptedEidsForSource', (done) => {
         beforeEach(() => {
           init(config);
           setSubmoduleRegistry([sharedIdSystemSubmodule]);
           config.setConfig({
-			  userSync: {
+            userSync: {
               syncDelay: 0,
               userIds: [
-				  {
+                {
                   'name': 'sharedId',
                   'storage': {
-					  'type': 'cookie',
-					  'name': '_pubcid',
-					  'expires': 365
+                    'type': 'cookie',
+                    'name': '_pubcid',
+                    'expires': 365
                   }
-				  },
-				  {
+                },
+                {
                   'name': 'pubcid.org'
-				  }
-              ]
-			  },
+                }]
+            }
           });
           const encrypt = false;
           (getGlobal()).getEncryptedEidsForSource(signalSources[0], encrypt).then((data) => {
-			  let users = (getGlobal()).getUserIdsAsEids();
-			  expect(data).to.equal(users[0].uids[0].id);
-			  done();
+			      let users = (getGlobal()).getUserIdsAsEids();
+			      expect(data).to.equal(users[0].uids[0].id);
+			      done();
           }).catch(done);
         });
 
         it('should return the string base64 encryption if encryption is true', (done) => {
           const encrypt = true;
           (getGlobal()).getEncryptedEidsForSource(signalSources[0], encrypt).then((result) => {
-			  expect(result.startsWith('1||')).to.true;
-			  done();
+			      expect(result.startsWith('1||')).to.true;
+			      done();
           }).catch(done);
+          done();
         });
 
         it('pbjs.getEncryptedEidsForSource should return string if custom function is defined', (done) => {
           const getCustomSignal = () => {
-			  return '{"keywords":["tech","auto"]}';
+			      return '{"keywords":["tech","auto"]}';
           }
           const expectedString = '1||eyJrZXl3b3JkcyI6WyJ0ZWNoIiwiYXV0byJdfQ==';
           const encrypt = false;
           const source = 'pubmatic.com';
           (getGlobal()).getEncryptedEidsForSource(source, encrypt, getCustomSignal).then((result) => {
-			  expect(result).to.equal(expectedString);
-			  done();
+			      expect(result).to.equal(expectedString);
+			      done();
           }).catch(done);
+          done();
         });
-      });
 
-        it('pbjs.getUserIdsAsEidBySource', () => {
+        it('pbjs.getUserIdsAsEidBySource', (done) => {
           const users = {
-			  'source': 'pubcid.org',
-			  'uids': [
+			      'source': 'pubcid.org',
+			      'uids': [
               {
-				  'id': '11111',
-				  'atype': 1
+				      'id': '11111',
+				      'atype': 1
               }
-			  ]
+		        ]
           }
           setSubmoduleRegistry([sharedIdSystemSubmodule, amxIdSubmodule]);
           init(config);
           config.setConfig({
-			  userSync: {
+			      userSync: {
               syncDelay: 0,
               userIds: [{
-				  name: 'pubCommonId', value: {'pubcid': '11111'}
+				        name: 'pubCommonId', value: {'pubcid': '11111'}
               }, {
-				  name: 'amxId', value: {'amxId': 'amx-id-value-amx-id-value-amx-id-value'}
+				        name: 'amxId', value: {'amxId': 'amx-id-value-amx-id-value-amx-id-value'}
               }]
-			  }
+			    }
           });
           expect(typeof (getGlobal()).getUserIdsAsEidBySource).to.equal('function');
+          console.log('############ ', (getGlobal()).getUserIdsAsEidBySource(signalSources[0]));
           expect((getGlobal()).getUserIdsAsEidBySource(signalSources[0])).to.deep.equal(users);
+          done();
         });
 	  })
     });

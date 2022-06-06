@@ -3430,19 +3430,20 @@ describe('PubMatic adapter', function () {
     });
 
     it('bcat: do not pass bcat if all entries are invalid', function() {
-      // multi slot
-        multipleBidRequests[0].params.bcat = ['', 'IAB', 'IAB'];
-        multipleBidRequests[1].params.bcat = ['    ', 22, 99999, 'IA'];
-        let request = spec.buildRequests(multipleBidRequests);
-        let data = JSON.parse(request.data);
-        expect(data.bcat).to.deep.equal(undefined);
-      });
+    // multi slot
+      multipleBidRequests[0].params.bcat = ['', 'IAB', 'IAB'];
+      multipleBidRequests[1].params.bcat = ['    ', 22, 99999, 'IA'];
+      let request = spec.buildRequests(multipleBidRequests);
+      let data = JSON.parse(request.data);
+      expect(data.bcat).to.deep.equal(undefined);
     });
-   describe('Request param acat checking', function() {
-      let multipleBidRequests = [
+  });
+
+  describe('Request param acat checking', function() {
+    let multipleBidRequests = [
 		  {
-          bidder: 'pubmatic',
-          params: {
+        bidder: 'pubmatic',
+        params: {
 			  publisherId: '301',
 			  adSlot: '/15671365/DMDemo@300x250:0',
 			  kadfloor: '1.2',
@@ -3457,17 +3458,17 @@ describe('PubMatic adapter', function () {
 			  verId: '200',
 			  currency: 'AUD',
 			  dctr: 'key1=val1|key2=val2,!val3'
-          },
-          placementCode: '/19968336/header-bid-tag-1',
-          sizes: [[300, 250], [300, 600]],
-          bidId: '23acc48ad47af5',
-          requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
-          bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
+        },
+        placementCode: '/19968336/header-bid-tag-1',
+        sizes: [[300, 250], [300, 600]],
+        bidId: '23acc48ad47af5',
+        requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
+        bidderRequestId: '1c56ad30b9b8ca8',
+        transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
 		  },
 		  {
-          bidder: 'pubmatic',
-          params: {
+        bidder: 'pubmatic',
+        params: {
 			  publisherId: '301',
 			  adSlot: '/15671365/DMDemo@300x250:0',
 			  kadfloor: '1.2',
@@ -3482,128 +3483,124 @@ describe('PubMatic adapter', function () {
 			  verId: '200',
 			  currency: 'GBP',
 			  dctr: 'key1=val3|key2=val1,!val3|key3=val123'
-          },
-          placementCode: '/19968336/header-bid-tag-1',
-          sizes: [[300, 250], [300, 600]],
-          bidId: '23acc48ad47af5',
-          requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
-          bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
+        },
+        placementCode: '/19968336/header-bid-tag-1',
+        sizes: [[300, 250], [300, 600]],
+        bidId: '23acc48ad47af5',
+        requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
+        bidderRequestId: '1c56ad30b9b8ca8',
+        transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
 		  }
-      ];
+    ];
 
-      it('acat: pass only strings', function() {
+    it('acat: pass only strings', function() {
 		  multipleBidRequests[0].params.acat = [1, 2, 3, 'IAB1', 'IAB2'];
 		  let request = spec.buildRequests(multipleBidRequests, {
-          auctionId: 'new-auction-id'
+        auctionId: 'new-auction-id'
 		  });
 		  let data = JSON.parse(request.data);
 		  expect(data.ext.acat).to.exist.and.to.deep.equal(['IAB1', 'IAB2']);
-      });
+    });
 
 	  it('acat: trim the strings', function() {
-        multipleBidRequests[0].params.acat = ['   IAB1    ', '   IAB2   '];
-        let request = spec.buildRequests(multipleBidRequests, {
-          auctionId: 'new-auction-id'
-        });
-        let data = JSON.parse(request.data);
-        expect(data.ext.acat).to.exist.and.to.deep.equal(['IAB1', 'IAB2']);
+      multipleBidRequests[0].params.acat = ['   IAB1    ', '   IAB2   '];
+      let request = spec.buildRequests(multipleBidRequests, {
+        auctionId: 'new-auction-id'
       });
+      let data = JSON.parse(request.data);
+      expect(data.ext.acat).to.exist.and.to.deep.equal(['IAB1', 'IAB2']);
+    });
 
 	  it('acat: pass only unique strings', function() {
-        multipleBidRequests[0].params.acat = ['IAB1', 'IAB2', 'IAB1', 'IAB2', 'IAB1', 'IAB2'];
-        multipleBidRequests[1].params.acat = ['IAB1', 'IAB2', 'IAB1', 'IAB2', 'IAB1', 'IAB3'];
-        let request = spec.buildRequests(multipleBidRequests, {
-          auctionId: 'new-auction-id'
-        });
-        let data = JSON.parse(request.data);
-        expect(data.ext.acat).to.exist.and.to.deep.equal(['IAB1', 'IAB2', 'IAB3']);
+      multipleBidRequests[0].params.acat = ['IAB1', 'IAB2', 'IAB1', 'IAB2', 'IAB1', 'IAB2'];
+      multipleBidRequests[1].params.acat = ['IAB1', 'IAB2', 'IAB1', 'IAB2', 'IAB1', 'IAB3'];
+      let request = spec.buildRequests(multipleBidRequests, {
+        auctionId: 'new-auction-id'
       });
-      it('ortb2.ext.prebid.bidderparams.pubmatic.acat should be passed in request payload', function() {
-        let sandbox = sinon.sandbox.create();
-        sandbox.stub(config, 'getConfig').callsFake(key => {
-          const config = {
-            'ortb2': {
-              ext: {
-                prebid: {
-                  bidderparams: {
-                    pubmatic: {
-                      acat: ['IAB1', 'IAB2', 'IAB1', 'IAB2', 'IAB1', 'IAB2']
-                    }
+      let data = JSON.parse(request.data);
+      expect(data.ext.acat).to.exist.and.to.deep.equal(['IAB1', 'IAB2', 'IAB3']);
+    });
+    it('ortb2.ext.prebid.bidderparams.pubmatic.acat should be passed in request payload', function() {
+      let sandbox = sinon.sandbox.create();
+      sandbox.stub(config, 'getConfig').callsFake(key => {
+        const config = {
+          'ortb2': {
+            ext: {
+              prebid: {
+                bidderparams: {
+                  pubmatic: {
+                    acat: ['IAB1', 'IAB2', 'IAB1', 'IAB2', 'IAB1', 'IAB2']
                   }
                 }
               }
             }
-          };
-          return config[key];
-        });
-        const request = spec.buildRequests(bidRequests, {
-          auctionId: 'new-auction-id',
-          bidderCode: 'pubmatic'
-        });
-        let data = JSON.parse(request.data);
-        expect(data.ext.acat).to.deep.equal(['IAB1', 'IAB2']);
-        sandbox.restore();
+          }
+        };
+        return config[key];
       });
+      const request = spec.buildRequests(bidRequests, {
+        auctionId: 'new-auction-id',
+        bidderCode: 'pubmatic'
+      });
+      let data = JSON.parse(request.data);
+      expect(data.ext.acat).to.deep.equal(['IAB1', 'IAB2']);
+      sandbox.restore();
     });
-
-    describe('Request param bcat checking', function() {
-      let multipleBidRequests = [
-        {
-          bidder: 'pubmatic',
-          params: {
-            publisherId: '301',
-            adSlot: '/15671365/DMDemo@300x250:0',
-            kadfloor: '1.2',
-            pmzoneid: 'aabc, ddef',
-            kadpageurl: 'www.publisher.com',
-            yob: '1986',
-            gender: 'M',
-            lat: '12.3',
-            lon: '23.7',
-            wiid: '1234567890',
-            profId: '100',
-            verId: '200',
-            currency: 'AUD',
-            dctr: 'key1=val1|key2=val2,!val3'
-          },
-          placementCode: '/19968336/header-bid-tag-1',
-          sizes: [[300, 250], [300, 600]],
-          bidId: '23acc48ad47af5',
-          requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
-          bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
-        },
-        {
-          bidder: 'pubmatic',
-          params: {
-            publisherId: '301',
-            adSlot: '/15671365/DMDemo@300x250:0',
-            kadfloor: '1.2',
-            pmzoneid: 'aabc, ddef',
-            kadpageurl: 'www.publisher.com',
-            yob: '1986',
-            gender: 'M',
-            lat: '12.3',
-            lon: '23.7',
-            wiid: '1234567890',
-            profId: '100',
-            verId: '200',
-            currency: 'GBP',
-            dctr: 'key1=val3|key2=val1,!val3|key3=val123'
-          },
-          placementCode: '/19968336/header-bid-tag-1',
-          sizes: [[300, 250], [300, 600]],
-          bidId: '23acc48ad47af5',
-          requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
-          bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
-        }
-      ];
-    });
-
+  });
 
   describe('Response checking', function () {
+    let multipleBidRequests = [
+      {
+        bidder: 'pubmatic',
+        params: {
+          publisherId: '301',
+          adSlot: '/15671365/DMDemo@300x250:0',
+          kadfloor: '1.2',
+          pmzoneid: 'aabc, ddef',
+          kadpageurl: 'www.publisher.com',
+          yob: '1986',
+          gender: 'M',
+          lat: '12.3',
+          lon: '23.7',
+          wiid: '1234567890',
+          profId: '100',
+          verId: '200',
+          currency: 'AUD',
+          dctr: 'key1=val1|key2=val2,!val3'
+        },
+        placementCode: '/19968336/header-bid-tag-1',
+        sizes: [[300, 250], [300, 600]],
+        bidId: '23acc48ad47af5',
+        requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
+        bidderRequestId: '1c56ad30b9b8ca8',
+        transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
+      },
+      {
+        bidder: 'pubmatic',
+        params: {
+          publisherId: '301',
+          adSlot: '/15671365/DMDemo@300x250:0',
+          kadfloor: '1.2',
+          pmzoneid: 'aabc, ddef',
+          kadpageurl: 'www.publisher.com',
+          yob: '1986',
+          gender: 'M',
+          lat: '12.3',
+          lon: '23.7',
+          wiid: '1234567890',
+          profId: '100',
+          verId: '200',
+          currency: 'GBP',
+          dctr: 'key1=val3|key2=val1,!val3|key3=val123'
+        },
+        placementCode: '/19968336/header-bid-tag-1',
+        sizes: [[300, 250], [300, 600]],
+        bidId: '23acc48ad47af5',
+        requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
+        bidderRequestId: '1c56ad30b9b8ca8',
+        transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
+      }
+    ];
     it('should check for valid response values', function () {
       let request = spec.buildRequests(bidRequests, {
         'auctionId': 'new-auction-id'
@@ -3700,27 +3697,26 @@ describe('PubMatic adapter', function () {
       let response = spec.interpretResponse(videoBidResponse, request);
       expect(response[0].renderer).to.not.exist;
     });
-    
-	  it('ortb2.bcat should merged with slot level bcat param', function() {
-        multipleBidRequests[0].params.bcat = ['IAB-1', 'IAB-2'];
-        let sandbox = sinon.sandbox.create();
-        sandbox.stub(config, 'getConfig').callsFake(key => {
-          const config = {
-            'ortb2': {
-              bcat: ['IAB-3', 'IAB-4']
-            }
-          };
-          return config[key];
-        });
-        const request = spec.buildRequests(multipleBidRequests, {
-          auctionId: 'new-auction-id',
-          bidderCode: 'pubmatic'
-        });
-        let data = JSON.parse(request.data);
-        expect(data.bcat).to.deep.equal(['IAB-1', 'IAB-2', 'IAB-3', 'IAB-4']);
-        sandbox.restore();
+
+    it('ortb2.bcat should merged with slot level bcat param', function() {
+      multipleBidRequests[0].params.bcat = ['IAB-1', 'IAB-2'];
+      let sandbox = sinon.sandbox.create();
+      sandbox.stub(config, 'getConfig').callsFake(key => {
+        const config = {
+          'ortb2': {
+            bcat: ['IAB-3', 'IAB-4']
+          }
+        };
+        return config[key];
       });
-    
+      const request = spec.buildRequests(multipleBidRequests, {
+        auctionId: 'new-auction-id',
+        bidderCode: 'pubmatic'
+      });
+      let data = JSON.parse(request.data);
+      expect(data.bcat).to.deep.equal(['IAB-1', 'IAB-2', 'IAB-3', 'IAB-4']);
+      sandbox.restore();
+    });
 
     it('should not assign renderer if bid is native', function() {
       let request = spec.buildRequests(nativeBidRequests, {

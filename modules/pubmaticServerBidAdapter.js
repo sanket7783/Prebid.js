@@ -4,7 +4,7 @@ import {userSync} from '../src/userSync.js';
 import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, VIDEO } from '../src/mediaTypes.js';
-const constants = require('../src/constants.json');
+import constants from '../src/constants.json';
 const LOG_WARN_PREFIX = 'PubMatic: ';
 
 const BIDDER_CODE = 'pubmaticServer';
