@@ -1351,6 +1351,12 @@ export const spec = {
                       'hb_buyid_pubmatic': seatbidder.ext.buyid
                     };
                   }
+
+                  // if from the server-response the bid.ext.marketplace is set then
+                  //    submit the bid to Prebid as marketplace name
+                  if (bid.ext && !!bid.ext.marketplace) {
+                    br.bidderCode = bid.ext.marketplace;
+                  }
                 }
               });
             });

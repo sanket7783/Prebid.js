@@ -2680,214 +2680,197 @@ describe('User ID', function () {
         }).catch(done);
       });
 
-      describe('pbjs.getEncryptedEidsForSource', (done) => {
+      describe('pbjs.getEncryptedEidsForSource', () => {
         beforeEach(() => {
           init(config);
           setSubmoduleRegistry([sharedIdSystemSubmodule]);
           config.setConfig({
             userSync: {
-              syncDelay: 0,
-              userIds: [
-                {
-                  'name': 'sharedId',
-                  'storage': {
-                    'type': 'cookie',
-                    'name': '_pubcid',
-                    'expires': 365
-                  }
-                },
-                {
-                  'name': 'pubcid.org'
-                }]
+              auctionDelay: 10,
+              userIds: [{
+                name: 'pubCommonId', value: {'pubcid': '11111'}
+              }]
             }
           });
-          const encrypt = false;
-          (getGlobal()).getEncryptedEidsForSource(signalSources[0], encrypt).then((data) => {
-			      let users = (getGlobal()).getUserIdsAsEids();
-			      expect(data).to.equal(users[0].uids[0].id);
-			      done();
-          }).catch(done);
         });
 
         it('should return the string base64 encryption if encryption is true', (done) => {
           const encrypt = true;
           (getGlobal()).getEncryptedEidsForSource(signalSources[0], encrypt).then((result) => {
-			      expect(result.startsWith('1||')).to.true;
-			      done();
+            expect(result.startsWith('1||')).to.true;
+            done();
           }).catch(done);
-          done();
         });
 
-        it('pbjs.getEncryptedEidsForSource should return string if custom function is defined', (done) => {
+        it('pbjs.getEncryptedEidsForSource should return string if custom function is defined', () => {
           const getCustomSignal = () => {
-			      return '{"keywords":["tech","auto"]}';
+            return '{"keywords":["tech","auto"]}';
           }
           const expectedString = '1||eyJrZXl3b3JkcyI6WyJ0ZWNoIiwiYXV0byJdfQ==';
           const encrypt = false;
           const source = 'pubmatic.com';
-          (getGlobal()).getEncryptedEidsForSource(source, encrypt, getCustomSignal).then((result) => {
-			      expect(result).to.equal(expectedString);
-			      done();
-          }).catch(done);
-          done();
-        });
-
-        it('pbjs.getUserIdsAsEidBySource', (done) => {
-          const users = {
-			      'source': 'pubcid.org',
-			      'uids': [
-              {
-				      'id': '11111',
-				      'atype': 1
-              }
-		        ]
-          }
-          setSubmoduleRegistry([sharedIdSystemSubmodule, amxIdSubmodule]);
-          init(config);
-          config.setConfig({
-			      userSync: {
-              syncDelay: 0,
-              userIds: [{
-				        name: 'pubCommonId', value: {'pubcid': '11111'}
-              }, {
-				        name: 'amxId', value: {'amxId': 'amx-id-value-amx-id-value-amx-id-value'}
-              }]
-			    }
+          return (getGlobal()).getEncryptedEidsForSource(source, encrypt, getCustomSignal).then((result) => {
+            expect(result).to.equal(expectedString);
           });
-          expect(typeof (getGlobal()).getUserIdsAsEidBySource).to.equal('function');
-          console.log('############ ', (getGlobal()).getUserIdsAsEidBySource(signalSources[0]));
-          expect((getGlobal()).getUserIdsAsEidBySource(signalSources[0])).to.deep.equal(users);
+        });
+      });
+
+      it('pbjs.getUserIdsAsEidBySource', (done) => {
+        const users = {
+          'source': 'pubcid.org',
+          'uids': [
+            {
+              'id': '11111',
+              'atype': 1
+            }
+          ]
+        }
+        init(config);
+        setSubmoduleRegistry([sharedIdSystemSubmodule, amxIdSubmodule]);
+        config.setConfig({
+          userSync: {
+            auctionDelay: 10,
+            userIds: [{
+              name: 'pubCommonId', value: {'pubcid': '11111'}
+            }, {
+              name: 'amxId', value: {'amxId': 'amx-id-value-amx-id-value-amx-id-value'}
+            }]
+          }
+        });
+        expect(typeof (getGlobal()).getUserIdsAsEidBySource).to.equal('function');
+        (getGlobal()).getUserIdsAsync().then(() => {
+          expect(getGlobal().getUserIdsAsEidBySource(signalSources[0])).to.deep.equal(users);
           done();
         });
-	  })
+      });
+    })
+  });
+
+  describe('Handle SSO Login', function () {
+    var dummyGoogleUserObject = { 'getBasicProfile': getBasicProfile };
+    let sandbox;
+    let auctionSpy;
+    let adUnits;
+
+    function getEmail() {
+      return 'abc@def.com';
+    }
+    function getBasicProfile() {
+      return { 'getEmail': getEmail }
+    }
+    beforeEach(function () {
+      (getGlobal()).setUserIdentities({});
+      window.PWT = window.PWT || {};
+      // sinon.stub($$PREBID_GLOBAL$$, 'refreshUserIds');
+      window.PWT.ssoEnabled = true;
+      sandbox = sinon.createSandbox();
+      adUnits = [getAdUnitMock()];
+      auctionSpy = sandbox.spy();
     });
 
-    describe('Handle SSO Login', function() {
-      var dummyGoogleUserObject = { 'getBasicProfile': getBasicProfile };
-      let sandbox;
-      let auctionSpy;
-      let adUnits;
+    afterEach(function () {
+      // $$PREBID_GLOBAL$$.refreshUserIds.restore();
+      // $$PREBID_GLOBAL$$.requestBids.removeAll();
+      config.resetConfig();
+    });
 
-      function getEmail() {
-		  return 'abc@def.com';
-      }
-      function getBasicProfile() {
-		  return { 'getEmail': getEmail }
-      }
-      beforeEach(function () {
-		  (getGlobal()).setUserIdentities({});
-		  window.PWT = window.PWT || {};
-		  // sinon.stub($$PREBID_GLOBAL$$, 'refreshUserIds');
-		  window.PWT.ssoEnabled = true;
-		  sandbox = sinon.createSandbox();
-		  adUnits = [getAdUnitMock()];
-		  auctionSpy = sandbox.spy();
-      });
+    xit('Email hashes are not stored in userIdentities Object on SSO login if ssoEnabled is false', function () {
+      window.PWT.ssoEnabled = false;
 
-      afterEach(function() {
-		  // $$PREBID_GLOBAL$$.refreshUserIds.restore();
-		  // $$PREBID_GLOBAL$$.requestBids.removeAll();
-		  config.resetConfig();
-      });
+      expect(typeof (getGlobal()).onSSOLogin).to.equal('function');
+      getGlobal().onSSOLogin({ 'provider': 'google', 'googleUserObject': dummyGoogleUserObject });
+      expect((getGlobal()).getUserIdentities().emailHash).to.not.exist;
+    });
 
-      xit('Email hashes are not stored in userIdentities Object on SSO login if ssoEnabled is false', function () {
-		  window.PWT.ssoEnabled = false;
+    xit('Email hashes are stored in userIdentities Object on SSO login if ssoEnabled is true', function () {
+      expect(typeof (getGlobal()).onSSOLogin).to.equal('function');
+      getGlobal().onSSOLogin({ 'provider': 'google', 'googleUserObject': dummyGoogleUserObject });
+      expect((getGlobal()).getUserIdentities().emailHash).to.exist;
+    });
 
-		  expect(typeof (getGlobal()).onSSOLogin).to.equal('function');
-		  getGlobal().onSSOLogin({'provider': 'google', 'googleUserObject': dummyGoogleUserObject});
-		  expect((getGlobal()).getUserIdentities().emailHash).to.not.exist;
-      });
+    xit('Publisher provided emails are stored in userIdentities.pubProvidedEmailHash if available', function () {
+      getGlobal().setUserIdentities({ 'pubProvidedEmail': 'abc@xyz.com' });
+      expect(getGlobal().getUserIdentities().pubProvidedEmailHash).to.exist;
+    });
 
-      xit('Email hashes are stored in userIdentities Object on SSO login if ssoEnabled is true', function () {
-		  expect(typeof (getGlobal()).onSSOLogin).to.equal('function');
-		  getGlobal().onSSOLogin({'provider': 'google', 'googleUserObject': dummyGoogleUserObject});
-		  expect((getGlobal()).getUserIdentities().emailHash).to.exist;
-      });
+    xit('should return encoded string with email hash and userid in id5 format', function () {
+      var emailHashes = {
+        'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
+        'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
+        'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
+      };
+      var outputString = 'MT03MjJiOGMxMmU3OTkxZjBlYmJjYzJkN2NhZWJlOGUxMjQ3OWQyNmQ1ZGQ5Y2IzN2Y0NDJhNTVkZGMxOTA4MTdhJjU9WVdKalpERXlNelE9';
+      var encodedString = getRawPDString(emailHashes, 'abcd1234');
+      expect(encodedString).to.equal(outputString);
+    });
 
-      xit('Publisher provided emails are stored in userIdentities.pubProvidedEmailHash if available', function() {
-		  getGlobal().setUserIdentities({'pubProvidedEmail': 'abc@xyz.com'});
-		  expect(getGlobal().getUserIdentities().pubProvidedEmailHash).to.exist;
-      });
+    xit('should return encoded string with only email hash if userID is not available', function () {
+      var emailHashes = {
+        'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
+        'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
+        'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
+      };
+      var outputString = 'MT03MjJiOGMxMmU3OTkxZjBlYmJjYzJkN2NhZWJlOGUxMjQ3OWQyNmQ1ZGQ5Y2IzN2Y0NDJhNTVkZGMxOTA4MTdh';
+      var encodedString = getRawPDString(emailHashes, undefined);
+      expect(encodedString).to.equal(outputString);
+    });
 
-      xit('should return encoded string with email hash and userid in id5 format', function() {
-		  var emailHashes = {
-          'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
-          'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
-          'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
-		  };
-		  var outputString = 'MT03MjJiOGMxMmU3OTkxZjBlYmJjYzJkN2NhZWJlOGUxMjQ3OWQyNmQ1ZGQ5Y2IzN2Y0NDJhNTVkZGMxOTA4MTdhJjU9WVdKalpERXlNelE9';
-		  var encodedString = getRawPDString(emailHashes, 'abcd1234');
-		  expect(encodedString).to.equal(outputString);
-      });
-
-      xit('should return encoded string with only email hash if userID is not available', function() {
-		  var emailHashes = {
-          'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
-          'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
-          'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
-		  };
-		  var outputString = 'MT03MjJiOGMxMmU3OTkxZjBlYmJjYzJkN2NhZWJlOGUxMjQ3OWQyNmQ1ZGQ5Y2IzN2Y0NDJhNTVkZGMxOTA4MTdh';
-		  var encodedString = getRawPDString(emailHashes, undefined);
-		  expect(encodedString).to.equal(outputString);
-      });
-
-      xit('should set the pd param for id5id if id5id module is configured and pd string is available', function() {
-		  var pdString = 'MT03MjJiOGMxMmU3OTkxZjBlYmJjYzJkN2NhZWJlOGUxMjQ3OWQyNmQ1ZGQ5Y2IzN2Y0NDJhNTVkZGMxOTA4MTdh';
-		  var moduleToUpdate = {
-          'name': 'id5Id',
-          'params':
-			{
-			  'partner': 173,
-			  'provider': 'pubmatic-identity-hub'
-			},
-          'storage':
-			{
-			  'type': 'cookie',
-			  'name': '_myUnifiedId',
-			  'expires': '1825'
-			}
-		  };
-		  getGlobal().setUserIdentities(
-          {
-			  'emailHash': {
-              'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
-              'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
-              'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
-			  }
+    xit('should set the pd param for id5id if id5id module is configured and pd string is available', function () {
+      var pdString = 'MT03MjJiOGMxMmU3OTkxZjBlYmJjYzJkN2NhZWJlOGUxMjQ3OWQyNmQ1ZGQ5Y2IzN2Y0NDJhNTVkZGMxOTA4MTdh';
+      var moduleToUpdate = {
+        'name': 'id5Id',
+        'params':
+        {
+          'partner': 173,
+          'provider': 'pubmatic-identity-hub'
+        },
+        'storage':
+        {
+          'type': 'cookie',
+          'name': '_myUnifiedId',
+          'expires': '1825'
+        }
+      };
+      getGlobal().setUserIdentities(
+        {
+          'emailHash': {
+            'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
+            'SHA1': '5acb6964c743eff1d4f51b8d57abddc11438e8eb',
+            'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
           }
-		  );
-		  updateModuleParams(moduleToUpdate);
-		  expect(moduleToUpdate.params.pd).to.exist;
-		  expect(moduleToUpdate.params.pd).to.equal(pdString);
-      });
+        }
+      );
+      updateModuleParams(moduleToUpdate);
+      expect(moduleToUpdate.params.pd).to.exist;
+      expect(moduleToUpdate.params.pd).to.equal(pdString);
+    });
 
-      xit('should set the e param for publink if publink module is configured and email hashes are available', function() {
-		  var emailHash = '1edeb32aa0ab4b329a41b431050dcf26';
-		  var moduleToUpdate = {
-          name: 'publinkId',
-          storage: {
-			  name: 'pbjs_publink',
-			  type: 'cookie',
-			  expires: 30
-          },
-          params: {
-			  site_id: '214393',
-			  api_key: '061065f4-4835-40f4-936e-74e0f3af59b5'
-          }
-		  };
+    xit('should set the e param for publink if publink module is configured and email hashes are available', function () {
+      var emailHash = '1edeb32aa0ab4b329a41b431050dcf26';
+      var moduleToUpdate = {
+        name: 'publinkId',
+        storage: {
+          name: 'pbjs_publink',
+          type: 'cookie',
+          expires: 30
+        },
+        params: {
+          site_id: '214393',
+          api_key: '061065f4-4835-40f4-936e-74e0f3af59b5'
+        }
+      };
 
-		  getGlobal().setUserIdentities(
-          {
-			  'emailHash': {
-              'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
-              'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
-			  }
+      getGlobal().setUserIdentities(
+        {
+          'emailHash': {
+            'MD5': '1edeb32aa0ab4b329a41b431050dcf26',
+            'SHA256': '722b8c12e7991f0ebbcc2d7caebe8e12479d26d5dd9cb37f442a55ddc190817a'
           }
-		  );
-		  updateModuleParams(moduleToUpdate);
-		  expect(moduleToUpdate.params.e).to.exist;
-		  expect(moduleToUpdate.params.e).to.equal(emailHash);
-      });
+        }
+      );
+      updateModuleParams(moduleToUpdate);
+      expect(moduleToUpdate.params.e).to.exist;
+      expect(moduleToUpdate.params.e).to.equal(emailHash);
     });
   });
 });
