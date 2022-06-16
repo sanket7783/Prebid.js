@@ -44,6 +44,8 @@ let defaultAliases = {
   pubmatic2: 'pubmatic'
 }
 let isPrebidKeys = false;
+let siteObj = {};
+let siteProperties = ['page', 'domain', 'ref'];
 /**
  * @typedef {Object} AdapterOptions
  * @summary s2sConfig parameter that adds arguments to resulting OpenRTB payload that goes to Prebid Server
@@ -381,13 +383,21 @@ function _appendSiteAppDevice(request, pageUrl, accountId) {
   }
 }
 
+function updateSiteObject(request) {
+  for (let key in siteObj) {
+    if (deepAccess(request, `site.${key}`) && siteProperties.includes(key)) {
+      request.site[key] = siteObj[key];
+    }
+  }
+}
+
 function addBidderFirstPartyDataToRequest(request) {
   const bidderConfig = config.getBidderConfig();
   const fpdConfigs = Object.keys(bidderConfig).reduce((acc, bidder) => {
     const currBidderConfig = bidderConfig[bidder];
     if (currBidderConfig.ortb2) {
-      const ortb2 = mergeDeep({}, currBidderConfig.ortb2);
-
+      let ortb2 = mergeDeep({}, currBidderConfig.ortb2);
+      updateSiteObject(ortb2);
       acc.push({
         bidders: [ bidder ],
         config: { ortb2 }
@@ -990,8 +1000,10 @@ Object.assign(ORTB2.prototype, {
       deepSetValue(request, 'regs.coppa', 1);
     }
 
+    siteObj = { ...request.site };
     const commonFpd = getConfig('ortb2') || {};
     mergeDeep(request, commonFpd);
+    updateSiteObject(request);
     // delete isPrebidPubMaticAnalyticsEnabled from extPrebid object as it not required in request.
     // it is only used to decide impressionId for wiid parameter in logger and tracker calls.
     delete request.ext.prebid.isPrebidPubMaticAnalyticsEnabled;
