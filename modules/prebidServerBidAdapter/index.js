@@ -368,6 +368,7 @@ function _appendSiteAppDevice(request, pageUrl, accountId) {
     if (!request.site.page) {
       request.site.page = pageUrl;
     }
+    siteObj.domain = _getDomainFromURL(request.site.page);
   }
   if (typeof config.getConfig('device') === 'object') {
     request.device = config.getConfig('device');
@@ -391,12 +392,18 @@ function updateSiteObject(request) {
   }
 }
 
+function _getDomainFromURL(url) {
+  let anchor = document.createElement('a');
+  anchor.href = url;
+  return anchor.hostname;
+}
+
 function addBidderFirstPartyDataToRequest(request) {
   const bidderConfig = config.getBidderConfig();
   const fpdConfigs = Object.keys(bidderConfig).reduce((acc, bidder) => {
     const currBidderConfig = bidderConfig[bidder];
     if (currBidderConfig.ortb2) {
-      let ortb2 = mergeDeep({}, currBidderConfig.ortb2);
+      const ortb2 = mergeDeep({}, currBidderConfig.ortb2);
       updateSiteObject(ortb2);
       acc.push({
         bidders: [ bidder ],
@@ -1000,7 +1007,7 @@ Object.assign(ORTB2.prototype, {
       deepSetValue(request, 'regs.coppa', 1);
     }
 
-    siteObj = { ...request.site };
+    siteObj = mergeDeep(siteObj, request.site);
     const commonFpd = getConfig('ortb2') || {};
     mergeDeep(request, commonFpd);
     updateSiteObject(request);
