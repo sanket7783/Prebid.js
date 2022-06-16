@@ -256,7 +256,7 @@ function bundle(dev, moduleArr) {
   // gutil.log('Concatenating files:\n', entries);
   // gutil.log('Appending ' + prebid.globalVarName + '.processQueue();');
   // gutil.log('Generating bundle:', outputFileName);
-  var globalVarName = argv.profile === "IH" ? prebid.ihGlobalVarName : prebid.globalVarName;
+  var globalVarName = /*argv.profile === "IH" ? prebid.ihGlobalVarName : */ prebid.globalVarName;
   return gulp.src(
     entries
   )
