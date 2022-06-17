@@ -369,6 +369,7 @@ function _appendSiteAppDevice(request, pageUrl, accountId) {
       request.site.page = pageUrl;
     }
     siteObj.domain = _getDomainFromURL(request.site.page);
+    siteObj.ref = window.document.referrer;
   }
   if (typeof config.getConfig('device') === 'object') {
     request.device = config.getConfig('device');

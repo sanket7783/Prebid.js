@@ -1199,15 +1199,15 @@ export const spec = {
     const commonFpd = config.getConfig('ortb2') || {};
     if (commonFpd.site) {
       // Saving page, domain & ref property from payload before getting replaced by fpd modules.
-			const {page, domain, ref} = payload.site;
-			mergeDeep(payload, {site: commonFpd.site});
-			// Replace original values for page, domain & ref
-			payload.site.page = page;
-			payload.site.domain = domain;
-			payload.site.ref = ref;
+      const {page, domain, ref} = payload.site;
+      mergeDeep(payload, {site: commonFpd.site});
+      // Replace original values for page, domain & ref
+      payload.site.page = page;
+      payload.site.domain = domain;
+      payload.site.ref = ref;
     }
     if (commonFpd.user) {
-    	mergeDeep(payload, {user: commonFpd.user});
+      mergeDeep(payload, {user: commonFpd.user});
     }
 
     // Note: Do not move this block up

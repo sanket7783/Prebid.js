@@ -706,7 +706,7 @@ function encryptSignals(signals, version = 1) {
 * This function will be exposed in the global-name-space so that publisher can register the signals-ESP.
 */
 function registerSignalSources() {
-  //Need to keep below change always instead of using isGptPubadsDefined()
+  // Need to keep below change always instead of using isGptPubadsDefined()
   if (!window.googletag) {
     return;
   }
