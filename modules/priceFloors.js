@@ -657,6 +657,8 @@ export function handleSetFloorsConfig(config) {
  */
 function addFloorDataToBid(floorData, floorInfo, bid, adjustedCpm) {
   bid.floorData = {
+	  usersGeoInfo: fetchUserGeoDetails(floorData.data),
+	  fetchStatus: floorData.fetchStatus,
     floorValue: floorInfo.matchingFloor,
     floorRule: floorInfo.matchingRule,
     floorRuleValue: floorInfo.floorRuleValue,
@@ -669,6 +671,20 @@ function addFloorDataToBid(floorData, floorInfo, bid, adjustedCpm) {
     let matchedValue = floorInfo.matchingData.split(floorData.data.schema.delimiter)[index];
     bid.floorData.matchedFields[field] = matchedValue;
   });
+}
+
+function fetchUserGeoDetails(userData) {
+	let userGeo = {};
+	if(userData.user) {
+		const {country, continent, latitude, longitude} = userData.user;
+		userGeo = {
+			country: country,
+			continent: continent,
+			latitude: latitude,
+			longitude: longitude,
+		}
+	}
+	return userGeo;
 }
 
 /**

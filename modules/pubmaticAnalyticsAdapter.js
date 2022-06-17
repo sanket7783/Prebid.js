@@ -370,6 +370,13 @@ function executeBidsLoggerCall(e, highestCpmBids) {
       'fskp': floorData ? (floorData.floorRequestData ? (floorData.floorRequestData.skipped == false ? 0 : 1) : undefined) : undefined,
       'ps': gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestCpmBids.filter(bid => bid.adUnitCode === adUnitId))
     };
+	if(floorData?.floorResponseData?.usersGeoInfo) {
+		const {country, continent, latitude, longitude} = floorData.floorResponseData.usersGeoInfo;
+		slotObject.country = country;
+		slotObject.continent = continent;
+		slotObject.latitude = latitude;
+		slotObject.longitude = longitude;
+	}
     slotsArray.push(slotObject);
     return slotsArray;
   }, []);
