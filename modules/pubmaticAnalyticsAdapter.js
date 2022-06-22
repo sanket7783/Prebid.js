@@ -280,6 +280,9 @@ function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
       'ocry': bid.bidResponse ? (bid.bidResponse.originalCurrency || CURRENCY_USD) : CURRENCY_USD,
       'piid': bid.bidResponse ? (bid.bidResponse.partnerImpId || EMPTY_STRING) : EMPTY_STRING,
       'frv': (s2sBidders.indexOf(bid.bidder) > -1) ? undefined : (bid.bidResponse ? (bid.bidResponse.floorData ? bid.bidResponse.floorData.floorRuleValue : undefined) : undefined),
+      'fen': bid?.bidResponse?.floorData?.enforcements?.enforceJS,
+      'fcur': bid?.bidResponse?.floorData?.floorCurrency,
+      'fv': bid?.bidResponse?.floorData?.floorValue
     });
     return partnerBids;
   }, [])
@@ -357,6 +360,17 @@ function executeBidsLoggerCall(e, highestCpmBids) {
   if (floorData) {
     outputObj['fmv'] = floorData.floorRequestData ? floorData.floorRequestData.modelVersion || undefined : undefined;
     outputObj['ft'] = floorData.floorResponseData ? (floorData.floorResponseData.enforcements.enforceJS == false ? 0 : 1) : undefined;
+    outputObj['fs'] = floorData?.floorResponseData?.fetchStatus;
+    outputObj['fmin'] = floorData?.floorResponseData?.floorMin;
+    outputObj['fp'] = floorData?.floorResponseData?.floorProvider;
+    outputObj['fsr'] = floorData?.floorResponseData?.skipRate;
+    if (floorData.floorResponseData?.usersGeoInfo) {
+      const {country, continent, latitude, longitude} = floorData.floorResponseData.usersGeoInfo;
+      outputObj.country = country;
+      outputObj.continent = continent;
+      outputObj.latitude = latitude;
+      outputObj.longitude = longitude;
+    }
   }
 
   outputObj.s = Object.keys(auctionCache.adUnitCodes).reduce(function(slotsArray, adUnitId) {
@@ -368,15 +382,11 @@ function executeBidsLoggerCall(e, highestCpmBids) {
       'mt': getAdUnitAdFormats(origAdUnit),
       'sz': getSizesForAdUnit(adUnit, adUnitId),
       'fskp': floorData ? (floorData.floorRequestData ? (floorData.floorRequestData.skipped == false ? 0 : 1) : undefined) : undefined,
+      'location': floorData?.floorResponseData?.location,
+      'mw': floorData?.floorResponseData?.modelWeight,
       'ps': gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestCpmBids.filter(bid => bid.adUnitCode === adUnitId))
     };
-	if(floorData?.floorResponseData?.usersGeoInfo) {
-		const {country, continent, latitude, longitude} = floorData.floorResponseData.usersGeoInfo;
-		slotObject.country = country;
-		slotObject.continent = continent;
-		slotObject.latitude = latitude;
-		slotObject.longitude = longitude;
-	}
+
     slotsArray.push(slotObject);
     return slotsArray;
   }, []);

@@ -657,8 +657,13 @@ export function handleSetFloorsConfig(config) {
  */
 function addFloorDataToBid(floorData, floorInfo, bid, adjustedCpm) {
   bid.floorData = {
-	  usersGeoInfo: fetchUserGeoDetails(floorData.data),
-	  fetchStatus: floorData.fetchStatus,
+    usersGeoInfo: fetchUserGeoDetails(floorData.data),
+    fetchStatus: floorData.fetchStatus,
+    floorMin: floorInfo.floorMin,
+    floorProvider: floorData.floorProvider,
+    skipRate: floorData.skipRate,
+    location: floorData.data.location,
+    modelWeight: floorData.data.modelWeight,
     floorValue: floorInfo.matchingFloor,
     floorRule: floorInfo.matchingRule,
     floorRuleValue: floorInfo.floorRuleValue,
@@ -674,17 +679,17 @@ function addFloorDataToBid(floorData, floorInfo, bid, adjustedCpm) {
 }
 
 function fetchUserGeoDetails(userData) {
-	let userGeo = {};
-	if(userData.user) {
-		const {country, continent, latitude, longitude} = userData.user;
-		userGeo = {
-			country: country,
-			continent: continent,
-			latitude: latitude,
-			longitude: longitude,
-		}
-	}
-	return userGeo;
+  let userGeo = {};
+  if (userData.user) {
+    const {country, continent, latitude, longitude} = userData.user;
+    userGeo = {
+      country: country,
+      continent: continent,
+      latitude: latitude,
+      longitude: longitude,
+    }
+  }
+  return userGeo;
 }
 
 /**

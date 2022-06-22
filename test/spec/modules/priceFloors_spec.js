@@ -1665,8 +1665,14 @@ describe('the price floors module', function () {
       expect(returnedBidResponse.cpm).to.equal(0);
     });
     it('if it finds a rule and does not floor should update the bid accordingly', function () {
-      _floorDataForAuction[AUCTION_ID] = utils.deepClone(basicFloorConfig);
+	  basicFloorConfig.data.skipRate = 20;
+	  basicFloorConfig.data.location = 'setConfig';
+	  basicFloorConfig.fetchStatus = 'success';
+	  basicFloorConfig.skipRate = 20;
+	  basicFloorConfig.floorProvider = 'F_P';
+	  _floorDataForAuction[AUCTION_ID] = utils.deepClone(basicFloorConfig);
       _floorDataForAuction[AUCTION_ID].data.values = { 'banner': 0.3 };
+
       runBidResponse();
       expect(returnedBidResponse).to.haveOwnProperty('floorData');
       expect(returnedBidResponse.floorData).to.deep.equal({
@@ -1675,6 +1681,8 @@ describe('the price floors module', function () {
         floorCurrency: 'USD',
         floorRule: 'banner',
         cpmAfterAdjustments: 0.5,
+        floorMin: 0,
+        modelWeight: 10,
         enforcements: {
           bidAdjustment: true,
           enforceJS: true,
@@ -1683,11 +1691,19 @@ describe('the price floors module', function () {
         },
         matchedFields: {
           mediaType: 'banner'
-        }
+        },
+        usersGeoInfo: {},
+        location: 'setConfig',
+        skipRate: 20,
+        fetchStatus: 'success',
+        floorProvider: 'F_P'
       });
       expect(returnedBidResponse.cpm).to.equal(0.5);
     });
     it('if should work with more complex rules and update accordingly', function () {
+	  basicFloorConfig.skipRate = 20;
+	  basicFloorConfig.fetchStatus = 'success';
+	  basicFloorConfig.floorProvider = 'F_P';
       _floorDataForAuction[AUCTION_ID] = {
         ...basicFloorConfig,
         data: {
@@ -1701,7 +1717,9 @@ describe('the price floors module', function () {
             'video|640x480': 4.5,
             'video|*': 5.5
           },
-          default: 10.0
+          default: 10.0,
+		  location: 'setConfig',
+		  modelWeight: 10
         }
       };
       runBidResponse();
@@ -1712,6 +1730,7 @@ describe('the price floors module', function () {
         floorCurrency: 'USD',
         floorRule: 'banner|300x250',
         cpmAfterAdjustments: 0.5,
+        floorMin: 0,
         enforcements: {
           bidAdjustment: true,
           enforceJS: true,
@@ -1721,7 +1740,13 @@ describe('the price floors module', function () {
         matchedFields: {
           mediaType: 'banner',
           size: '300x250'
-        }
+        },
+        usersGeoInfo: {},
+        location: 'setConfig',
+        skipRate: 20,
+        fetchStatus: 'success',
+        floorProvider: 'F_P',
+        modelWeight: 10
       });
       expect(returnedBidResponse.cpm).to.equal(0.5);
 
@@ -1740,6 +1765,7 @@ describe('the price floors module', function () {
         floorCurrency: 'USD',
         floorRule: 'video|*',
         cpmAfterAdjustments: 7.5,
+        floorMin: 0,
         enforcements: {
           bidAdjustment: true,
           enforceJS: true,
@@ -1749,7 +1775,13 @@ describe('the price floors module', function () {
         matchedFields: {
           mediaType: 'video',
           size: '300x250'
-        }
+        },
+		usersGeoInfo: {},
+        location: 'setConfig',
+        skipRate: 20,
+        fetchStatus: 'success',
+        floorProvider: 'F_P',
+        modelWeight: 10
       });
       expect(returnedBidResponse.cpm).to.equal(7.5);
     });
