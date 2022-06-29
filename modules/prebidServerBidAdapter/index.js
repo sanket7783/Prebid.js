@@ -380,6 +380,9 @@ function _appendSiteAppDevice(request, pageUrl, accountId) {
   if (!request.device.h) {
     request.device.h = window.innerHeight;
   }
+  
+  // update device.language to ISO-639-1-alpha-2 (2 character language)
+  request.device.language = request.device.language && request.device.language.split('-')[0];
 }
 
 function addBidderFirstPartyDataToRequest(request) {
@@ -878,9 +881,20 @@ Object.assign(ORTB2.prototype, {
           }, {}).min
       })();
 
-      if (floor) {
-        // imp.bidfloor = floor.floor;
-        // imp.bidfloorcur = floor.currency
+      if (getFloorBid) {
+        let floorInfo;
+        try {
+          floorInfo = getFloorBid.getFloor({
+            currency: config.getConfig('currency.adServerCurrency') || DEFAULT_S2S_CURRENCY,
+          });
+        } catch (e) {
+          logError('PBS: getFloor threw an error: ', e);
+        }
+        if (floorInfo && floorInfo.currency && !isNaN(parseFloat(floorInfo.floor))) {
+          // Restriciting floor specific parameters being sent to auction request
+          // imp.bidfloor = parseFloat(floorInfo.floor);
+          // imp.bidfloorcur = floorInfo.currency
+        }
       }
 
       if (imp.banner || imp.video || imp.native) {

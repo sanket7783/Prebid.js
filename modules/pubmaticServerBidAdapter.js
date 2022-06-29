@@ -5,7 +5,7 @@ import { config } from '../src/config.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, VIDEO } from '../src/mediaTypes.js';
 import constants from '../src/constants.json';
-const LOG_WARN_PREFIX = 'PubMatic: ';
+const LOG_WARN_PREFIX = 'PubMatic: '; 
 
 const BIDDER_CODE = 'pubmaticServer';
 const ENDPOINT = 'https://ow.pubmatic.com/openrtb/2.5/';
@@ -597,6 +597,10 @@ export const spec = {
         startTime: startTime
       }
     }
+	
+	// update device.language to ISO-639-1-alpha-2 (2 character language)
+    payload.device.language = payload.device.language && payload.device.language.split('-')[0];
+
     _handleEids(payload, validBidRequests);
     return {
       method: 'POST',
