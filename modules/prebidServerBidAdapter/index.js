@@ -380,7 +380,7 @@ function _appendSiteAppDevice(request, pageUrl, accountId) {
   if (!request.device.h) {
     request.device.h = window.innerHeight;
   }
-  
+
   // update device.language to ISO-639-1-alpha-2 (2 character language)
   request.device.language = request.device.language && request.device.language.split('-')[0];
 }
@@ -880,6 +880,8 @@ Object.assign(ORTB2.prototype, {
             return min;
           }, {}).min
       })();
+
+      const getFloorBid = find(firstBidRequest.bids, bid => bid.adUnitCode === adUnit.code && typeof bid.getFloor === 'function');
 
       if (getFloorBid) {
         let floorInfo;
