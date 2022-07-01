@@ -365,11 +365,12 @@ function executeBidsLoggerCall(e, highestCpmBids) {
     outputObj['fp'] = floorData?.floorResponseData?.floorProvider;
     outputObj['fsr'] = floorData?.floorResponseData?.skipRate;
     if (floorData.floorResponseData?.usersGeoInfo) {
-      const {country, continent, latitude, longitude} = floorData.floorResponseData.usersGeoInfo;
+      const {country, continent, latitude, longitude, jsonName} = floorData.floorResponseData.usersGeoInfo;
       outputObj.country = country;
       outputObj.continent = continent;
       outputObj.latitude = latitude;
       outputObj.longitude = longitude;
+	  outputObj.floorJson = jsonName;
     }
   }
 

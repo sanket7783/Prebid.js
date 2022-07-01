@@ -1776,7 +1776,7 @@ describe('the price floors module', function () {
           mediaType: 'video',
           size: '300x250'
         },
-		usersGeoInfo: {},
+        usersGeoInfo: {},
         location: 'setConfig',
         skipRate: 20,
         fetchStatus: 'success',

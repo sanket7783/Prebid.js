@@ -681,12 +681,13 @@ function addFloorDataToBid(floorData, floorInfo, bid, adjustedCpm) {
 function fetchUserGeoDetails(userData) {
   let userGeo = {};
   if (userData.user) {
-    const {country, continent, latitude, longitude} = userData.user;
+    const {country, continent, latitude, longitude, jsonName} = userData.user;
     userGeo = {
       country: country,
       continent: continent,
       latitude: latitude,
       longitude: longitude,
+	  jsonName: jsonName
     }
   }
   return userGeo;
