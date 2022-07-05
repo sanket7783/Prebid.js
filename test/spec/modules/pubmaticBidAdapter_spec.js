@@ -1590,13 +1590,12 @@ describe('PubMatic adapter', function () {
       describe('FPD', function() {
         let newRequest;
 
-        it('ortb2.site should be merged in the request', function() {
+        it('ortb2.site should be merged except page, domain & ref in the request', function() {
           let sandbox = sinon.sandbox.create();
           sandbox.stub(config, 'getConfig').callsFake(key => {
             const config = {
               'ortb2': {
                 site: {
-                  domain: 'page.example.com',
                   cat: ['IAB2'],
                   sectioncat: ['IAB2-2']
                 }
@@ -1606,7 +1605,6 @@ describe('PubMatic adapter', function () {
           });
           const request = spec.buildRequests(bidRequests, {});
           let data = JSON.parse(request.data);
-          expect(data.site.domain).to.equal('page.example.com');
           expect(data.site.cat).to.deep.equal(['IAB2']);
           expect(data.site.sectioncat).to.deep.equal(['IAB2-2']);
           sandbox.restore();
