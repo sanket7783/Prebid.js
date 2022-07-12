@@ -38,7 +38,7 @@ console.timeEnd('Loading Plugins in Prebid');
 const FAKE_SERVER_HOST = argv.host ? argv.host : 'localhost';
 const FAKE_SERVER_PORT = 4444;
 const { spawn } = require('child_process');
-
+prebid.profile = argv.profile;
 // these modules must be explicitly listed in --modules to be included in the build, won't be part of "all" modules
 var explicitModules = [
   'pre1api'
@@ -164,7 +164,6 @@ function makeDevpackPkg() {
 
   const analyticsSources = helpers.getAnalyticsSources();
   const moduleSources = helpers.getModulePaths(externalModules);
-
   return gulp.src([].concat(moduleSources, analyticsSources, 'src/prebid.js'))
     .pipe(helpers.nameModules(externalModules))
     .pipe(webpackStream(cloned, webpack))
@@ -257,7 +256,7 @@ function bundle(dev, moduleArr) {
   // gutil.log('Concatenating files:\n', entries);
   // gutil.log('Appending ' + prebid.globalVarName + '.processQueue();');
   // gutil.log('Generating bundle:', outputFileName);
-
+  var globalVarName = /*argv.profile === "IH" ? prebid.ihGlobalVarName : */ prebid.globalVarName;
   return gulp.src(
     entries
   )
@@ -266,7 +265,7 @@ function bundle(dev, moduleArr) {
     .pipe(gulpif(dev, sourcemaps.init({ loadMaps: true })))
     .pipe(concat(outputFileName))
     .pipe(gulpif(!argv.manualEnable, footer('\n<%= global %>.processQueue();', {
-      global: prebid.globalVarName
+      global: globalVarName
     }
     )))
     .pipe(gulpif(dev, sourcemaps.write('.')));
