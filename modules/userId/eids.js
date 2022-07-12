@@ -177,7 +177,7 @@ export const USER_IDS_CONFIG = {
     source: 'zeotap.com',
     atype: 1,
     getValue: function getValue(data) {
-      return isPlainObject(data)? data.id : data;
+      return isPlainObject(data) ? data.id : data;
     }
   },
 

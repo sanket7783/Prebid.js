@@ -1163,6 +1163,9 @@ export const spec = {
       payload.device = Object.assign(payload.device, config.getConfig('device'));
     }
 
+		// update device.language to ISO-639-1-alpha-2 (2 character language)
+    payload.device.language = payload.device.language && payload.device.language.split('-')[0];
+
     // passing transactionId in source.tid
     deepSetValue(payload, 'source.tid', conf.transactionId);
 
@@ -1198,7 +1201,13 @@ export const spec = {
     // First Party Data
     const commonFpd = config.getConfig('ortb2') || {};
     if (commonFpd.site) {
+      // Saving page, domain & ref property from payload before getting replaced by fpd modules.
+      const {page, domain, ref} = payload.site;
       mergeDeep(payload, {site: commonFpd.site});
+      // Replace original values for page, domain & ref
+      payload.site.page = page;
+      payload.site.domain = domain;
+      payload.site.ref = ref;
     }
     if (commonFpd.user) {
       mergeDeep(payload, {user: commonFpd.user});
