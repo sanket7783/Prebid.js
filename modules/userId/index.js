@@ -839,16 +839,16 @@ function generateModuleLists() {
   for (let index in configRegistry) {
     let moduleName = configRegistry[index].name;
     if (primaryModulesList.indexOf(moduleName) >= 0) {
-      modulesToRefresh.push(moduleName);
+      !modulesToRefresh.includes(moduleName)  && modulesToRefresh.push(moduleName);
       updateModuleParams(configRegistry[index]);
     }
     if (scriptBasedModulesList.indexOf(moduleName) >= 0) {
-      scriptBasedModulesToRefresh.push(moduleName);
+      !scriptBasedModulesToRefresh.includes(moduleName) && scriptBasedModulesToRefresh.push(moduleName);
     }
   }
 }
 
-export function reTriggerPartnerCallsWithEmailHashes(updateModulesOnly) {
+export function reTriggerPartnerCallsWithEmailHashes() {
   generateModuleLists();
   getGlobal().refreshUserIds({'submoduleNames': modulesToRefresh});
   reTriggerScriptBasedAPICalls(scriptBasedModulesToRefresh);
