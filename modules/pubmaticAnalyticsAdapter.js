@@ -267,7 +267,7 @@ function gatherPartnerBidsForAdUnitForLogger(adUnit, adUnitId, highestBid) {
       'eg': bid.bidResponse ? bid.bidResponse.bidGrossCpmUSD : 0,
       'en': bid.bidResponse ? bid.bidResponse.bidPriceUSD : 0,
       'di': bid.bidResponse ? (bid.bidResponse.dealId || EMPTY_STRING) : EMPTY_STRING,
-      'dc': bid.bidResponse && bid.bidResponse.dealId ? (bid.bidResponse.dealChannel || EMPTY_STRING) : EMPTY_STRING,
+      'dc': bid.bidResponse ? (bid.bidResponse.dealChannel || EMPTY_STRING) : EMPTY_STRING,
       'l1': bid.bidResponse ? bid.clientLatencyTimeMs : 0,
       'l2': 0,
       'adv': bid.bidResponse ? getAdDomain(bid.bidResponse) || undefined : undefined,
