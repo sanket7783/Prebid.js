@@ -217,6 +217,15 @@ export const USER_IDS_CONFIG = {
     atype: 3
   },
 
+  // 33across ID
+  '33acrossId': {
+    source: '33across.com',
+    atype: 1,
+    getValue: function(data) {
+      return data.envelope;
+    }
+  },
+
   // Neustar Fabrick
   'fabrickId': {
     source: 'neustar.biz',
