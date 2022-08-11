@@ -5,39 +5,16 @@ console.time('Loading Plugins in Prebid');
 
 var argv = require('yargs').argv;
 var gulp = require('gulp');
-// var gutil = require('gulp-util');
-// var connect = require('gulp-connect');
-// var webpack = require('webpack');
-// var webpackStream = require('webpack-stream');
-// var terser = require('gulp-terser');
-// var gulpClean = require('gulp-clean');
-// var KarmaServer = require('karma').Server;
-// var karmaConfMaker = require('./karma.conf.maker.js');
-// var opens = require('opn');
-// var webpackConfig = require('./webpack.conf.js');
-// var helpers = require('./gulpHelpers.js');
 var concat = require('gulp-concat');
-// var header = require('gulp-header');
-// var footer = require('gulp-footer');
 var replace = require('gulp-replace');
-// var shell = require('gulp-shell');
-// var eslint = require('gulp-eslint');
-// var gulpif = require('gulp-if');
-// var sourcemaps = require('gulp-sourcemaps');
-// var through = require('through2');
-// var fs = require('fs');
-// var jsEscape = require('gulp-js-escape');
-const path = require('path');
-const execa = require('execa');
-
 var prebid = require('./package.json');
+const { spawn } = require('child_process');
 var dateString = 'Updated : ' + (new Date()).toISOString().substring(0, 10);
 var banner = '/* <%= prebid.name %> v<%= prebid.version %>\n' + dateString + '*/\n';
 var port = 9999;
 console.timeEnd('Loading Plugins in Prebid');
 const FAKE_SERVER_HOST = argv.host ? argv.host : 'localhost';
 const FAKE_SERVER_PORT = 4444;
-const { spawn } = require('child_process');
 prebid.profile = argv.profile;
 // these modules must be explicitly listed in --modules to be included in the build, won't be part of "all" modules
 var explicitModules = [
@@ -222,7 +199,7 @@ function nodeBundle(modules) {
 }
 
 function bundle(dev, moduleArr) {
-  // console.time('Loading Plugins for Prebid');
+  console.time("-----------------------------------");
   var _ = require('lodash');
   var gutil = require('gulp-util');
   var helpers = require('./gulpHelpers');
@@ -257,10 +234,8 @@ function bundle(dev, moduleArr) {
   // gutil.log('Appending ' + prebid.globalVarName + '.processQueue();');
   // gutil.log('Generating bundle:', outputFileName);
   var globalVarName = /*argv.profile === "IH" ? prebid.ihGlobalVarName : */ prebid.globalVarName;
-  return gulp.src(
-    entries
-  )
-    // Need to uodate the "Modules: ..." section in comment with the current modules list
+  console.timeEnd("-----------------------------------");
+    return gulp.src(entries)
     .pipe(replace(/(Modules: )(.*?)(\*\/)/, ('$1' + getModulesListToAddInBanner(helpers.getArgModules()) + ' $3')))
     .pipe(gulpif(dev, sourcemaps.init({ loadMaps: true })))
     .pipe(concat(outputFileName))
@@ -285,6 +260,8 @@ function test(done) {
   var KarmaServer = require('karma').Server;
   var karmaConfMaker = require('./karma.conf.maker');
   var helpers = require('./gulpHelpers');
+  const path = require('path');
+  const execa = require('execa');
   if (argv.notest) {
     done();
   } else if (argv.e2e) {
