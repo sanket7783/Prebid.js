@@ -402,16 +402,6 @@
       "name": "gPTPre-Auction",
       "path": "",
       "module": ""
-    },
-    {
-      "name": "First Party Data Enrichment Module",
-      "path": "/modules/enrichmentFpdModule.js",
-      "module": "enrichmentFpdModule"
-    },
-    {
-      "name": "firstPartyDataEnrichmentModule",
-      "path": "/modules/enrichmentFpdModule.js",
-      "module": "enrichmentFpdModule"
     }
   ]
 }
