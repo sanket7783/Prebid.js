@@ -351,57 +351,5 @@
       "path": "/modules/yuktamediaAnalyticsAdapter.js",
       "module": "yuktamediaAnalyticsAdapter"
     }
-  ],
-  "Others": [
-    {
-      "name": "currency",
-      "path": "/modules/currency.js",
-      "module": "currency"
-    },
-    {
-      "name": "demandChainObjectModule",
-      "path": "/modules/dcchain.js",
-      "module": "dcchain"
-    },
-    {
-      "name": "debugging",
-      "path": "",
-      "module": ""
-    },
-    {
-      "name": "iABCategoryTranslation",
-      "path": "",
-      "module": ""
-    },
-    {
-      "name": "bidViewability-AdServerIndependent",
-      "path": "",
-      "module": ""
-    },
-    {
-      "name": "priceFloors",
-      "path": "/modules/priceFloors.js",
-      "module": "priceFloors"
-    },
-    {
-      "name": "gDPRConsentManagement",
-      "path": "/modules/consentManagement.js",
-      "module": "consentManagement"
-    },
-    {
-      "name": "uSPrivacyConsentManagement",
-      "path": "/modules/consentManagementUsp.js",
-      "module": "consentManagementUsp"
-    },
-    {
-      "name": "firstPartyDataEnrichment",
-      "path": "/modules/enrichmentFpdModule.js",
-      "module": "enrichmentFpdModule"
-    },
-    {
-      "name": "gPTPre-Auction",
-      "path": "",
-      "module": ""
-    }
   ]
 }
